@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import Globe from '@/components/Globe'
 
 const SAT_DATA = [
   { id: 'ISS', name: 'ISS (ZARYA)', type: 'ISS', lat: 42.46, lon: -70.71, alt: 408, speed: 27600 },
@@ -49,7 +50,7 @@ export default function Dashboard() {
   const [filter, setFilter] = useState('ALL')
   const [selected, setSelected] = useState<typeof SAT_DATA[0] | null>(null)
   const [utc, setUtc] = useState('')
-  const [issPos, setIssPos] = useState({ lat: 42.46, lon: -70.71 })
+  const [issPos, setIssPos] = useState({ lat: 42.46, lon: -70.71, alt: 408, vel: 27600 })
   const [passes, setPasses] = useState(PASSES.map(p => ({ ...p })))
 
   useEffect(() => {
@@ -58,10 +59,17 @@ export default function Dashboard() {
   }, [])
 
   useEffect(() => {
-    const i = setInterval(() => setIssPos(p => ({
-      lat: +(p.lat + (Math.random()-.5)*.5).toFixed(2),
-      lon: +(p.lon + (Math.random()-.5)*.5).toFixed(2),
-    })), 5000); return () => clearInterval(i)
+    let cancelled = false
+    const poll = async () => {
+      try {
+        const res = await fetch('/api/iss')
+        const d = await res.json()
+        if (!cancelled) setIssPos({ lat: +d.latitude.toFixed(2), lon: +d.longitude.toFixed(2), alt: Math.round(d.altitude), vel: Math.round(d.velocity) })
+      } catch {}
+    }
+    poll()
+    const i = setInterval(poll, 5000)
+    return () => { cancelled = true; clearInterval(i) }
   }, [])
 
   useEffect(() => {
@@ -164,16 +172,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-            {[520, 420, 320].map((sz, i) => (
-              <div key={i} style={{ position: 'absolute', width: sz, height: sz, borderRadius: '50%', border: '1px solid rgba(0,212,255,0.06)', transform: `rotate(${[15,-15,45][i]}deg)` }} />
-            ))}
-            <div style={{ width: 300, height: 300, borderRadius: '50%', border: '2px solid rgba(0,212,255,0.25)', background: 'radial-gradient(circle at 35% 35%, rgba(0,212,255,0.08), rgba(0,0,60,0.4) 60%, rgba(0,0,0,0.8))', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-              <span style={{ ...S, fontSize: 10, color: '#8892A4' }}>GLOBE INITIALIZING...</span>
-            </div>
-            {[{top:'22%',left:'56%'},{top:'62%',left:'26%'},{top:'72%',left:'63%'},{top:'38%',left:'22%'}].map((pos,i) => (
-              <div key={i} style={{ position: 'absolute', ...pos, width: 8, height: 8, borderRadius: '50%', background: '#00D4FF', animation: 'blink 1s infinite', animationDelay: i*0.25+'s', boxShadow: '0 0 8px rgba(0,212,255,0.8)' }} />
-            ))}
+        <div style={{ flex: 1, position: 'relative' }}>
+            <Globe satellites={SAT_DATA} selected={selected} onSelect={setSelected} />
           </div>
 
           <div style={{ height: 44, display: 'flex', alignItems: 'center', gap: 0, padding: '0 16px', borderTop: '1px solid rgba(0,212,255,0.08)' }}>
@@ -198,7 +198,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-              {[['ALTITUDE','408 KM'],['SPEED','27,600 KM/H'],['LAT', issPos.lat+'°'],['LON', issPos.lon+'°']].map(([l,v]) => (
+{[['ALTITUDE', issPos.alt+' KM'],['SPEED', issPos.vel.toLocaleString()+' KM/H'],['LAT', issPos.lat+'°'],['LON', issPos.lon+'°']].map(([l,v]) => (
                 <div key={l} style={{ background: '#111118', borderRadius: 6, padding: 8 }}>
                   <div style={{ ...S, fontSize: 8, color: '#4A5568', marginBottom: 3 }}>{l}</div>
                   <div style={{ ...S, fontSize: 12, color: '#00D4FF', fontWeight: 700 }}>{v}</div>

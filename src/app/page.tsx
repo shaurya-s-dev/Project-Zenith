@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
@@ -19,10 +19,14 @@ const STATS = [
   { value: '< 5s', label: 'DATA LATENCY' },
   { value: '99.9%', label: 'UPTIME' },
 ]
+const toRad = (d: number) => (d * Math.PI) / 180
+
+interface Meteor { id: number; top: number; left: number; angle: number; length: number; duration: number }
 
 export default function HomePage() {
   const router = useRouter()
   const [stars, setStars] = useState<{ top: string; left: string; size: number; opacity: number; delay: number }[]>([])
+  const [meteors, setMeteors] = useState<Meteor[]>([])
   const [bootLines, setBootLines] = useState<string[]>([])
   const [bootComplete, setBootComplete] = useState(false)
 
@@ -35,6 +39,21 @@ export default function HomePage() {
       delay: Math.random() * 3,
     }))
     setStars(s)
+  }, [])
+
+  useEffect(() => {
+    let active = true
+    const spawn = () => {
+      if (!active) return
+      const id = Date.now() + Math.random()
+      const angle = 25 + Math.random() * 30
+      const duration = 0.9 + Math.random() * 1.1
+      setMeteors(prev => [...prev, { id, top: Math.random() * 45, left: Math.random() * 85, angle, length: 70 + Math.random() * 70, duration }])
+      setTimeout(() => setMeteors(prev => prev.filter(m => m.id !== id)), (duration + 0.4) * 1000)
+      setTimeout(spawn, 1500 + Math.random() * 3500)
+    }
+    const initial = setTimeout(spawn, 1000)
+    return () => { active = false; clearTimeout(initial) }
   }, [])
 
   useEffect(() => {
@@ -61,6 +80,21 @@ export default function HomePage() {
           animationDelay: s.delay + 's',
           pointerEvents: 'none',
         }} />
+      ))}
+      {meteors.map(m => (
+        <motion.div
+          key={m.id}
+          initial={{ opacity: 0, x: 0, y: 0 }}
+          animate={{ opacity: [0, 1, 1, 0], x: Math.cos(toRad(m.angle)) * 480, y: Math.sin(toRad(m.angle)) * 480 }}
+          transition={{ duration: m.duration, ease: 'easeIn' }}
+          style={{
+            position: 'absolute', top: m.top + '%', left: m.left + '%',
+            width: m.length, height: 2, borderRadius: 2,
+            background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(0,212,255,0.6) 60%, #fff 100%)',
+            transform: `rotate(${m.angle}deg)`, transformOrigin: 'left center',
+            boxShadow: '0 0 6px rgba(255,255,255,0.6)', pointerEvents: 'none',
+          }}
+        />
       ))}
 
       {/* Boot terminal */}
