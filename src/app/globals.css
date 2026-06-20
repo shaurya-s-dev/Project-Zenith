@@ -26,9 +26,37 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #00D4FF; border-radius: 4px; }
 
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-@keyframes pulse-cyan { 0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,0)} 50%{box-shadow:0 0 0 6px rgba(0,212,255,0.2)} }
-@keyframes rotate-slow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-@keyframes scanline { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
-@keyframes twinkle { 0%,100%{opacity:0.2} 50%{opacity:1} }
+/* ── existing animations ──────────────────────────────── */
+@keyframes blink        { 0%,100%{opacity:1} 50%{opacity:0} }
+@keyframes float        { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes pulse-cyan   { 0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,0)} 50%{box-shadow:0 0 0 6px rgba(0,212,255,0.2)} }
+@keyframes rotate-slow  { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes scanline     { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
+@keyframes twinkle      { 0%,100%{opacity:0.2} 50%{opacity:1} }
+
+/* ── hero float (larger travel, hero-scale rhythm) ────── */
+@keyframes float-hero {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-15px); }
+}
+.animate-float {
+  animation: float-hero 6s ease-in-out infinite;
+}
+
+/* ── glow text pulse ─────────────────────────────────── */
+@keyframes pulse-glow {
+  0%, 100% { text-shadow: 0 0 20px rgba(27, 84, 218, 0.5); }
+  50%       { text-shadow: 0 0 40px rgba(27, 84, 218, 0.9),
+                           0 0 80px rgba(27, 84, 218, 0.3); }
+}
+.animate-glow-text {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* ── respect prefers-reduced-motion ─────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-glow-text {
+    animation: none;
+  }
+}
