@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Globe from '@/components/Globe'
+import { InfoRayButton } from '@/components/InfoRayButton'
+import SkyLensModal from '@/components/SkyLensModal'
 
 const SAT_DATA = [
   { id: 'ISS', name: 'ISS (ZARYA)', type: 'ISS', lat: 42.46, lon: -70.71, alt: 408, speed: 27600 },
@@ -33,6 +35,20 @@ const WEATHER = [
   { label: 'X-RAY FLUX', value: 'B2.1', pct: 20, color: '#9B59FF' },
 ]
 
+// Zenith objects visible overhead (Sky Above Me section)
+const ZENITH_OBJECTS = [
+  { name: 'VENUS', ra: '04h 12m', dec: '+18°', mag: '-4.5' },
+  { name: 'JUPITER', ra: '22h 44m', dec: '-12°', mag: '-2.9' },
+  { name: 'MARS', ra: '10h 08m', dec: '+14°', mag: '+0.7' },
+  { name: 'SIRIUS', ra: '06h 45m', dec: '-16°', mag: '-1.5' },
+]
+
+const RISE_SET = [
+  { body: 'SUN', rise: '06:14', set: '19:47' },
+  { body: 'MOON', rise: '21:32', set: '08:19' },
+  { body: 'ISS', rise: '22:14', set: '22:21' },
+]
+
 function fmt(s: number) {
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60
   return `+${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
@@ -52,6 +68,13 @@ export default function Dashboard() {
   const [utc, setUtc] = useState('')
   const [issPos, setIssPos] = useState({ lat: 42.46, lon: -70.71, alt: 408, vel: 27600 })
   const [passes, setPasses] = useState(PASSES.map(p => ({ ...p })))
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalObject, setModalObject] = useState<typeof SAT_DATA[0] | null>(null)
+
+  // Part 4: Speed tracker for selected satellite (simulated real-time)
+  const [currentSpeed, setCurrentSpeed] = useState(0)
+  const [speedDelta, setSpeedDelta] = useState(0)
+  const prevSpeedRef = useRef(0)
 
   useEffect(() => {
     const t = () => setUtc(new Date().toUTCString().split(' ')[4] + ' UTC')
@@ -77,9 +100,32 @@ export default function Dashboard() {
     return () => clearInterval(i)
   }, [])
 
+  // Part 4: Simulate speed updates for selected satellite
+  useEffect(() => {
+    if (!selected) return
+    const base = selected.id === 'ISS' ? issPos.vel : selected.speed
+    setCurrentSpeed(base)
+    prevSpeedRef.current = base
+
+    const i = setInterval(() => {
+      const jitter = (Math.random() - 0.5) * 12
+      const newSpeed = Math.round(base + jitter)
+      setSpeedDelta(newSpeed - prevSpeedRef.current)
+      setCurrentSpeed(newSpeed)
+      prevSpeedRef.current = newSpeed
+    }, 1000)
+    return () => clearInterval(i)
+  }, [selected, issPos.vel])
+
+  const handleInfoClick = (sat: typeof SAT_DATA[0]) => {
+    setModalObject(sat)
+    setModalOpen(true)
+  }
+
   const list = SAT_DATA.filter(s => filter === 'ALL' || s.type === filter)
 
   const S = { fontFamily: 'Space Mono, monospace' }
+  const issContextString = `ISS position: lat ${issPos.lat}°, lon ${issPos.lon}°, altitude ${issPos.alt} km, velocity ${issPos.vel.toLocaleString()} km/h.`
 
   return (
     <div style={{ height: '100vh', background: '#000', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -130,6 +176,12 @@ export default function Dashboard() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                   <span style={{ ...S, fontSize: 8, padding: '1px 5px', borderRadius: 3, ...badge(s.type) }}>{s.type}</span>
                   <span style={{ ...S, fontSize: 10, color: '#fff', flex: 1 }}>{s.name}</span>
+                  {/* Part 2: InfoRayButton per satellite row */}
+                  <InfoRayButton
+                    onClick={() => handleInfoClick(s)}
+                    color={s.type === 'ISS' ? '#00FF88' : s.type === 'DEBRIS' ? '#FF6B35' : '#FFD400'}
+                    size={22}
+                  />
                   <div style={{ width: 5, height: 5, borderRadius: '50%', background: s.type==='DEBRIS' ? '#FF6B35' : '#00FF88', animation: 'blink 1s infinite' }} />
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
@@ -144,7 +196,11 @@ export default function Dashboard() {
             {selected ? (
               <>
                 <div style={{ ...S, fontSize: 8, color: '#8892A4', marginBottom: 4 }}>SELECTED TARGET</div>
-                <div style={{ ...S, fontSize: 12, color: '#00D4FF', marginBottom: 8 }}>{selected.name}</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div style={{ ...S, fontSize: 12, color: '#00D4FF' }}>{selected.name}</div>
+                  {/* Part 2: InfoRayButton in detail panel */}
+                  <InfoRayButton onClick={() => handleInfoClick(selected)} color="#FFD400" size={26} />
+                </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
                   {[['LAT', selected.lat+'°'],['LON', selected.lon+'°'],['ALT', selected.alt+'km'],['SPD', selected.speed.toLocaleString()]].map(([k,v]) => (
                     <div key={k}>
@@ -162,7 +218,7 @@ export default function Dashboard() {
         </div>
 
         {/* CENTER */}
-        <div style={{ flex: 1, background: '#000', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, background: '#000', display: 'flex', flexDirection: 'column', position: 'relative' }}>
           <div style={{ height: 40, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', borderBottom: '1px solid rgba(0,212,255,0.08)' }}>
             <span style={{ ...S, fontSize: 9, color: '#4A5568' }}>ZENITH / MISSION CONTROL</span>
             <span style={{ ...S, fontSize: 10, color: '#8892A4', letterSpacing: '0.2em' }}>GLOBAL TRACKING VIEW</span>
@@ -172,8 +228,131 @@ export default function Dashboard() {
             </div>
           </div>
 
-        <div style={{ flex: 1, position: 'relative' }}>
+          <div style={{ flex: 1, position: 'relative' }}>
             <Globe satellites={SAT_DATA} selected={selected} onSelect={setSelected} />
+
+            {/* Part 4: Speed Tracker HUD overlay */}
+            {selected && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                style={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 16,
+                  background: 'rgba(0,0,0,0.82)',
+                  border: '1px solid rgba(0,212,255,0.25)',
+                  borderRadius: 10,
+                  padding: '12px 16px',
+                  backdropFilter: 'blur(12px)',
+                  minWidth: 180,
+                  boxShadow: '0 0 20px rgba(0,212,255,0.08)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#00FF88', animation: 'blink 1s infinite' }} />
+                  <span style={{ ...S, fontSize: 8, color: '#8892A4', letterSpacing: '0.2em' }}>LIVE SPEED TRACKER</span>
+                </div>
+                <div style={{ ...S, fontSize: 9, color: '#4A5568', marginBottom: 4 }}>{selected.name}</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                  <span style={{ ...S, fontSize: 22, color: '#00D4FF', fontWeight: 700 }}>
+                    {currentSpeed.toLocaleString()}
+                  </span>
+                  <span style={{ ...S, fontSize: 9, color: '#4A5568' }}>KM/H</span>
+                </div>
+                <div style={{ ...S, fontSize: 9, color: speedDelta >= 0 ? '#00FF88' : '#FF6B35', marginTop: 4 }}>
+                  {speedDelta >= 0 ? '▲' : '▼'} {Math.abs(speedDelta)} km/h
+                </div>
+                {/* Speed bar */}
+                <div style={{ marginTop: 8, height: 2, background: 'rgba(0,212,255,0.1)', borderRadius: 1 }}>
+                  <motion.div
+                    animate={{ width: `${Math.min(100, (currentSpeed / 30000) * 100)}%` }}
+                    transition={{ duration: 0.8 }}
+                    style={{ height: '100%', background: '#00D4FF', borderRadius: 1 }}
+                  />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+                  <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>ALT: {selected.id === 'ISS' ? issPos.alt : selected.alt} KM</span>
+                  <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>{selected.type}</span>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Part 4: Orbit visualization hint when selected */}
+            {selected && (
+              <div style={{
+                position: 'absolute',
+                bottom: 16,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'rgba(0,0,0,0.75)',
+                border: '1px solid rgba(0,212,255,0.15)',
+                borderRadius: 6,
+                padding: '6px 14px',
+                backdropFilter: 'blur(8px)',
+              }}>
+                <span style={{ ...S, fontSize: 9, color: '#4A5568' }}>
+                  🛸 TRACKING <span style={{ color: '#00D4FF' }}>{selected.name}</span> — orbit path rendered on globe
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* PART 3: Sky Above Me + Space Weather grid below globe */}
+          <div style={{ flexShrink: 0, borderTop: '1px solid rgba(0,212,255,0.08)' }}>
+            {/* Grid: 2/3 Sky Above Me + 1/3 Space Weather */}
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 0 }}>
+
+              {/* Sky Above Me */}
+              <div style={{ borderRight: '1px solid rgba(0,212,255,0.08)', padding: '10px 14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                  <span style={{ animation: 'blink 2s infinite', fontSize: 12 }}>🌐</span>
+                  <span style={{ ...S, fontSize: 9, color: '#00D4FF', letterSpacing: '0.2em' }}>SKY ABOVE ME</span>
+                  <InfoRayButton onClick={() => {}} color="#00D4FF" size={18} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  {/* Left: Zenith Objects */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {ZENITH_OBJECTS.map(obj => (
+                      <div key={obj.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ ...S, fontSize: 9, color: '#fff', minWidth: 52 }}>{obj.name}</span>
+                        <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>mag {obj.mag}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Right: Rise/Set Times */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {RISE_SET.map(rs => (
+                      <div key={rs.body} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ ...S, fontSize: 8, color: '#8892A4', minWidth: 36 }}>{rs.body}</span>
+                        <span style={{ ...S, fontSize: 8, color: '#00FF88' }}>↑{rs.rise}</span>
+                        <span style={{ ...S, fontSize: 8, color: '#FF6B35' }}>↓{rs.set}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Space Weather */}
+              <div style={{ padding: '10px 14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                  <span style={{ animation: 'blink 2s infinite', fontSize: 12 }}>☀️</span>
+                  <span style={{ ...S, fontSize: 9, color: '#FF6B35', letterSpacing: '0.2em' }}>SPACE WEATHER</span>
+                </div>
+                {WEATHER.map(({ label, value, pct, color }) => (
+                  <div key={label} style={{ marginBottom: 6 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                      <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>{label}</span>
+                      <span style={{ ...S, fontSize: 8, color: '#fff' }}>{value}</span>
+                    </div>
+                    <div style={{ width: '100%', height: 2, background: '#1a1a2e', borderRadius: 1 }}>
+                      <div style={{ width: pct+'%', height: '100%', background: color, borderRadius: 1 }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div style={{ height: 44, display: 'flex', alignItems: 'center', gap: 0, padding: '0 16px', borderTop: '1px solid rgba(0,212,255,0.08)' }}>
@@ -198,7 +377,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-{[['ALTITUDE', issPos.alt+' KM'],['SPEED', issPos.vel.toLocaleString()+' KM/H'],['LAT', issPos.lat+'°'],['LON', issPos.lon+'°']].map(([l,v]) => (
+              {[['ALTITUDE', issPos.alt+' KM'],['SPEED', issPos.vel.toLocaleString()+' KM/H'],['LAT', issPos.lat+'°'],['LON', issPos.lon+'°']].map(([l,v]) => (
                 <div key={l} style={{ background: '#111118', borderRadius: 6, padding: 8 }}>
                   <div style={{ ...S, fontSize: 8, color: '#4A5568', marginBottom: 3 }}>{l}</div>
                   <div style={{ ...S, fontSize: 12, color: '#00D4FF', fontWeight: 700 }}>{v}</div>
@@ -239,6 +418,14 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Part 5: SkyLens Modal */}
+      <SkyLensModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        object={modalObject}
+        issContext={issContextString}
+      />
     </div>
   )
 }
