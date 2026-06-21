@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useSkyLens } from '@/components/SkyLensContext'
 
 const NAV = [['MISSION CONTROL','/dashboard'],['SKY ABOVE ME','/sky'],['SPACE WEATHER','/weather'],['SKYLENS AI','/skylens']]
 const S = { fontFamily: 'Space Mono, monospace' }
@@ -17,9 +18,8 @@ const SUGGESTIONS = [
 ]
 
 export default function SkyLensPage() {
-  const [messages, setMessages] = useState<Msg[]>([])
+  const { messages, addMessage, updateLastMessage, clearMessages, isLoading, setIsLoading } = useSkyLens()
   const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
   const [issContext, setIssContext] = useState('')
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -35,12 +35,12 @@ export default function SkyLensPage() {
   }, [messages])
 
   const send = async (text: string) => {
-    if (!text.trim() || loading) return
-    const next = [...messages, { role: 'user' as const, content: text }]
-    setMessages(next)
+    if (!text.trim() || isLoading) return
+    const next: Msg[] = [...messages, { role: 'user' as const, content: text }]
+    addMessage({ role: 'user', content: text })
     setInput('')
-    setLoading(true)
-    setMessages(m => [...m, { role: 'assistant', content: '' }])
+    setIsLoading(true)
+    addMessage({ role: 'assistant', content: '' })
 
     try {
       const res = await fetch('/api/skylens', {
@@ -56,20 +56,12 @@ export default function SkyLensPage() {
         const { done, value } = await reader.read()
         if (done) break
         acc += decoder.decode(value, { stream: true })
-        setMessages(m => {
-          const copy = [...m]
-          copy[copy.length - 1] = { role: 'assistant', content: acc }
-          return copy
-        })
+        updateLastMessage(acc)
       }
     } catch {
-      setMessages(m => {
-        const copy = [...m]
-        copy[copy.length - 1] = { role: 'assistant', content: 'SIGNAL LOST — could not reach SkyLens core. Check your GROQ_API_KEY and restart the dev server.' }
-        return copy
-      })
+      updateLastMessage('SIGNAL LOST — could not reach SkyLens core. Check your GROQ_API_KEY and restart the dev server.')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -93,6 +85,17 @@ export default function SkyLensPage() {
       </nav>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 760, margin: '0 auto', width: '100%', padding: '0 20px', overflow: 'hidden' }}>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 0' }}>
+          {messages.length > 0 && (
+            <button
+              onClick={clearMessages}
+              style={{ ...S, fontSize: 8, color: '#8892A4', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '3px 8px', cursor: 'pointer' }}
+            >
+              CLEAR CHAT
+            </button>
+          )}
+        </div>
 
         <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '24px 0' }}>
           {messages.length === 0 && (
@@ -118,7 +121,7 @@ export default function SkyLensPage() {
                 fontFamily: 'Space Grotesk, sans-serif', fontSize: 13, lineHeight: 1.6, color: '#fff',
                 whiteSpace: 'pre-wrap',
               }}>
-                {m.content || (loading && i === messages.length - 1 ? <span style={{ ...S, color: '#9B59FF' }}>···</span> : '')}
+                {m.content || (isLoading && i === messages.length - 1 ? <span style={{ ...S, color: '#9B59FF' }}>···</span> : '')}
               </div>
             </motion.div>
           ))}
@@ -131,8 +134,8 @@ export default function SkyLensPage() {
             placeholder="Ask about satellites, the ISS, space weather, the night sky..."
             style={{ ...S, flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '12px 14px', color: '#fff', fontSize: 12, outline: 'none' }}
           />
-          <button type="submit" disabled={loading} style={{ ...S, fontSize: 10, letterSpacing: '0.15em', color: '#000', background: loading ? '#4A5568' : '#00D4FF', border: 'none', borderRadius: 8, padding: '0 22px', cursor: loading ? 'default' : 'pointer' }}>
-            {loading ? '...' : 'SEND'}
+          <button type="submit" disabled={isLoading} style={{ ...S, fontSize: 10, letterSpacing: '0.15em', color: '#000', background: isLoading ? '#4A5568' : '#00D4FF', border: 'none', borderRadius: 8, padding: '0 22px', cursor: isLoading ? 'default' : 'pointer' }}>
+            {isLoading ? '...' : 'SEND'}
           </button>
         </form>
       </div>

@@ -13,6 +13,71 @@
   --accent-purple: #9B59FF;
 }
 
+/* ── Phase 6: Theme Variables ───────────────────────── */
+/* Deep Space (default) */
+[data-theme="deep-space"] {
+  --theme-bg: #000;
+  --theme-primary: #00D4FF;
+  --theme-secondary: #00FF88;
+  --theme-accent: #9B59FF;
+  --theme-warn: #FF6B35;
+  --theme-surface: rgba(8,10,16,0.92);
+  --theme-border: rgba(0,212,255,0.12);
+  --theme-text: #ffffff;
+  --theme-text-dim: #8892A4;
+  --theme-text-faint: #4A5568;
+  --theme-glow: rgba(0,212,255,0.3);
+  --theme-nebula-hue: 260;
+}
+
+/* Cosmic Aurora */
+[data-theme="cosmic-aurora"] {
+  --theme-bg: #0a0014;
+  --theme-primary: #9B59FF;
+  --theme-secondary: #00FF88;
+  --theme-accent: #FF6B35;
+  --theme-warn: #FFD400;
+  --theme-surface: rgba(15,0,30,0.92);
+  --theme-border: rgba(155,89,255,0.15);
+  --theme-text: #ffffff;
+  --theme-text-dim: #9B89B0;
+  --theme-text-faint: #6A5078;
+  --theme-glow: rgba(155,89,255,0.3);
+  --theme-nebula-hue: 290;
+}
+
+/* Solar Flare */
+[data-theme="solar-flare"] {
+  --theme-bg: #0d0500;
+  --theme-primary: #FF6B35;
+  --theme-secondary: #FFD400;
+  --theme-accent: #FF3B3B;
+  --theme-warn: #00D4FF;
+  --theme-surface: rgba(20,8,0,0.92);
+  --theme-border: rgba(255,107,53,0.15);
+  --theme-text: #ffffff;
+  --theme-text-dim: #B08870;
+  --theme-text-faint: #6A4030;
+  --theme-glow: rgba(255,107,53,0.3);
+  --theme-nebula-hue: 20;
+}
+
+/* Retro Terminal */
+[data-theme="retro-terminal"] {
+  --theme-bg: #000800;
+  --theme-primary: #00FF88;
+  --theme-secondary: #00D4FF;
+  --theme-accent: #FFD400;
+  --theme-warn: #FF6B35;
+  --theme-surface: rgba(0,15,0,0.95);
+  --theme-border: rgba(0,255,136,0.12);
+  --theme-text: #e0ffe0;
+  --theme-text-dim: #4a8a4a;
+  --theme-text-faint: #2a5a2a;
+  --theme-glow: rgba(0,255,136,0.3);
+  --theme-nebula-hue: 120;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -193,4 +258,46 @@ body {
   .orbit-ring::before {
     animation: none !important;
   }
+}
+
+/* ── Phase 7: Cesium UI Overrides ──────────────────── */
+.cesium-viewer-toolbar {
+  display: flex !important;
+  gap: 4px !important;
+  background: rgba(0,0,0,0.5) !important;
+  border: 1px solid rgba(0,212,255,0.15) !important;
+  border-radius: 8px !important;
+  padding: 4px !important;
+  backdrop-filter: blur(12px) !important;
+}
+.cesium-viewer-toolbar button {
+  background: rgba(0,212,255,0.08) !important;
+  border: 1px solid rgba(0,212,255,0.1) !important;
+  border-radius: 4px !important;
+  color: #00D4FF !important;
+  font-size: 11px !important;
+  cursor: pointer !important;
+  transition: all 0.15s !important;
+}
+.cesium-viewer-toolbar button:hover {
+  background: rgba(0,212,255,0.2) !important;
+  border-color: rgba(0,212,255,0.3) !important;
+}
+.cesium-viewer-toolbar .cesium-button {
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+}
+.cesium-viewer-navigationContainer {
+  opacity: 0.6 !important;
+  transition: opacity 0.2s !important;
+}
+.cesium-viewer-navigationContainer:hover {
+  opacity: 1 !important;
+}
+.cesium-viewer-bottom {
+  display: none !important;
+}
+.cesium-viewer-fullscreenContainer {
+  display: none !important;
 }

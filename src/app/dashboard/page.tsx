@@ -19,6 +19,19 @@ const SAT_DATA = [
   { id: 'DB2', name: 'DEBRIS-2019-006', type: 'DEBRIS', lat: 40.7, lon: -74.0, alt: 420, speed: 27700 },
   { id: 'LN1', name: 'LANDSAT-9', type: 'SAT', lat: 38.9, lon: -77.0, alt: 705, speed: 26600 },
   { id: 'WS1', name: 'WORLDVIEW-3', type: 'SAT', lat: 1.3, lon: 103.8, alt: 617, speed: 26800 },
+  { id: 'SL5', name: 'STARLINK-5100', type: 'SAT', lat: -45.2, lon: 165.1, alt: 550, speed: 27000 },
+  { id: 'NO1', name: 'NOAA-21', type: 'SAT', lat: 62.4, lon: -25.7, alt: 824, speed: 26200 },
+  { id: 'DB3', name: 'DEBRIS-2020-089', type: 'DEBRIS', lat: 12.3, lon: 55.8, alt: 360, speed: 27900 },
+  { id: 'SE1', name: 'SENTINEL-2A', type: 'SAT', lat: 35.0, lon: -4.5, alt: 786, speed: 26400 },
+  { id: 'SL6', name: 'STARLINK-6200', type: 'SAT', lat: 67.8, lon: 22.0, alt: 550, speed: 27000 },
+  { id: 'DB4', name: 'DEBRIS-FALCON-9', type: 'DEBRIS', lat: -51.2, lon: -120.5, alt: 310, speed: 28000 },
+  { id: 'GP2', name: 'GLONASS-M', type: 'SAT', lat: 48.7, lon: 42.3, alt: 19130, speed: 13900 },
+  { id: 'SE2', name: 'SENTINEL-2B', type: 'SAT', lat: 29.5, lon: 94.2, alt: 786, speed: 26400 },
+  { id: 'DB5', name: 'DEBRIS-CZ-5B', type: 'DEBRIS', lat: -15.8, lon: -170.3, alt: 280, speed: 28100 },
+  { id: 'SL7', name: 'STARLINK-7400', type: 'SAT', lat: 11.0, lon: -165.0, alt: 550, speed: 27000 },
+  { id: 'ISS2', name: 'ISS (ZARYA) B', type: 'ISS', lat: 45.1, lon: 65.2, alt: 409, speed: 27600 },
+  { id: 'DB6', name: 'DEBRIS-2023-112', type: 'DEBRIS', lat: 3.5, lon: 132.8, alt: 340, speed: 27950 },
+  { id: 'SL8', name: 'STARLINK-8500', type: 'SAT', lat: -36.4, lon: -135.6, alt: 550, speed: 27000 },
 ]
 
 const PASSES = [
@@ -95,6 +108,7 @@ export default function Dashboard() {
   const [isPlaying, setIsPlaying] = useState(false)
   const playRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [showConstellations, setShowConstellations] = useState(false)
+  const [globePaused, setGlobePaused] = useState(false)
 
   // Odometer digit animation
   const prevSpeedDisplay = useRef(0)
@@ -275,6 +289,7 @@ export default function Dashboard() {
               onSelect={setSelected}
               timeOffsetHours={timeOffset}
               showConstellations={showConstellations}
+              isPaused={globePaused}
             />
 
             {/* Phase 6: Live Speed Tracker HUD */}
@@ -333,6 +348,25 @@ export default function Dashboard() {
               )}
             </AnimatePresence>
 
+            {/* Pause rotation button */}
+            <button
+              onClick={() => setGlobePaused(p => !p)}
+              style={{
+                position: 'absolute', bottom: 14, left: 14, zIndex: 10,
+                fontFamily: "'Space Mono', monospace", fontSize: 8, letterSpacing: '0.15em',
+                color: globePaused ? '#00FF88' : '#8892A4',
+                background: globePaused ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.04)',
+                border: globePaused ? '1px solid rgba(0,255,136,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 6, padding: '5px 10px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 5,
+                backdropFilter: 'blur(8px)',
+                transition: 'all 0.2s',
+              }}
+            >
+              <span style={{ fontSize: 10 }}>{globePaused ? '▶' : '⏸'}</span>
+              {globePaused ? 'ROTATION PAUSED' : 'PAUSE ROTATION'}
+            </button>
+
             {/* Constellation hint */}
             <AnimatePresence>
               {showConstellations && (
@@ -357,44 +391,85 @@ export default function Dashboard() {
             </AnimatePresence>
           </div>
 
-          {/* Time Travel Slider */}
+          {/* Phase 5: Redesigned Time Travel */}
           <div style={{
             flexShrink: 0,
             background: 'rgba(6,8,14,0.95)',
-            borderTop: '1px solid rgba(255,212,0,0.1)',
-            padding: '8px 14px 6px',
+            borderTop: '1px solid rgba(255,212,0,0.12)',
+            padding: '10px 14px 8px',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontSize: 10 }}>⏳</span>
-                <span style={{ ...S, fontSize: 8, color: '#FFD400', letterSpacing: '0.2em' }}>TIME TRAVEL</span>
+            {/* Row 1: Label + controls + digital clock */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ ...S, fontSize: 7, color: '#4A5568', letterSpacing: '0.2em' }}>⏳ TIMELINE</span>
               </div>
               <button
                 onClick={() => { if (timeOffset >= 24) setTimeOffset(-24); setIsPlaying(p => !p) }}
                 style={{
-                  ...S, fontSize: 9, color: isPlaying ? '#FF6B35' : '#FFD400',
-                  background: 'transparent',
+                  ...S, fontSize: 10,
+                  color: isPlaying ? '#FF6B35' : '#FFD400',
+                  background: isPlaying ? 'rgba(255,107,53,0.12)' : 'rgba(255,212,0,0.08)',
                   border: `1px solid ${isPlaying ? 'rgba(255,107,53,0.4)' : 'rgba(255,212,0,0.3)'}`,
-                  borderRadius: 4, padding: '2px 8px', cursor: 'pointer',
+                  borderRadius: 5, padding: '2px 10px', cursor: 'pointer',
+                  transition: 'all 0.15s',
                 }}
               >
-                {isPlaying ? '⏸' : '▶'}
+                {isPlaying ? '⏸ PAUSE' : '▶ PLAY'}
               </button>
               <button
                 onClick={() => { setTimeOffset(0); setIsPlaying(false) }}
-                style={{ ...S, fontSize: 8, color: '#8892A4', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer' }}
+                style={{ ...S, fontSize: 8, color: timeOffset === 0 ? '#00FF88' : '#8892A4', background: timeOffset === 0 ? 'rgba(0,255,136,0.08)' : 'transparent', border: timeOffset === 0 ? '1px solid rgba(0,255,136,0.25)' : '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '2px 7px', cursor: 'pointer' }}
               >
                 ↺ NOW
               </button>
-              <span style={{ ...S, fontSize: 9, color: timeOffset === 0 ? '#00FF88' : '#FFD400' }}>
+
+              {/* Neon digital clock */}
+              <div style={{
+                flex: 1, textAlign: 'center',
+                fontFamily: "'Space Mono', monospace", fontSize: 13,
+                color: timeOffset === 0 ? '#00D4FF' : '#FFD400',
+                letterSpacing: '0.15em', fontWeight: 700,
+                textShadow: timeOffset === 0
+                  ? '0 0 10px rgba(0,212,255,0.5), 0 0 30px rgba(0,212,255,0.2)'
+                  : '0 0 10px rgba(255,212,0,0.5), 0 0 30px rgba(255,212,0,0.2)',
+              }}>
+                {getSimulatedTime(timeOffset)}
+              </div>
+
+              <span style={{ ...S, fontSize: 8, color: isTimeTravel ? '#FFD400' : '#00FF88' }}>
                 {fmtOffset(timeOffset)}
               </span>
-              <div style={{ flex: 1 }} />
-              <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>{getSimulatedTime(timeOffset)}</span>
             </div>
 
-            {/* Slider with comet-tail */}
+            {/* Row 2: Quick-jump pills */}
+            <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+              {[-24, -12, -6, -1, 0, 1, 6, 12, 24].map(h => (
+                <button
+                  key={h}
+                  onClick={() => { setTimeOffset(h); setIsPlaying(false) }}
+                  style={{
+                    ...S, fontSize: 7, letterSpacing: '0.05em', flex: 1,
+                    padding: '3px 0', borderRadius: 4,
+                    color: timeOffset === h ? '#000' : timeOffset < 0 && h < 0 ? '#9B59FF' : timeOffset > 0 && h > 0 ? '#FFD400' : '#8892A4',
+                    background: timeOffset === h
+                      ? '#00D4FF'
+                      : timeOffset < 0 && h < 0 ? 'rgba(155,89,255,0.08)'
+                      : timeOffset > 0 && h > 0 ? 'rgba(255,212,0,0.08)'
+                      : 'rgba(255,255,255,0.03)',
+                    border: timeOffset === h
+                      ? '1px solid #00D4FF'
+                      : '1px solid rgba(255,255,255,0.06)',
+                    cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                >
+                  {h === 0 ? 'NOW' : h > 0 ? `+${h}h` : `${h}h`}
+                </button>
+              ))}
+            </div>
+
+            {/* Row 3: Comet-tail slider */}
             <div style={{ position: 'relative' }}>
+              {/* Filled track with comet tail */}
               <div style={{
                 position: 'absolute', top: '50%', left: 0, height: 3, borderRadius: 2,
                 width: `${((timeOffset + 24) / 48) * 100}%`,
@@ -402,7 +477,8 @@ export default function Dashboard() {
                   ? 'linear-gradient(90deg, rgba(0,212,255,0.3), #FFD400)'
                   : 'linear-gradient(90deg, #9B59FF, rgba(0,212,255,0.3))',
                 transform: 'translateY(-50%)', pointerEvents: 'none', zIndex: 1,
-                boxShadow: `0 0 8px ${timeOffset === 0 ? 'rgba(0,212,255,0.4)' : timeOffset > 0 ? 'rgba(255,212,0,0.5)' : 'rgba(155,89,255,0.5)'}`,
+                boxShadow: `0 0 12px ${timeOffset === 0 ? 'rgba(0,212,255,0.4)' : timeOffset > 0 ? 'rgba(255,212,0,0.5)' : 'rgba(155,89,255,0.5)'}`,
+                transition: 'width 0.1s',
               }} />
               <input
                 type="range" min={-24} max={24} step={0.25} value={timeOffset}
@@ -416,7 +492,6 @@ export default function Dashboard() {
                 }}
               />
             </div>
-            <div style={{ height: 12 }} />
           </div>
 
           {/* Bottom status bar */}
@@ -468,25 +543,25 @@ export default function Dashboard() {
       <style>{`
         input[type=range]::-webkit-slider-thumb {
           -webkit-appearance: none;
-          width: 14px; height: 14px;
+          width: 16px; height: 16px;
           border-radius: 50%;
-          background: #FFD400;
-          box-shadow: 0 0 0 3px rgba(255,212,0,0.15), -8px 0 14px 2px rgba(255,212,0,0.35);
+          background: ${timeOffset === 0 ? '#00D4FF' : timeOffset > 0 ? '#FFD400' : '#9B59FF'};
+          box-shadow: 0 0 0 3px rgba(0,0,0,0.3), 0 0 16px 2px ${timeOffset === 0 ? 'rgba(0,212,255,0.5)' : timeOffset > 0 ? 'rgba(255,212,0,0.5)' : 'rgba(155,89,255,0.5)'};
           cursor: pointer; border: 2px solid rgba(0,0,0,0.6);
           transition: box-shadow 0.15s;
         }
         input[type=range]::-webkit-slider-thumb:hover {
-          box-shadow: 0 0 0 5px rgba(255,212,0,0.2), -12px 0 18px 4px rgba(255,212,0,0.5);
+          box-shadow: 0 0 0 5px rgba(0,0,0,0.2), 0 0 24px 4px ${timeOffset === 0 ? 'rgba(0,212,255,0.7)' : timeOffset > 0 ? 'rgba(255,212,0,0.7)' : 'rgba(155,89,255,0.7)'};
         }
         input[type=range]::-webkit-slider-runnable-track {
           height: 3px; border-radius: 2px;
           background: rgba(255,255,255,0.06);
         }
         input[type=range]::-moz-range-thumb {
-          width: 14px; height: 14px;
+          width: 16px; height: 16px;
           border-radius: 50%;
-          background: #FFD400;
-          box-shadow: 0 0 0 3px rgba(255,212,0,0.15), -8px 0 14px 2px rgba(255,212,0,0.35);
+          background: ${timeOffset === 0 ? '#00D4FF' : timeOffset > 0 ? '#FFD400' : '#9B59FF'};
+          box-shadow: 0 0 0 3px rgba(0,0,0,0.3), 0 0 16px 2px ${timeOffset === 0 ? 'rgba(0,212,255,0.5)' : timeOffset > 0 ? 'rgba(255,212,0,0.5)' : 'rgba(155,89,255,0.5)'};
           cursor: pointer; border: 2px solid rgba(0,0,0,0.6);
         }
       `}</style>

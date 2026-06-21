@@ -20,11 +20,10 @@ interface GlobeProps {
   satellites: Sat[]
   selected: Sat | null
   onSelect: (s: Sat) => void
-  // Part 6: time offset in hours from now (-24 to +24)
   timeOffsetHours?: number
-  // Part 7: constellation overlay toggle
   showConstellations?: boolean
   onConstellationClick?: (c: Constellation) => void
+  isPaused?: boolean
 }
 
 // Propagate satellite position by time offset (simple linear approximation)
@@ -62,6 +61,7 @@ export default function Globe({
   timeOffsetHours = 0,
   showConstellations = false,
   onConstellationClick,
+  isPaused = false,
 }: GlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const globeRef = useRef<any>(null)
@@ -158,10 +158,16 @@ export default function Globe({
   useEffect(() => {
     if (!globeRef.current) return
     const controls = globeRef.current.controls()
-    controls.autoRotate = true
+    controls.autoRotate = !isPaused
     controls.autoRotateSpeed = 0.35
     globeRef.current.pointOfView({ lat: 20, lng: 10, altitude: 2.2 }, 0)
   }, [])
+
+  useEffect(() => {
+    if (!globeRef.current) return
+    const controls = globeRef.current.controls()
+    controls.autoRotate = !isPaused
+  }, [isPaused])
 
   // Combined points: satellite points + constellation stars
   const allPoints = useMemo(() => [
