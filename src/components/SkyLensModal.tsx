@@ -44,6 +44,31 @@ function getDefaultFact(name: string, type?: string) {
   return GROQ_FACTS.DEFAULT
 }
 
+function getQuickQuestions(name: string, type?: string) {
+  const isIss = name.includes('ISS') || name.includes('ZARYA') || type === 'ISS'
+  const isDebris = type === 'DEBRIS'
+
+  if (isIss) {
+    return [
+      "How many astronauts are onboard?",
+      "How long does one orbit take?",
+      "What research is done on the ISS?",
+    ]
+  }
+  if (isDebris) {
+    return [
+      "How dangerous is this debris?",
+      "What is being done about space debris?",
+      "How fast does space junk travel?",
+    ]
+  }
+  return [
+    "What is its primary mission?",
+    "How long is its operational lifespan?",
+    "How does it communicate with Earth?",
+  ]
+}
+
 function TypewriterText({ text }: { text: string }) {
   const [displayed, setDisplayed] = useState('')
   useEffect(() => {
@@ -172,39 +197,35 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(4px)',
+              background: 'rgba(3, 5, 10, 0.7)',
+              backdropFilter: 'blur(8px)',
               zIndex: 1000,
             }}
           />
 
-          {/* Modal - slides up from bottom */}
-          <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 1001, pointerEvents: 'none' }}>
+          {/* Modal - Centered */}
+          <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1001, pointerEvents: 'none' }}>
             <motion.div
-              initial={{ y: '100%', opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 26, stiffness: 280 }}
+              initial={{ scale: 0.9, y: 15, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 15, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
               style={{
-                width: '100%',
-                maxWidth: 560,
-                background: 'rgba(8, 10, 20, 0.97)',
-                backdropFilter: 'blur(24px)',
-                border: '1px solid rgba(0,212,255,0.18)',
-                borderBottom: 'none',
-                borderRadius: '16px 16px 0 0',
+                width: '90%',
+                maxWidth: 540,
+                background: 'rgba(8, 10, 20, 0.88)',
+                backdropFilter: 'blur(30px)',
+                border: '1px solid rgba(0, 212, 255, 0.22)',
+                borderRadius: '16px',
                 overflow: 'hidden',
-                boxShadow: '0 -20px 60px rgba(0,212,255,0.08)',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 212, 255, 0.08)',
                 pointerEvents: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
               }}
             >
-            {/* Drag handle */}
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0' }}>
-              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.15)' }} />
-            </div>
-
             {/* Header */}
-            <div style={{ padding: '12px 20px 0', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <div style={{ padding: '20px 20px 0', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span style={{ ...S, fontSize: 8, padding: '2px 6px', borderRadius: 3, background: `${typeColor}18`, color: typeColor, border: `1px solid ${typeColor}40` }}>
@@ -219,12 +240,14 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
                   <p style={{ ...S, fontSize: 9, color: '#8892A4', marginTop: 4 }}>{object.description}</p>
                 )}
               </div>
-              <button
+              <motion.button
                 onClick={onClose}
-                style={{ ...S, fontSize: 16, color: '#4A5568', background: 'transparent', border: 'none', cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}
+                whileHover={{ scale: 1.15, color: '#FF3B3B' }}
+                whileTap={{ scale: 0.95 }}
+                style={{ ...S, fontSize: 14, color: '#8892A4', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px', lineHeight: 1 }}
               >
                 ✕
-              </button>
+              </motion.button>
             </div>
 
             {/* Tabs */}
@@ -235,25 +258,39 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
                   onClick={() => setActiveTab(tab.id)}
                   style={{
                     ...S,
+                    position: 'relative',
                     fontSize: 9,
                     letterSpacing: '0.2em',
-                    color: activeTab === tab.id ? '#00D4FF' : '#4A5568',
+                    color: activeTab === tab.id ? '#00D4FF' : '#8892A4',
                     background: 'transparent',
                     border: 'none',
-                    borderBottom: activeTab === tab.id ? '2px solid #00D4FF' : '2px solid transparent',
                     padding: '0 0 10px',
-                    marginRight: 20,
+                    marginRight: 24,
                     cursor: 'pointer',
-                    transition: 'color 0.15s',
+                    transition: 'color 0.2s',
                   }}
                 >
                   {tab.label}
+                  {activeTab === tab.id && (
+                    <motion.div
+                      layoutId="activeTabLine"
+                      style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: 2,
+                        background: '#00D4FF',
+                        boxShadow: '0 0 8px #00D4FF',
+                      }}
+                    />
+                  )}
                 </button>
               ))}
             </div>
 
             {/* Tab content */}
-            <div style={{ padding: '16px 20px', minHeight: 140 }}>
+            <div style={{ padding: '16px 20px', minHeight: 140, maxHeight: 280, overflowY: 'auto' }}>
               <AnimatePresence mode="wait">
                 {activeTab === 'overview' && (
                   <motion.div key="overview" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
@@ -322,6 +359,38 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
+
+            {/* Suggested Questions */}
+            <div style={{ padding: '0 20px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ ...S, fontSize: 7, color: '#4A5568', letterSpacing: '0.15em', fontWeight: 600 }}>SUGGESTED QUESTIONS</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {getQuickQuestions(object.name, object.type).map((q, idx) => (
+                  <motion.button
+                    key={idx}
+                    onClick={() => {
+                      setQuery(q)
+                      handleAskSkyLens(q)
+                    }}
+                    whileHover={{ scale: 1.02, y: -1, background: 'rgba(0, 212, 255, 0.08)', borderColor: 'rgba(0, 212, 255, 0.35)', boxShadow: '0 0 10px rgba(0, 212, 255, 0.15)' }}
+                    whileTap={{ scale: 0.98 }}
+                    style={{
+                      ...S,
+                      fontSize: 8,
+                      color: '#00D4FF',
+                      background: 'rgba(0, 212, 255, 0.03)',
+                      border: '1px solid rgba(0, 212, 255, 0.12)',
+                      borderRadius: 16,
+                      padding: '4px 10px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'border-color 0.2s, background-color 0.2s',
+                    }}
+                  >
+                    ✨ {q}
+                  </motion.button>
+                ))}
+              </div>
             </div>
 
             {/* Input bar */}
