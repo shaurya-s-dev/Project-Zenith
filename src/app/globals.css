@@ -397,3 +397,8 @@ html, body, nav, header, footer, button, .animate-card-glow, .hover-lift {
   text-shadow: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(0, 212, 255, 0.1);
 }
 
+.sky-above-me-container {
+  background: radial-gradient(ellipse at 30% 50%, #0f1a2e 0%, #070b14 100%);
+  min-height: 100vh;
+}
+

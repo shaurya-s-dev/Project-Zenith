@@ -47,15 +47,15 @@ export default function AuroraBackground() {
       canvas.height = h
 
       // Re-populate stars based on size
-      const count = Math.floor((w * h) / 6000) // ~250 stars on 1080p
+      const count = 250
       const newStars: Star[] = []
       for (let i = 0; i < count; i++) {
         newStars.push({
           x: Math.random() * w,
           y: Math.random() * h,
-          size: 0.4 + Math.random() * 1.2,
+          size: 1.0 + Math.random() * 2.0, // 1-3px
           phase: Math.random() * Math.PI * 2,
-          speed: 0.5 + Math.random() * 1.5,
+          speed: 0.15 + Math.random() * 0.25, // slow twinkling
         })
       }
       stars = newStars

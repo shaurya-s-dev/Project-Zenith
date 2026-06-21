@@ -117,7 +117,7 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
         setAiResponse(acc)
       }
     } catch {
-      setAiResponse('SIGNAL LOST — could not reach SkyLens core.')
+      setAiResponse('CONNECTION ERROR — could not reach SkyLens core.')
     } finally {
       setAiLoading(false)
     }

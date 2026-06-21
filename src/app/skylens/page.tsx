@@ -70,7 +70,7 @@ export default function SkyLensPage() {
         updateLastMessage(acc)
       }
     } catch {
-      updateLastMessage('SIGNAL LOST — could not reach SkyLens core. Check your GROQ_API_KEY and restart the dev server.')
+      updateLastMessage('CONNECTION ERROR — could not reach SkyLens core. Check your GROQ_API_KEY and restart the dev server.')
     } finally {
       setIsLoading(false)
     }

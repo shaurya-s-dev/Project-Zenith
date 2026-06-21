@@ -270,7 +270,7 @@ export default function SkyPage() {
     : '—'
 
   return (
-    <div style={{ height: 'calc(100vh - 52px)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="sky-above-me-container" style={{ height: 'calc(100vh - 52px)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       
       {/* Scrollable Main Area */}
       <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }} className="custom-scrollbar">
