@@ -11,6 +11,7 @@ import LaunchCountdownWidget from '@/components/LaunchCountdownWidget'
 import { exportMissionLog } from '@/lib/exportPdf'
 import { useISSData } from '@/hooks/useISSData'
 import KeyboardShortcuts from '@/components/KeyboardShortcuts'
+import { CONSTELLATIONS } from '@/components/constellations-data'
 import { useTheme, THEME_ORDER } from '@/components/ThemeProvider'
 import Tooltip from '@/components/Tooltip'
 import { usePulseOnChange } from '@/hooks/usePulse'
@@ -141,6 +142,10 @@ export default function Dashboard() {
   const [showConstellations, setShowConstellations] = useState(false)
   const [globePaused, setGlobePaused] = useState(false)
   const globeRef = useRef<HTMLDivElement>(null)
+  const [focusCoords, setFocusCoords] = useState<{ lat: number; lon: number } | null>(null)
+  const [activeTab, setActiveTab] = useState<'satellites' | 'constellations'>('satellites')
+  const [constellationSearchQuery, setConstellationSearchQuery] = useState('')
+  const [selectedConstellationId, setSelectedConstellationId] = useState<string | null>(null)
 
   const { data: issPos = NO_DATA } = useISSData()
   const { setTheme } = useTheme()
@@ -282,22 +287,6 @@ export default function Dashboard() {
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00D4FF', animation: 'blink 1.2s infinite' }} />
             <span style={{ ...S, fontSize: 10, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.25em' }}>ZENITH / MISSION CONTROL</span>
           </div>
-          <button
-            onClick={() => setShowConstellations(c => !c)}
-            style={{
-              ...S, fontSize: 8, letterSpacing: '0.15em',
-              color: showConstellations ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #A0AEC0)',
-              background: showConstellations ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.04)',
-              border: showConstellations ? '1px solid rgba(0,212,255,0.3)' : '1px solid rgba(255,255,255,0.12)',
-              borderRadius: 6, padding: '4px 10px', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 5,
-              backdropFilter: 'blur(8px)',
-              transition: 'all 0.2s',
-            }}
-          >
-            <span style={{ fontSize: 10, color: showConstellations ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #A0AEC0)' }}>✦</span>
-            CONSTELLATIONS {showConstellations ? 'ON' : 'OFF'}
-          </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ ...S, fontSize: 10, color: isTimeTravel ? '#FFD400' : '#00D4FF' }}>{displayTime}</span>
             <div style={{ width: 5, height: 5, borderRadius: '50%', background: isTimeTravel ? '#FFD400' : '#00FF88', animation: 'blink 1s infinite' }} />
@@ -307,7 +296,7 @@ export default function Dashboard() {
         {/* Row 1: List (left) + Globe (right) */}
         <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
           
-          {/* LEFT PANEL - Tracked Objects List */}
+          {/* LEFT PANEL - Tracked Objects List & Constellations Browser */}
           <div className="animate-card-glow" style={{ 
             width: 320, 
             flexShrink: 0, 
@@ -321,86 +310,280 @@ export default function Dashboard() {
           }}>
             <ConjunctionWarning satellites={SAT_DATA} />
 
-            <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, alignItems: 'baseline' }}>
-                <span style={{ ...S, fontSize: 9, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.3em' }}>TRACKED OBJECTS</span>
-                <span style={{ ...S, fontSize: 12, color: 'var(--theme-primary, #00D4FF)' }}>{list.length}</span>
-              </div>
-
-              {/* Search Input */}
-              <input
-                type="text"
-                placeholder="🔍 Search satellites..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+            {/* Sleek Tab Header */}
+            <div style={{ 
+              display: 'flex', 
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              background: 'rgba(0,0,0,0.15)'
+            }}>
+              <button 
+                onClick={() => setActiveTab('satellites')}
                 style={{
-                  ...S,
-                  width: '100%',
-                  fontSize: 10,
-                  background: 'rgba(0,0,0,0.3)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: 4,
-                  padding: '6px 10px',
-                  color: '#fff',
-                  marginBottom: 8,
+                  flex: 1, 
+                  padding: '10px 0', 
+                  background: activeTab === 'satellites' ? 'rgba(255,255,255,0.02)' : 'transparent',
+                  border: 'none', 
+                  borderBottom: activeTab === 'satellites' ? '2px solid var(--theme-primary, #00D4FF)' : '2px solid transparent',
+                  color: activeTab === 'satellites' ? '#fff' : 'var(--theme-text-dim, #A0AEC0)',
+                  cursor: 'pointer', 
+                  ...S, 
+                  fontSize: 8.5, 
+                  letterSpacing: '0.15em', 
+                  fontWeight: activeTab === 'satellites' ? 700 : 500,
+                  transition: 'all 0.2s',
                   outline: 'none',
                 }}
-              />
-
-              <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                {['ALL', 'SAT', 'ISS', 'DEBRIS', 'CLASSIFIED'].map(f => (
-                  <button key={f} onClick={() => setFilter(f)} style={{
-                    ...S, fontSize: 8, padding: '3px 6px', borderRadius: 4, cursor: 'pointer',
-                    background: filter === f ? 'rgba(0,212,255,0.12)' : 'transparent',
-                    color: filter === f ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #A0AEC0)',
-                    border: filter === f ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent',
-                    marginBottom: 2,
-                  }}>{f}</button>
-                ))}
-              </div>
+              >
+                🛰️ SATELLITES
+              </button>
+              <button 
+                onClick={() => setActiveTab('constellations')}
+                style={{
+                  flex: 1, 
+                  padding: '10px 0', 
+                  background: activeTab === 'constellations' ? 'rgba(255,255,255,0.02)' : 'transparent',
+                  border: 'none', 
+                  borderBottom: activeTab === 'constellations' ? '2px solid var(--theme-primary, #00D4FF)' : '2px solid transparent',
+                  color: activeTab === 'constellations' ? '#fff' : 'var(--theme-text-dim, #A0AEC0)',
+                  cursor: 'pointer', 
+                  ...S, 
+                  fontSize: 8.5, 
+                  letterSpacing: '0.15em', 
+                  fontWeight: activeTab === 'constellations' ? 700 : 500,
+                  transition: 'all 0.2s',
+                  outline: 'none',
+                }}
+              >
+                ✨ CONSTELLATIONS
+              </button>
             </div>
 
-            {/* Scrollable list container */}
-            <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', maxHeight: 450, minHeight: 300 }}>
-              {list.map((s, i) => {
-                const meta = getSatMeta(s)
-                const tooltipContent = (
-                  <div style={{ ...S, fontSize: 9, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <div style={{ fontWeight: 'bold', color: 'var(--theme-primary, #00D4FF)' }}>{s.name}</div>
-                    <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>NORAD ID:</span> {meta.norad}</div>
-                    <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>Launch:</span> {meta.launch}</div>
-                    <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>Operator:</span> {meta.operator}</div>
-                    <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>Orbit:</span> {meta.orbit}</div>
+            {activeTab === 'satellites' ? (
+              <>
+                <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, alignItems: 'baseline' }}>
+                    <span style={{ ...S, fontSize: 9, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.3em' }}>TRACKED OBJECTS</span>
+                    <span style={{ ...S, fontSize: 12, color: 'var(--theme-primary, #00D4FF)' }}>{list.length}</span>
                   </div>
-                )
-                return (
-                  <motion.div key={s.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.015 }}
-                    onClick={() => setSelected(s)}
-                    className="hover-lift"
+
+                  {/* Search Input */}
+                  <input
+                    type="text"
+                    placeholder="🔍 Search satellites..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
                     style={{
-                      padding: '7px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer',
-                      background: selected?.id === s.id ? 'rgba(0,212,255,0.06)' : 'transparent',
-                      transition: 'background 0.15s, transform 0.2s, box-shadow 0.2s',
+                      ...S,
+                      width: '100%',
+                      fontSize: 10,
+                      background: 'rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: 4,
+                      padding: '6px 10px',
+                      color: '#fff',
+                      marginBottom: 8,
+                      outline: 'none',
                     }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <StatusDot status={s.status} />
-                      <span style={{ ...S, fontSize: 8, padding: '1px 5px', borderRadius: 3, ...badge(s.type) }}>{s.type}</span>
-                      <Tooltip content={tooltipContent} color={s.status === 'GREEN' ? '#00FF88' : s.status === 'YELLOW' ? '#FFD400' : s.status === 'RED' ? '#FF3B3B' : '#00D4FF'}>
-                        <span style={{ ...S, fontSize: 10, color: '#fff', flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', cursor: 'help' }}>{s.name}</span>
-                      </Tooltip>
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <InfoRayButton onClick={() => handleInfoClick(s)} color={s.status === 'GREEN' ? '#00FF88' : s.status === 'YELLOW' ? '#FFD400' : s.status === 'RED' ? '#FF3B3B' : '#00D4FF'} size={20} />
+                  />
+
+                  <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                    {['ALL', 'SAT', 'ISS', 'DEBRIS', 'CLASSIFIED'].map(f => (
+                      <button key={f} onClick={() => setFilter(f)} style={{
+                        ...S, fontSize: 8, padding: '3px 6px', borderRadius: 4, cursor: 'pointer',
+                        background: filter === f ? 'rgba(0,212,255,0.12)' : 'transparent',
+                        color: filter === f ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #A0AEC0)',
+                        border: filter === f ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent',
+                        marginBottom: 2,
+                      }}>{f}</button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Scrollable list container */}
+                <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', maxHeight: 450, minHeight: 300 }}>
+                  {list.map((s, i) => {
+                    const meta = getSatMeta(s)
+                    const tooltipContent = (
+                      <div style={{ ...S, fontSize: 9, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <div style={{ fontWeight: 'bold', color: 'var(--theme-primary, #00D4FF)' }}>{s.name}</div>
+                        <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>NORAD ID:</span> {meta.norad}</div>
+                        <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>Launch:</span> {meta.launch}</div>
+                        <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>Operator:</span> {meta.operator}</div>
+                        <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>Orbit:</span> {meta.orbit}</div>
                       </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 10, marginLeft: 18 }}>
-                      <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>ALT: {s.alt}km</span>
-                      <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>SPD: {s.speed.toLocaleString('en-US')}</span>
-                    </div>
-                  </motion.div>
-                )
-              })}
-            </div>
+                    )
+                    return (
+                      <motion.div key={s.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.015 }}
+                        onClick={() => setSelected(s)}
+                        className="hover-lift"
+                        style={{
+                          padding: '7px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer',
+                          background: selected?.id === s.id ? 'rgba(0,212,255,0.06)' : 'transparent',
+                          transition: 'background 0.15s, transform 0.2s, box-shadow 0.2s',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                          <StatusDot status={s.status} />
+                          <span style={{ ...S, fontSize: 8, padding: '1px 5px', borderRadius: 3, ...badge(s.type) }}>{s.type}</span>
+                          <Tooltip content={tooltipContent} color={s.status === 'GREEN' ? '#00FF88' : s.status === 'YELLOW' ? '#FFD400' : s.status === 'RED' ? '#FF3B3B' : '#00D4FF'}>
+                            <span style={{ ...S, fontSize: 10, color: '#fff', flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', cursor: 'help' }}>{s.name}</span>
+                          </Tooltip>
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <InfoRayButton onClick={() => handleInfoClick(s)} color={s.status === 'GREEN' ? '#00FF88' : s.status === 'YELLOW' ? '#FFD400' : s.status === 'RED' ? '#FF3B3B' : '#00D4FF'} size={20} />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 10, marginLeft: 18 }}>
+                          <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>ALT: {s.alt}km</span>
+                          <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>SPD: {s.speed.toLocaleString('en-US')}</span>
+                        </div>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, alignItems: 'center' }}>
+                    <span style={{ ...S, fontSize: 9, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.3em' }}>STAR LINES</span>
+                    
+                    <button
+                      onClick={() => setShowConstellations(c => !c)}
+                      style={{
+                        ...S, fontSize: 8, letterSpacing: '0.1em',
+                        color: showConstellations ? '#00FF88' : '#8892A4',
+                        background: showConstellations ? 'rgba(0,255,136,0.08)' : 'transparent',
+                        border: showConstellations ? '1px solid rgba(0,255,136,0.25)' : '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: 4, padding: '4px 8px', cursor: 'pointer',
+                        transition: 'all 0.15s',
+                        display: 'flex', alignItems: 'center', gap: 4
+                      }}
+                    >
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: showConstellations ? '#00FF88' : '#8892A4', boxShadow: showConstellations ? '0 0 6px #00FF88' : 'none' }} />
+                      {showConstellations ? 'OVERLAY ON' : 'OVERLAY OFF'}
+                    </button>
+                  </div>
+
+                  {/* Search Input for Constellations */}
+                  <input
+                    type="text"
+                    placeholder="🔍 Search constellations..."
+                    value={constellationSearchQuery}
+                    onChange={e => setConstellationSearchQuery(e.target.value)}
+                    style={{
+                      ...S,
+                      width: '100%',
+                      fontSize: 10,
+                      background: 'rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: 4,
+                      padding: '6px 10px',
+                      color: '#fff',
+                      outline: 'none',
+                    }}
+                  />
+                  <div style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)', marginTop: 5, lineHeight: 1.4 }}>
+                    Select a constellation below to center the orbital camera view.
+                  </div>
+                </div>
+
+                {/* Constellations Scrollable List */}
+                <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', maxHeight: 450, minHeight: 300, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {CONSTELLATIONS.filter(con => 
+                    con.name.toLowerCase().includes(constellationSearchQuery.toLowerCase()) ||
+                    con.abbr.toLowerCase().includes(constellationSearchQuery.toLowerCase()) ||
+                    con.season.toLowerCase().includes(constellationSearchQuery.toLowerCase())
+                  ).map((con, i) => {
+                    const isSelectedCon = selectedConstellationId === con.id
+                    return (
+                      <motion.div
+                        key={con.id}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.015 }}
+                        onClick={() => {
+                          const avgLat = con.stars.reduce((s, st) => s + st.lat, 0) / con.stars.length
+                          const avgLon = con.stars.reduce((s, st) => s + st.lon, 0) / con.stars.length
+                          setFocusCoords({ lat: avgLat, lon: avgLon })
+                          setSelected(null)
+                          setShowConstellations(true)
+                          setSelectedConstellationId(isSelectedCon ? null : con.id)
+                        }}
+                        className="hover-lift"
+                        style={{
+                          padding: '8px 12px',
+                          borderBottom: '1px solid rgba(255,255,255,0.04)',
+                          background: isSelectedCon ? 'rgba(0,212,255,0.06)' : 'transparent',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <span style={{ ...S, fontSize: 10, color: isSelectedCon ? 'var(--theme-primary, #00D4FF)' : '#fff', fontWeight: 600 }}>
+                              {con.name}
+                            </span>
+                            <span style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)' }}>
+                              {con.abbr} · {con.season} Season
+                            </span>
+                          </div>
+                          
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            {isSelectedCon && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setSelectedConstellationId(null)
+                                }}
+                                style={{
+                                  background: 'transparent',
+                                  border: 'none',
+                                  color: '#FF6B35',
+                                  fontSize: 8,
+                                  cursor: 'pointer',
+                                  ...S
+                                }}
+                              >
+                                CLOSE
+                              </button>
+                            )}
+                            <span style={{ fontSize: 9, color: isSelectedCon ? '#00D4FF' : 'rgba(255,255,255,0.2)' }}>✦</span>
+                          </div>
+                        </div>
+
+                        {/* Animated mythology description */}
+                        <AnimatePresence>
+                          {isSelectedCon && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                              animate={{ height: 'auto', opacity: 1, marginTop: 6 }}
+                              exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                              transition={{ duration: 0.2 }}
+                              style={{ overflow: 'hidden' }}
+                            >
+                              <div
+                                style={{
+                                  ...S,
+                                  fontSize: 8,
+                                  color: 'var(--theme-text-dim, #c0d8e8)',
+                                  lineHeight: 1.4,
+                                  padding: '6px 8px',
+                                  background: 'rgba(0, 212, 255, 0.03)',
+                                  borderLeft: '2px solid var(--theme-primary, #00D4FF)',
+                                  borderRadius: '0 4px 4px 0',
+                                }}
+                              >
+                                {con.mythology}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+              </>
+            )}
           </div>
 
           {/* RIGHT PANEL - 3D Globe Card */}
@@ -427,6 +610,16 @@ export default function Dashboard() {
               timeOffsetHours={timeOffset}
               showConstellations={showConstellations}
               isPaused={globePaused}
+              focusCoords={focusCoords}
+              onConstellationClick={(con) => {
+                setActiveTab('constellations')
+                setSelectedConstellationId(con.id)
+                const avgLat = con.stars.reduce((s, st) => s + st.lat, 0) / con.stars.length
+                const avgLon = con.stars.reduce((s, st) => s + st.lon, 0) / con.stars.length
+                setFocusCoords({ lat: avgLat, lon: avgLon })
+                setSelected(null)
+                setShowConstellations(true)
+              }}
             />
 
             {/* Selected Target Info Overlay */}
@@ -639,32 +832,7 @@ export default function Dashboard() {
             >
               <span style={{ fontSize: 10 }}>{globePaused ? '▶' : '⏸'}</span>
               {globePaused ? 'ROTATION PAUSED' : 'PAUSE ROTATION'}
-            </button>
-
-            {/* Constellations active hint */}
-            <AnimatePresence>
-              {showConstellations && (
-                <motion.div
-                  key="conhint"
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  style={{
-                    position: 'absolute', bottom: 14, right: 14,
-                    background: 'rgba(0,0,0,0.78)',
-                    border: '1px solid rgba(155,220,255,0.2)',
-                    borderRadius: 8, padding: '6px 10px',
-                    backdropFilter: 'blur(10px)',
-                    zIndex: 10,
-                  }}
-                >
-                  <span style={{ ...S, fontSize: 8, color: '#9BDCFF' }}>
-                    ✦ 10 constellations overlaid · click a line or label for mythology
-                  </span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+            </button>          </div>
         </div>
 
         {/* Time Travel controller (Full width below Row 1) */}

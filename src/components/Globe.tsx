@@ -24,6 +24,7 @@ interface GlobeProps {
   showConstellations?: boolean
   onConstellationClick?: (c: Constellation) => void
   isPaused?: boolean
+  focusCoords?: { lat: number; lon: number } | null
 }
 
 // Propagate satellite position by time offset (simple linear approximation)
@@ -61,6 +62,7 @@ export default function Globe({
   showConstellations = false,
   onConstellationClick,
   isPaused = false,
+  focusCoords = null,
 }: GlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -223,6 +225,13 @@ export default function Globe({
       controls.autoRotate = !isPaused
     }
   }, [isPaused])
+
+  // Focus camera on custom coordinates when triggered
+  useEffect(() => {
+    if (focusCoords && globeRef.current) {
+      globeRef.current.pointOfView({ lat: focusCoords.lat, lng: focusCoords.lon, altitude: 2.0 }, 1000)
+    }
+  }, [focusCoords])
 
 
   // Combined points: satellite points + constellation stars
