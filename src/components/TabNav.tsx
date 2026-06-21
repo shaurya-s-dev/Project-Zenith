@@ -14,6 +14,7 @@ const TABS = [
   { label: 'DASHBOARD', href: '/dashboard', icon: '◉' },
   { label: 'SKY ABOVE ME', href: '/sky', icon: '✦' },
   { label: 'SPACE WEATHER', href: '/weather', icon: '☀' },
+  { label: 'SKYLENS AI', href: '/skylens', icon: '◆' },
 ]
 
 export default function TabNav() {
@@ -28,8 +29,8 @@ export default function TabNav() {
     <HologramCtx.Provider value={{ hologramOn, setHologramOn }}>
     <nav style={{
       height: 52,
-      background: 'rgba(0,0,0,0.85)',
-      borderBottom: '1px solid rgba(0,212,255,0.12)',
+      background: 'color-mix(in srgb, var(--theme-bg, #000) 85%, transparent)',
+      borderBottom: '1px solid var(--theme-border, rgba(0,212,255,0.12))',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -38,10 +39,11 @@ export default function TabNav() {
       position: 'sticky',
       top: 0,
       zIndex: 50,
+      transition: 'background 0.3s, border-color 0.3s',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#00D4FF', animation: 'pulse-cyan 2s infinite' }} />
-        <span style={{ ...S, color: '#00D4FF', letterSpacing: '0.3em', fontSize: 13, fontWeight: 700 }}>ZENITH</span>
+        <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--theme-primary, #00D4FF)', animation: 'pulse-cyan 2s infinite' }} />
+        <span style={{ ...S, color: 'var(--theme-primary, #00D4FF)', letterSpacing: '0.3em', fontSize: 13, fontWeight: 700 }}>ZENITH</span>
       </div>
 
       <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: 3 }}>
@@ -55,8 +57,8 @@ export default function TabNav() {
                 ...S,
                 fontSize: 9,
                 letterSpacing: '0.2em',
-                color: isActive ? '#000' : '#8892A4',
-                background: isActive ? '#00D4FF' : 'transparent',
+                color: isActive ? '#000' : 'var(--theme-text-dim, #8892A4)',
+                background: isActive ? 'var(--theme-primary, #00D4FF)' : 'transparent',
                 borderRadius: 6,
                 padding: '6px 14px',
                 textDecoration: 'none',
@@ -82,7 +84,7 @@ export default function TabNav() {
           }}
           style={{
             ...S, fontSize: 8, letterSpacing: '0.1em',
-            color: '#8892A4', background: 'rgba(255,255,255,0.04)',
+            color: 'var(--theme-text-dim, #8892A4)', background: 'rgba(255,255,255,0.04)',
             border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4,
             padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
           }}
@@ -95,9 +97,9 @@ export default function TabNav() {
           onClick={() => { setHologramOn(v => !v) }}
           style={{
             ...S, fontSize: 8, letterSpacing: '0.1em',
-            color: hologramOn ? '#00D4FF' : '#8892A4',
-            background: hologramOn ? 'rgba(0,212,255,0.08)' : 'rgba(255,255,255,0.04)',
-            border: `1px solid ${hologramOn ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.1)'}`,
+            color: hologramOn ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #8892A4)',
+            background: hologramOn ? 'color-mix(in srgb, var(--theme-primary, #00D4FF) 8%, transparent)' : 'rgba(255,255,255,0.04)',
+            border: `1px solid ${hologramOn ? 'color-mix(in srgb, var(--theme-primary, #00D4FF) 30%, transparent)' : 'rgba(255,255,255,0.1)'}`,
             borderRadius: 4, padding: '4px 8px', cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: 4,
           }}
@@ -111,7 +113,7 @@ export default function TabNav() {
             onClick={() => setThemeOpen(o => !o)}
             style={{
               ...S, fontSize: 8, letterSpacing: '0.15em',
-              color: '#8892A4', background: 'rgba(255,255,255,0.04)',
+              color: 'var(--theme-text-dim, #8892A4)', background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4,
               padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
             }}
@@ -123,7 +125,7 @@ export default function TabNav() {
             <div
               style={{
                 position: 'absolute', right: 0, top: '100%', marginTop: 4,
-                background: '#0a0a12', border: '1px solid rgba(0,212,255,0.15)',
+                background: 'var(--theme-bg, #0a0a12)', border: '1px solid var(--theme-border, rgba(0,212,255,0.15))',
                 borderRadius: 8, padding: 4, minWidth: 160, zIndex: 100,
                 backdropFilter: 'blur(20px)',
               }}
@@ -134,8 +136,8 @@ export default function TabNav() {
                   onClick={() => { setTheme(kt); setThemeOpen(false) }}
                   style={{
                     ...S, fontSize: 9, letterSpacing: '0.1em', width: '100%', textAlign: 'left',
-                    color: theme === kt ? '#00D4FF' : '#8892A4',
-                    background: theme === kt ? 'rgba(0,212,255,0.08)' : 'transparent',
+                    color: theme === kt ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #8892A4)',
+                    background: theme === kt ? 'color-mix(in srgb, var(--theme-primary, #00D4FF) 8%, transparent)' : 'transparent',
                     border: 'none', borderRadius: 4, padding: '6px 10px', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}
@@ -154,8 +156,8 @@ export default function TabNav() {
           )}
         </div>
 
-        <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#00FF88', animation: 'blink 1s infinite' }} />
-        <span style={{ ...S, fontSize: 9, color: '#00FF88', letterSpacing: '0.15em' }}>SYSTEMS ONLINE</span>
+        <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--theme-secondary, #00FF88)', animation: 'blink 1s infinite' }} />
+        <span style={{ ...S, fontSize: 9, color: 'var(--theme-secondary, #00FF88)', letterSpacing: '0.15em' }}>SYSTEMS ONLINE</span>
       </div>
     </nav>
     </HologramCtx.Provider>

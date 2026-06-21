@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 
 interface Msg { role: 'user' | 'assistant'; content: string }
 
@@ -13,6 +13,8 @@ interface SkyLensContextType {
   setIsLoading: (v: boolean) => void
 }
 
+const STORAGE_KEY = 'zenith-skylens-messages'
+
 const SkyLensContext = createContext<SkyLensContextType>({
   messages: [],
   addMessage: () => {},
@@ -23,8 +25,20 @@ const SkyLensContext = createContext<SkyLensContextType>({
 })
 
 export function SkyLensProvider({ children }: { children: React.ReactNode }) {
-  const [messages, setMessages] = useState<Msg[]>([])
+  const [messages, setMessages] = useState<Msg[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY)
+        if (saved) return JSON.parse(saved)
+      } catch {}
+    }
+    return []
+  })
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages))
+  }, [messages])
 
   const addMessage = useCallback((m: Msg) => {
     setMessages(prev => [...prev, m])
