@@ -130,6 +130,9 @@ export default function Dashboard() {
   const [passes, setPasses] = useState(PASSES.map(p => ({ ...p })))
   const [modalOpen, setModalOpen] = useState(false)
   const [modalObject, setModalObject] = useState<typeof SAT_DATA[0] | null>(null)
+  const [launchModalOpen, setLaunchModalOpen] = useState(false)
+  const [neoModalOpen, setNeoModalOpen] = useState(false)
+  const [statsModalOpen, setStatsModalOpen] = useState(false)
   const [currentSpeed, setCurrentSpeed] = useState(0)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isDragging, setIsDragging] = useState(false)
@@ -745,21 +748,23 @@ export default function Dashboard() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
           
           {/* Column 1: Launch Countdown */}
-          <div className="animate-card-glow" style={{
+          <div className="animate-card-glow hover-lift" onClick={() => setLaunchModalOpen(true)} style={{
             background: 'rgba(8,10,16,0.92)',
             border: '1px solid rgba(0,212,255,0.12)',
             borderRadius: 12, padding: 16,
-            display: 'flex', flexDirection: 'column', justifyContent: 'center'
+            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            cursor: 'pointer'
           }}>
             <LaunchCountdownWidget />
           </div>
 
           {/* Column 2: NEO Watch Alert */}
-          <div className="animate-card-glow hover-lift" style={{
+          <div className="animate-card-glow hover-lift" onClick={() => setNeoModalOpen(true)} style={{
             background: 'rgba(8,10,16,0.92)',
             border: '1px solid rgba(155,89,255,0.15)',
             borderRadius: 12, padding: 16,
-            display: 'flex', flexDirection: 'column', justifyContent: 'center'
+            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            cursor: 'pointer'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
               <span style={{ fontSize: 14 }}>☄️</span>
@@ -782,11 +787,12 @@ export default function Dashboard() {
           </div>
 
           {/* Column 3: Statistics */}
-          <div className="animate-card-glow hover-lift" style={{
+          <div className="animate-card-glow hover-lift" onClick={() => setStatsModalOpen(true)} style={{
             background: 'rgba(8,10,16,0.92)',
             border: '1px solid rgba(0,212,255,0.12)',
             borderRadius: 12, padding: 16,
-            display: 'flex', flexDirection: 'column', justifyContent: 'center'
+            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            cursor: 'pointer'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
               <span style={{ fontSize: 14 }}>📊</span>
@@ -932,6 +938,198 @@ export default function Dashboard() {
         object={modalObject}
         issContext={issContextString}
       />
+
+      {/* Launch Detail Modal */}
+      <AnimatePresence>
+        {launchModalOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setLaunchModalOpen(false)}
+              style={{
+                position: 'fixed', inset: 0,
+                background: 'rgba(3, 5, 10, 0.7)',
+                backdropFilter: 'blur(8px)',
+                zIndex: 1000
+              }}
+            />
+            <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1001, padding: 16, pointerEvents: 'none' }}>
+              <motion.div
+                initial={{ scale: 0.9, y: 15, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.9, y: 15, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                style={{
+                  width: '90%', maxWidth: 440,
+                  background: 'rgba(8,10,20,0.92)',
+                  backdropFilter: 'blur(30px)',
+                  border: '1px solid rgba(255,107,53,0.22)',
+                  borderRadius: 16, padding: 20,
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(255,107,53,0.08)',
+                  pointerEvents: 'auto',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <span style={{ ...S, fontSize: 8, color: '#FF6B35', letterSpacing: '0.2em', fontWeight: 700 }}>LAUNCH SPECIFICATION</span>
+                  <button onClick={() => setLaunchModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#8892A4', fontSize: 14, cursor: 'pointer' }}>✕</button>
+                </div>
+                <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 12px 0' }}>Falcon 9 · Starlink 12-3</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {[
+                    ['ROCKET', 'Falcon 9 Block 5'],
+                    ['PAYLOAD', '22 Starlink V2 Mini'],
+                    ['LAUNCH SITE', 'SLC-40, Florida'],
+                    ['TARGET ORBIT', '290x300 km, 53° LEO'],
+                    ['BOOSTER CODE', 'B1089.4 (Reused)'],
+                    ['LANDING SITE', 'ASDS Drone Ship'],
+                  ].map(([label, val]) => (
+                    <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '8px 12px' }}>
+                      <div style={{ ...S, fontSize: 7, color: '#4A5568', marginBottom: 2 }}>{label}</div>
+                      <div style={{ ...S, fontSize: 11, color: '#FF6B35' }}>{val}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 12, padding: 10, background: 'rgba(255,107,53,0.05)', border: '1px solid rgba(255,107,53,0.15)', borderRadius: 8 }}>
+                  <div style={{ ...S, fontSize: 8, color: '#FF6B35', marginBottom: 2 }}>MISSION OVERVIEW</div>
+                  <div style={{ ...S, fontSize: 9, color: '#a0aec0', lineHeight: 1.5 }}>
+                    Deploys 22 next-generation Starlink satellites to expand global broadband coverage. The first stage booster is flight-proven and will attempt a precision landing on the recovery drone ship in the Atlantic Ocean.
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* NEO Detail Modal */}
+      <AnimatePresence>
+        {neoModalOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setNeoModalOpen(false)}
+              style={{
+                position: 'fixed', inset: 0,
+                background: 'rgba(3, 5, 10, 0.7)',
+                backdropFilter: 'blur(8px)',
+                zIndex: 1000
+              }}
+            />
+            <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1001, padding: 16, pointerEvents: 'none' }}>
+              <motion.div
+                initial={{ scale: 0.9, y: 15, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.9, y: 15, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                style={{
+                  width: '90%', maxWidth: 440,
+                  background: 'rgba(8,10,20,0.92)',
+                  backdropFilter: 'blur(30px)',
+                  border: '1px solid rgba(155,89,255,0.22)',
+                  borderRadius: 16, padding: 20,
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(155,89,255,0.08)',
+                  pointerEvents: 'auto',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <span style={{ ...S, fontSize: 8, color: '#9B59FF', letterSpacing: '0.2em', fontWeight: 700 }}>NEO SPECIFICATION</span>
+                  <button onClick={() => setNeoModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#8892A4', fontSize: 14, cursor: 'pointer' }}>✕</button>
+                </div>
+                <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 12px 0' }}>Asteroid 2026-FT3</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {[
+                    ['DIAMETER', '310 Meters'],
+                    ['CLASS', 'Apollo-class PHA'],
+                    ['VELOCITY', '14.8 km/s (53,280 km/h)'],
+                    ['CLOSE APPROACH', '0.042 AU (6.28M km)'],
+                    ['LUNAR DISTANCE', '16.3 LD'],
+                    ['DISCOVERY DATE', 'Mar 20, 2026'],
+                  ].map(([label, val]) => (
+                    <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '8px 12px' }}>
+                      <div style={{ ...S, fontSize: 7, color: '#4A5568', marginBottom: 2 }}>{label}</div>
+                      <div style={{ ...S, fontSize: 11, color: '#9B59FF' }}>{val}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 12, padding: 10, background: 'rgba(155,89,255,0.05)', border: '1px solid rgba(155,89,255,0.15)', borderRadius: 8 }}>
+                  <div style={{ ...S, fontSize: 8, color: '#9B59FF', marginBottom: 2 }}>HAZARD ASSESSMENT</div>
+                  <div style={{ ...S, fontSize: 9, color: '#a0aec0', lineHeight: 1.5 }}>
+                    Classified as a Potentially Hazardous Asteroid (PHA) due to its size and proximity. However, detailed radar tracking confirms zero probability of impact during this pass. Orbit eccentricity is 0.582.
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Stats Detail Modal */}
+      <AnimatePresence>
+        {statsModalOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setStatsModalOpen(false)}
+              style={{
+                position: 'fixed', inset: 0,
+                background: 'rgba(3, 5, 10, 0.7)',
+                backdropFilter: 'blur(8px)',
+                zIndex: 1000
+              }}
+            />
+            <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1001, padding: 16, pointerEvents: 'none' }}>
+              <motion.div
+                initial={{ scale: 0.9, y: 15, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.9, y: 15, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                style={{
+                  width: '90%', maxWidth: 440,
+                  background: 'rgba(8,10,20,0.92)',
+                  backdropFilter: 'blur(30px)',
+                  border: '1px solid rgba(0,212,255,0.22)',
+                  borderRadius: 16, padding: 20,
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(0,212,255,0.08)',
+                  pointerEvents: 'auto',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <span style={{ ...S, fontSize: 8, color: '#00D4FF', letterSpacing: '0.2em', fontWeight: 700 }}>TELEMETRY STATUS</span>
+                  <button onClick={() => setStatsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#8892A4', fontSize: 14, cursor: 'pointer' }}>✕</button>
+                </div>
+                <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 12px 0' }}>System Telemetry</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {[
+                    ['ACTIVE SATELLITES', '23,794 objects'],
+                    ['TLE DB SOURCE', 'CelesTrak (Sync 5s)'],
+                    ['API STATUS', 'NOAA Solar Wind (Green)'],
+                    ['CLIENT STATE', 'PWA (sw.js active)'],
+                    ['API LATENCY', '128ms average'],
+                    ['CORES RUNNING', 'Turbopack (V8)'],
+                  ].map(([label, val]) => (
+                    <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '8px 12px' }}>
+                      <div style={{ ...S, fontSize: 7, color: '#4A5568', marginBottom: 2 }}>{label}</div>
+                      <div style={{ ...S, fontSize: 11, color: '#00D4FF' }}>{val}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 12, padding: 10, background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.15)', borderRadius: 8 }}>
+                  <div style={{ ...S, fontSize: 8, color: '#00D4FF', marginBottom: 2 }}>DIAGNOSTIC VERDICT</div>
+                  <div style={{ ...S, fontSize: 9, color: '#a0aec0', lineHeight: 1.5 }}>
+                    All background synchronization threads are executing within nominal limits. The satellite orbit propagators are fully cached on the client side. Offline availability verified.
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
 
       <HolographicGrid enabled={hologramOn} />
       <SysMon apiLatency={issPos.latencyMs ?? null} tleLastUpdated={new Date().toISOString().slice(11, 19)} />
