@@ -54,7 +54,7 @@ export default function KeyboardShortcuts(cb: ShortcutCallbacks) {
       onMouseLeave={() => setShowTooltip(false)}
     >
       <div style={{
-        ...S, fontSize: 8, color: '#4A5568', letterSpacing: '0.1em',
+        ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)', letterSpacing: '0.1em',
         background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.06)',
         borderRadius: 6, padding: '4px 8px', cursor: 'default',
         backdropFilter: 'blur(8px)',
@@ -78,7 +78,7 @@ export default function KeyboardShortcuts(cb: ShortcutCallbacks) {
           ].map(([key, desc]) => (
             <div key={key} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: 3 }}>
               <span style={{ ...S, fontSize: 8, color: '#FFD400' }}>{key}</span>
-              <span style={{ ...S, fontSize: 8, color: '#8892A4' }}>{desc}</span>
+              <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-dim, #A0AEC0)' }}>{desc}</span>
             </div>
           ))}
         </div>

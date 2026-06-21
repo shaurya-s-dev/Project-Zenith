@@ -125,7 +125,7 @@ export default function SkyLensPage() {
                 SkyLens AI – Your Personal Space Expert
               </h1>
             </div>
-            <p style={{ ...S, fontSize: 10, color: 'var(--theme-text-dim, #8892A4)' }}>
+            <p style={{ ...S, fontSize: 10, color: 'var(--theme-text-dim, #A0AEC0)' }}>
               Ask me anything about space, satellites, planets, and astronomy.
             </p>
           </div>
@@ -190,7 +190,7 @@ export default function SkyLensPage() {
               <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 24, fontWeight: 700, marginBottom: 8, color: '#fff' }}>
                 Establish Telemetry Link
               </h2>
-              <p style={{ ...S, fontSize: 11, color: 'var(--theme-text-dim, #8892A4)', maxWidth: 440, margin: '0 auto 24px', lineHeight: 1.6 }}>
+              <p style={{ ...S, fontSize: 11, color: 'var(--theme-text-dim, #A0AEC0)', maxWidth: 440, margin: '0 auto 24px', lineHeight: 1.6 }}>
                 Initialize connection with SkyLens AI. Real-time telemetry connection to ISS is active. Choose a suggestion or query the system directly.
               </p>
 
@@ -371,7 +371,7 @@ export default function SkyLensPage() {
                   style={{
                     ...S,
                     fontSize: 8.5,
-                    color: 'var(--theme-text-dim, #8892A4)',
+                    color: 'var(--theme-text-dim, #A0AEC0)',
                     background: 'rgba(255,255,255,0.03)',
                     border: '1px solid rgba(255,255,255,0.06)',
                     borderRadius: 20,
@@ -386,7 +386,7 @@ export default function SkyLensPage() {
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'
-                    e.currentTarget.style.color = 'var(--theme-text-dim, #8892A4)'
+                    e.currentTarget.style.color = 'var(--theme-text-dim, #A0AEC0)'
                   }}
                 >
                   {s.text}
@@ -425,7 +425,7 @@ export default function SkyLensPage() {
                 letterSpacing: '0.15em',
                 color: '#000',
                 background: isLoading || !input.trim()
-                  ? 'var(--theme-text-faint, #4A5568)'
+                  ? 'var(--theme-text-faint, #7D8A9E)'
                   : 'var(--theme-primary, #00D4FF)',
                 border: 'none',
                 borderRadius: 8,

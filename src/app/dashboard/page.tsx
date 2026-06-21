@@ -283,13 +283,13 @@ export default function Dashboard() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 8px', borderBottom: '1px solid rgba(0,212,255,0.08)', paddingBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00D4FF', animation: 'blink 1.2s infinite' }} />
-            <span style={{ ...S, fontSize: 10, color: '#8892A4', letterSpacing: '0.25em' }}>ZENITH / MISSION CONTROL</span>
+            <span style={{ ...S, fontSize: 10, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.25em' }}>ZENITH / MISSION CONTROL</span>
           </div>
           <button
             onClick={() => setShowConstellations(c => !c)}
             style={{
               ...S, fontSize: 8, letterSpacing: '0.15em',
-              color: showConstellations ? '#9BDCFF' : '#4A5568',
+              color: showConstellations ? '#9BDCFF' : 'var(--theme-text-faint, #7D8A9E)',
               background: showConstellations ? 'rgba(155,220,255,0.08)' : 'transparent',
               border: showConstellations ? '1px solid rgba(155,220,255,0.25)' : '1px solid rgba(255,255,255,0.08)',
               borderRadius: 4, padding: '2px 8px', cursor: 'pointer',
@@ -322,7 +322,7 @@ export default function Dashboard() {
 
             <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, alignItems: 'baseline' }}>
-                <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.3em' }}>TRACKED OBJECTS</span>
+                <span style={{ ...S, fontSize: 9, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.3em' }}>TRACKED OBJECTS</span>
                 <span style={{ ...S, fontSize: 12, color: 'var(--theme-primary, #00D4FF)' }}>{list.length}</span>
               </div>
 
@@ -351,7 +351,7 @@ export default function Dashboard() {
                   <button key={f} onClick={() => setFilter(f)} style={{
                     ...S, fontSize: 8, padding: '3px 6px', borderRadius: 4, cursor: 'pointer',
                     background: filter === f ? 'rgba(0,212,255,0.12)' : 'transparent',
-                    color: filter === f ? 'var(--theme-primary, #00D4FF)' : '#8892A4',
+                    color: filter === f ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #A0AEC0)',
                     border: filter === f ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent',
                     marginBottom: 2,
                   }}>{f}</button>
@@ -366,10 +366,10 @@ export default function Dashboard() {
                 const tooltipContent = (
                   <div style={{ ...S, fontSize: 9, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <div style={{ fontWeight: 'bold', color: 'var(--theme-primary, #00D4FF)' }}>{s.name}</div>
-                    <div><span style={{ color: '#8892A4' }}>NORAD ID:</span> {meta.norad}</div>
-                    <div><span style={{ color: '#8892A4' }}>Launch:</span> {meta.launch}</div>
-                    <div><span style={{ color: '#8892A4' }}>Operator:</span> {meta.operator}</div>
-                    <div><span style={{ color: '#8892A4' }}>Orbit:</span> {meta.orbit}</div>
+                    <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>NORAD ID:</span> {meta.norad}</div>
+                    <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>Launch:</span> {meta.launch}</div>
+                    <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>Operator:</span> {meta.operator}</div>
+                    <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>Orbit:</span> {meta.orbit}</div>
                   </div>
                 )
                 return (
@@ -393,8 +393,8 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 10, marginLeft: 18 }}>
-                      <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>ALT: {s.alt}km</span>
-                      <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>SPD: {s.speed.toLocaleString('en-US')}</span>
+                      <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>ALT: {s.alt}km</span>
+                      <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>SPD: {s.speed.toLocaleString('en-US')}</span>
                     </div>
                   </motion.div>
                 )
@@ -447,22 +447,20 @@ export default function Dashboard() {
                   }}
                   style={{
                     position: 'absolute',
-                    bottom: 14,
-                    left: 0,
-                    right: 0,
-                    margin: '0 auto',
+                    top: 14,
+                    left: 14,
                     zIndex: 10,
                     background: 'rgba(8,10,16,0.95)',
                     border: '1px solid rgba(0,212,255,0.18)',
                     boxShadow: '0 0 20px rgba(0,212,255,0.1)',
                     borderRadius: 12,
                     padding: '10px 16px',
-                    width: 320,
+                    width: 300,
                     backdropFilter: 'blur(12px)',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                    <span style={{ ...S, fontSize: 8, color: '#8892A4', letterSpacing: '0.15em' }}>SELECTED TARGET</span>
+                    <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.15em' }}>SELECTED TARGET</span>
                     <div onClick={(e) => e.stopPropagation()}>
                       <InfoRayButton onClick={() => handleInfoClick(selected)} color="#00D4FF" size={18} />
                     </div>
@@ -471,10 +469,10 @@ export default function Dashboard() {
                     {selected.name}
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 12px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 6 }}>
-                    <div><span style={{ ...S, fontSize: 7, color: '#4A5568' }}>LAT:</span> <span style={{ ...S, fontSize: 9, color: '#fff' }}>{selected.lat.toFixed(2)}°</span></div>
-                    <div><span style={{ ...S, fontSize: 7, color: '#4A5568' }}>LON:</span> <span style={{ ...S, fontSize: 9, color: '#fff' }}>{selected.lon.toFixed(2)}°</span></div>
-                    <div><span style={{ ...S, fontSize: 7, color: '#4A5568' }}>ALT:</span> <span style={{ ...S, fontSize: 9, color: '#fff' }}>{(selected.id === 'ISS' && issPos.vel ? issPos.alt : selected.alt).toLocaleString('en-US')} km</span></div>
-                    <div><span style={{ ...S, fontSize: 7, color: '#4A5568' }}>SPD:</span> <span style={{ ...S, fontSize: 9, color: '#fff' }}>{(selected.id === 'ISS' && issPos.vel ? issPos.vel : selected.speed).toLocaleString('en-US')} km/h</span></div>
+                    <div><span style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)' }}>LAT:</span> <span style={{ ...S, fontSize: 9, color: '#fff' }}>{selected.lat.toFixed(2)}°</span></div>
+                    <div><span style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)' }}>LON:</span> <span style={{ ...S, fontSize: 9, color: '#fff' }}>{selected.lon.toFixed(2)}°</span></div>
+                    <div><span style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)' }}>ALT:</span> <span style={{ ...S, fontSize: 9, color: '#fff' }}>{(selected.id === 'ISS' && issPos.vel ? issPos.alt : selected.alt).toLocaleString('en-US')} km</span></div>
+                    <div><span style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)' }}>SPD:</span> <span style={{ ...S, fontSize: 9, color: '#fff' }}>{(selected.id === 'ISS' && issPos.vel ? issPos.vel : selected.speed).toLocaleString('en-US')} km/h</span></div>
                   </div>
                 </motion.div>
               )}
@@ -500,7 +498,7 @@ export default function Dashboard() {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
                     <StatusDot status={selected.status} />
-                    <span style={{ ...S, fontSize: 7, color: '#8892A4', letterSpacing: '0.2em' }}>TACHOMETER</span>
+                    <span style={{ ...S, fontSize: 7, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.2em' }}>TACHOMETER</span>
                   </div>
                   <div style={{ ...S, fontSize: 11, fontWeight: 700, color: 'var(--theme-primary, #00D4FF)', marginBottom: 8, textAlign: 'center', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', letterSpacing: '0.05em' }}>
                     {selected.name}
@@ -588,12 +586,12 @@ export default function Dashboard() {
                     >
                       {displaySpeed.toLocaleString('en-US')}
                     </motion.span>
-                    <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>KM/H</span>
+                    <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>KM/H</span>
                   </div>
                   
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 6, marginTop: 4 }}>
-                    <span style={{ ...S, fontSize: 7, color: '#4A5568' }}>ALT: {selected.id === 'ISS' && issPos.vel ? issPos.alt : selected.alt} KM</span>
-                    <span style={{ ...S, fontSize: 7, color: '#4A5568' }}>{selected.type}</span>
+                    <span style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)' }}>ALT: {selected.id === 'ISS' && issPos.vel ? issPos.alt : selected.alt} KM</span>
+                    <span style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)' }}>{selected.type}</span>
                   </div>
                 </motion.div>
               )}
@@ -605,7 +603,7 @@ export default function Dashboard() {
               style={{
                 position: 'absolute', bottom: 14, left: 14, zIndex: 10,
                 fontFamily: "'Space Mono', monospace", fontSize: 8, letterSpacing: '0.15em',
-                color: globePaused ? '#00FF88' : '#8892A4',
+                color: globePaused ? '#00FF88' : 'var(--theme-text-dim, #A0AEC0)',
                 background: globePaused ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.04)',
                 border: globePaused ? '1px solid rgba(0,255,136,0.3)' : '1px solid rgba(255,255,255,0.1)',
                 borderRadius: 6, padding: '5px 10px', cursor: 'pointer',
@@ -627,11 +625,12 @@ export default function Dashboard() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   style={{
-                    position: 'absolute', top: 14, left: 14,
+                    position: 'absolute', bottom: 14, right: 14,
                     background: 'rgba(0,0,0,0.78)',
                     border: '1px solid rgba(155,220,255,0.2)',
                     borderRadius: 8, padding: '6px 10px',
                     backdropFilter: 'blur(10px)',
+                    zIndex: 10,
                   }}
                 >
                   <span style={{ ...S, fontSize: 8, color: '#9BDCFF' }}>
@@ -653,7 +652,7 @@ export default function Dashboard() {
           {/* Row 1: Label + controls + digital clock */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ ...S, fontSize: 7, color: '#4A5568', letterSpacing: '0.2em' }}>⏳ TIMELINE</span>
+              <span style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)', letterSpacing: '0.2em' }}>⏳ TIMELINE</span>
             </div>
             <button
               onClick={() => { if (timeOffset >= 24) setTimeOffset(-24); setIsPlaying(p => !p) }}
@@ -670,7 +669,7 @@ export default function Dashboard() {
             </button>
             <button
               onClick={() => { setTimeOffset(0); setIsPlaying(false) }}
-              style={{ ...S, fontSize: 8, color: timeOffset === 0 ? '#00FF88' : '#8892A4', background: timeOffset === 0 ? 'rgba(0,255,136,0.08)' : 'transparent', border: timeOffset === 0 ? '1px solid rgba(0,255,136,0.25)' : '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '2px 7px', cursor: 'pointer' }}
+              style={{ ...S, fontSize: 8, color: timeOffset === 0 ? '#00FF88' : 'var(--theme-text-dim, #A0AEC0)', background: timeOffset === 0 ? 'rgba(0,255,136,0.08)' : 'transparent', border: timeOffset === 0 ? '1px solid rgba(0,255,136,0.25)' : '1px solid rgba(255,255,255,0.08)', borderRadius: 4, padding: '2px 7px', cursor: 'pointer' }}
             >
               ↺ NOW
             </button>
@@ -702,7 +701,7 @@ export default function Dashboard() {
                 style={{
                   ...S, fontSize: 7, letterSpacing: '0.05em', flex: 1,
                   padding: '3px 0', borderRadius: 4,
-                  color: timeOffset === h ? '#000' : timeOffset < 0 && h < 0 ? '#9B59FF' : timeOffset > 0 && h > 0 ? '#FFD400' : '#8892A4',
+                  color: timeOffset === h ? '#000' : timeOffset < 0 && h < 0 ? '#9B59FF' : timeOffset > 0 && h > 0 ? '#FFD400' : 'var(--theme-text-dim, #A0AEC0)',
                   background: timeOffset === h
                     ? '#00D4FF'
                     : timeOffset < 0 && h < 0 ? 'rgba(155,89,255,0.08)'
@@ -777,11 +776,11 @@ export default function Dashboard() {
                 <span style={{ ...S, fontSize: 8, padding: '2px 6px', borderRadius: 4, background: 'rgba(255,170,0,0.1)', color: '#FFD400', border: '1px solid rgba(255,170,0,0.25)' }}>MONITORING</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 6 }}>
-                <span style={{ ...S, fontSize: 9, color: '#4A5568' }}>DISTANCE</span>
+                <span style={{ ...S, fontSize: 9, color: 'var(--theme-text-faint, #7D8A9E)' }}>DISTANCE</span>
                 <span style={{ ...S, fontSize: 10, color: '#fff' }}>0.042 AU</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ ...S, fontSize: 9, color: '#4A5568' }}>VELOCITY</span>
+                <span style={{ ...S, fontSize: 9, color: 'var(--theme-text-faint, #7D8A9E)' }}>VELOCITY</span>
                 <span style={{ ...S, fontSize: 10, color: '#fff' }}>14.8 KM/S</span>
               </div>
             </div>
@@ -807,7 +806,7 @@ export default function Dashboard() {
                 ['DATA REFRESH', '5s', '#9B59FF']
               ].map(([l, v, color]) => (
                 <div key={l} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: 2 }}>
-                  <span style={{ ...S, fontSize: 9, color: '#4A5568' }}>{l}</span>
+                  <span style={{ ...S, fontSize: 9, color: 'var(--theme-text-faint, #7D8A9E)' }}>{l}</span>
                   <span style={{ ...S, fontSize: 10, color: color || '#fff', fontWeight: 700 }}>{v}</span>
                 </div>
               ))}
@@ -888,7 +887,7 @@ export default function Dashboard() {
       }}>
         {/* Search Bar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>🔍 SEARCH:</span>
+          <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>🔍 SEARCH:</span>
           <input
             type="text"
             placeholder="Global feed query..."
@@ -909,11 +908,11 @@ export default function Dashboard() {
         {/* Center (Language, Battery) */}
         <div style={{ display: 'flex', gap: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>🌐 LANG:</span>
+            <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>🌐 LANG:</span>
             <span style={{ ...S, fontSize: 8, color: '#00D4FF', fontWeight: 700 }}>ENG/IN</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>🔋 BATTERY:</span>
+            <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>🔋 BATTERY:</span>
             <span style={{ ...S, fontSize: 8, color: '#00FF88', fontWeight: 700 }}>94%</span>
           </div>
         </div>
@@ -921,11 +920,11 @@ export default function Dashboard() {
         {/* Right (Time, Date) */}
         <div style={{ display: 'flex', gap: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>🕒 UTC:</span>
+            <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>🕒 UTC:</span>
             <span style={{ ...S, fontSize: 8, color: '#00D4FF', fontWeight: 700 }}>{utc}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>📅 DATE:</span>
+            <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>📅 DATE:</span>
             <span style={{ ...S, fontSize: 8, color: '#00D4FF', fontWeight: 700 }}>
               {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
             </span>
@@ -974,7 +973,7 @@ export default function Dashboard() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <span style={{ ...S, fontSize: 8, color: '#FF6B35', letterSpacing: '0.2em', fontWeight: 700 }}>LAUNCH SPECIFICATION</span>
-                  <button onClick={() => setLaunchModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#8892A4', fontSize: 14, cursor: 'pointer' }}>✕</button>
+                  <button onClick={() => setLaunchModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--theme-text-dim, #A0AEC0)', fontSize: 14, cursor: 'pointer' }}>✕</button>
                 </div>
                 <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 12px 0' }}>Falcon 9 · Starlink 12-3</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -987,7 +986,7 @@ export default function Dashboard() {
                     ['LANDING SITE', 'ASDS Drone Ship'],
                   ].map(([label, val]) => (
                     <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '8px 12px' }}>
-                      <div style={{ ...S, fontSize: 7, color: '#4A5568', marginBottom: 2 }}>{label}</div>
+                      <div style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)', marginBottom: 2 }}>{label}</div>
                       <div style={{ ...S, fontSize: 11, color: '#FF6B35' }}>{val}</div>
                     </div>
                   ))}
@@ -1038,7 +1037,7 @@ export default function Dashboard() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <span style={{ ...S, fontSize: 8, color: '#9B59FF', letterSpacing: '0.2em', fontWeight: 700 }}>NEO SPECIFICATION</span>
-                  <button onClick={() => setNeoModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#8892A4', fontSize: 14, cursor: 'pointer' }}>✕</button>
+                  <button onClick={() => setNeoModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--theme-text-dim, #A0AEC0)', fontSize: 14, cursor: 'pointer' }}>✕</button>
                 </div>
                 <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 12px 0' }}>Asteroid 2026-FT3</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -1051,7 +1050,7 @@ export default function Dashboard() {
                     ['DISCOVERY DATE', 'Mar 20, 2026'],
                   ].map(([label, val]) => (
                     <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '8px 12px' }}>
-                      <div style={{ ...S, fontSize: 7, color: '#4A5568', marginBottom: 2 }}>{label}</div>
+                      <div style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)', marginBottom: 2 }}>{label}</div>
                       <div style={{ ...S, fontSize: 11, color: '#9B59FF' }}>{val}</div>
                     </div>
                   ))}
@@ -1102,7 +1101,7 @@ export default function Dashboard() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <span style={{ ...S, fontSize: 8, color: '#00D4FF', letterSpacing: '0.2em', fontWeight: 700 }}>TELEMETRY STATUS</span>
-                  <button onClick={() => setStatsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#8892A4', fontSize: 14, cursor: 'pointer' }}>✕</button>
+                  <button onClick={() => setStatsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--theme-text-dim, #A0AEC0)', fontSize: 14, cursor: 'pointer' }}>✕</button>
                 </div>
                 <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 12px 0' }}>System Telemetry</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -1115,7 +1114,7 @@ export default function Dashboard() {
                     ['CORES RUNNING', 'Turbopack (V8)'],
                   ].map(([label, val]) => (
                     <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '8px 12px' }}>
-                      <div style={{ ...S, fontSize: 7, color: '#4A5568', marginBottom: 2 }}>{label}</div>
+                      <div style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)', marginBottom: 2 }}>{label}</div>
                       <div style={{ ...S, fontSize: 11, color: '#00D4FF' }}>{val}</div>
                     </div>
                   ))}

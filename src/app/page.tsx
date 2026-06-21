@@ -112,7 +112,7 @@ export default function HomePage() {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 8 }}>
           <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#00FF88', animation: 'blink 1s infinite' }} />
-          <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>SYSTEM_BOOT.SH</span>
+          <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.2em' }}>SYSTEM_BOOT.SH</span>
         </div>
         {bootLines.map((line, i) => (
           <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}
@@ -145,11 +145,11 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 'clamp(10px, 2vw, 14px)', letterSpacing: '0.4em', color: '#8892A4', marginBottom: 20 }}>
+            <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 'clamp(10px, 2vw, 14px)', letterSpacing: '0.4em', color: 'var(--theme-text-dim, #A0AEC0)', marginBottom: 20 }}>
               THE CELESTIAL EYE
             </div>
 
-            <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(14px, 2vw, 18px)', color: '#8892A4', maxWidth: 480, lineHeight: 1.6, marginBottom: 32 }}>
+            <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(14px, 2vw, 18px)', color: 'var(--theme-text-dim, #A0AEC0)', maxWidth: 480, lineHeight: 1.6, marginBottom: 32 }}>
               Every point on Earth. Every object in the sky. Right now.
             </p>
 
@@ -160,7 +160,7 @@ export default function HomePage() {
                   <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 'clamp(18px, 3vw, 26px)', color: '#00D4FF', animation: 'float 3s ease-in-out infinite', marginBottom: 6 }}>
                     {value}
                   </div>
-                  <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: '#4A5568', letterSpacing: '0.2em' }}>
+                  <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'var(--theme-text-faint, #7D8A9E)', letterSpacing: '0.2em' }}>
                     {label}
                   </div>
                 </div>
@@ -190,8 +190,8 @@ export default function HomePage() {
       {bootComplete && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
           style={{ position: 'absolute', bottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: '#4A5568', letterSpacing: '0.2em' }}>SCROLL TO EXPLORE</span>
-          <ChevronDown size={16} color="#4A5568" style={{ animation: 'float 2s ease-in-out infinite' }} />
+          <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'var(--theme-text-faint, #7D8A9E)', letterSpacing: '0.2em' }}>SCROLL TO EXPLORE</span>
+          <ChevronDown size={16} color="var(--theme-text-faint, #7D8A9E)" style={{ animation: 'float 2s ease-in-out infinite' }} />
         </motion.div>
       )}
     </div>

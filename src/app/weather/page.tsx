@@ -20,7 +20,7 @@ function flareClass(flux: number | null) {
 }
 
 function kpInfo(kp: number | null) {
-  if (kp === null) return { label: '—', color: '#4A5568', scale: '—' }
+  if (kp === null) return { label: '—', color: 'var(--theme-text-faint, #7D8A9E)', scale: '—' }
   if (kp < 4)  return { label: 'QUIET',           color: '#00FF88', scale: 'G0' }
   if (kp < 5)  return { label: 'UNSETTLED',       color: '#00D4FF', scale: 'G0' }
   if (kp < 6)  return { label: 'MINOR STORM',     color: '#FFD400', scale: 'G1' }
@@ -74,7 +74,7 @@ function KpGauge({ kp }: { kp: number | null }) {
           const a = startAngle + (v / 9) * Math.PI
           const lx = cx + (r + 20) * Math.cos(a)
           const ly = cy + (r + 20) * Math.sin(a)
-          return <text key={v} x={lx} y={ly} fill="#4A5568" fontFamily="Space Mono, monospace" fontSize="9" textAnchor="middle" dominantBaseline="middle">{v}</text>
+          return <text key={v} x={lx} y={ly} fill="var(--theme-text-faint, #7D8A9E)" fontFamily="Space Mono, monospace" fontSize="9" textAnchor="middle" dominantBaseline="middle">{v}</text>
         })}
 
         {/* Needle */}
@@ -200,7 +200,7 @@ export default function WeatherPage() {
 
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 20 }}>
           <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 28, fontWeight: 700, letterSpacing: '0.05em' }} className="animate-flicker">SPACE WEATHER</h1>
-          <p style={{ ...S, fontSize: 10, color: '#8892A4', marginTop: 4 }}>Live geomagnetic and solar activity · NOAA SWPC</p>
+          <p style={{ ...S, fontSize: 10, color: 'var(--theme-text-dim, #A0AEC0)', marginTop: 4 }}>Live geomagnetic and solar activity · NOAA SWPC</p>
         </motion.div>
 
         {/* Top stat row with InfoRayButtons */}
@@ -220,7 +220,7 @@ export default function WeatherPage() {
                 transition: 'border-color 0.4s ease, box-shadow 0.4s ease',
               }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>{c.label}</span>
+                <span style={{ ...S, fontSize: 9, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.2em' }}>{c.label}</span>
                 <InfoRayButton onClick={() => setModalKey(c.infoKey)} color={c.color} size={20} />
               </div>
               {isFetching && kp === null ? (
@@ -231,7 +231,7 @@ export default function WeatherPage() {
               ) : (
                 <>
                   <div style={{ ...S, fontSize: 24, color: c.color, marginBottom: 2 }}>{c.value}</div>
-                  <div style={{ ...S, fontSize: 9, color: '#4A5568' }}>{c.sub}</div>
+                  <div style={{ ...S, fontSize: 9, color: 'var(--theme-text-faint, #7D8A9E)' }}>{c.sub}</div>
                 </>
               )}
             </motion.div>
@@ -244,7 +244,7 @@ export default function WeatherPage() {
           style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.08)', borderRadius: 12, padding: 20, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 24 }}>
           <div style={{ flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>GEOMAGNETIC STORM SCALE</span>
+              <span style={{ ...S, fontSize: 9, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.2em' }}>GEOMAGNETIC STORM SCALE</span>
               <InfoRayButton onClick={() => setModalKey('kp')} color={info.color} size={20} />
             </div>
             <KpGauge kp={kp} />
@@ -258,17 +258,17 @@ export default function WeatherPage() {
             className="animate-card-glow hover-lift"
             style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 12, padding: 18 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>SOLAR WIND PLASMA</span>
+              <span style={{ ...S, fontSize: 9, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.2em' }}>SOLAR WIND PLASMA</span>
               <InfoRayButton onClick={() => setModalKey('solar')} color="#00D4FF" size={20} />
             </div>
             <SolarWindParticles windSpeed={wind?.speed ?? null} />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <div style={{ background: '#111118', borderRadius: 6, padding: 10 }}>
-                <div style={{ ...S, fontSize: 8, color: '#4A5568', marginBottom: 4 }}>SPEED</div>
+                <div style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)', marginBottom: 4 }}>SPEED</div>
                 <div style={{ ...S, fontSize: 14, color: '#00D4FF' }}>{wind ? Math.round(wind.speed) + ' KM/S' : '—'}</div>
               </div>
               <div style={{ background: '#111118', borderRadius: 6, padding: 10 }}>
-                <div style={{ ...S, fontSize: 8, color: '#4A5568', marginBottom: 4 }}>DENSITY</div>
+                <div style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)', marginBottom: 4 }}>DENSITY</div>
                 <div style={{ ...S, fontSize: 14, color: '#00D4FF' }}>{wind ? wind.density.toFixed(1) + ' P/CM³' : '—'}</div>
               </div>
             </div>
@@ -283,8 +283,8 @@ export default function WeatherPage() {
               borderRadius: 12, padding: 18, position: 'relative', overflow: 'hidden',
             }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>AURORA OUTLOOK</span>
-              <InfoRayButton onClick={() => setModalKey('aurora')} color={auroraPossible ? '#00FF88' : '#4A5568'} size={20} />
+              <span style={{ ...S, fontSize: 9, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.2em' }}>AURORA OUTLOOK</span>
+              <InfoRayButton onClick={() => setModalKey('aurora')} color={auroraPossible ? '#00FF88' : 'var(--theme-text-faint, #7D8A9E)'} size={20} />
             </div>
             {/* Aurora background glow */}
             <div style={{
@@ -292,10 +292,10 @@ export default function WeatherPage() {
               background: auroraPossible ? 'radial-gradient(circle, rgba(0,255,136,0.08), transparent)' : 'none',
               pointerEvents: 'none',
             }} />
-            <div style={{ ...S, fontSize: 16, color: auroraPossible ? '#00FF88' : '#4A5568', marginBottom: 6 }}>
+            <div style={{ ...S, fontSize: 16, color: auroraPossible ? '#00FF88' : 'var(--theme-text-faint, #7D8A9E)', marginBottom: 6 }}>
               {auroraPossible ? 'ELEVATED CHANCE' : 'LOW CHANCE'}
             </div>
-            <div style={{ ...S, fontSize: 9, color: '#4A5568', lineHeight: 1.6 }}>
+            <div style={{ ...S, fontSize: 9, color: 'var(--theme-text-faint, #7D8A9E)', lineHeight: 1.6 }}>
               {auroraPossible
                 ? 'Current Kp ≥ 5 — aurora may be visible from northern US, Canada, UK, and similar latitudes if skies are clear.'
                 : 'Current geomagnetic activity is too low for aurora outside polar regions.'}
@@ -307,7 +307,7 @@ export default function WeatherPage() {
         <ForecastChart />
 
         {/* Source note */}
-        <div style={{ ...S, fontSize: 8, color: '#4A5568', marginTop: 24, textAlign: 'center' }}>
+        <div style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)', marginTop: 24, textAlign: 'center' }}>
           SOURCE: NOAA SPACE WEATHER PREDICTION CENTER (SWPC) · UPDATES EVERY 60S
         </div>
       </div>
@@ -407,8 +407,8 @@ function ForecastChart() {
       position: 'relative'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-        <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>📈 3-DAY GEOMAGNETIC OUTLOOK (Kp FORECAST)</span>
-        <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>Estimated 3-hour planetary Kp index predicted by NOAA SWPC</span>
+        <span style={{ ...S, fontSize: 9, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.2em' }}>📈 3-DAY GEOMAGNETIC OUTLOOK (Kp FORECAST)</span>
+        <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>Estimated 3-hour planetary Kp index predicted by NOAA SWPC</span>
       </div>
       <div style={{ position: 'relative', width: '100%', overflowX: 'auto' }}>
         <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} style={{ minWidth: 700, display: 'block' }}>
@@ -430,7 +430,7 @@ function ForecastChart() {
             return (
               <g key={val}>
                 <line x1={paddingX} y1={y} x2={width - paddingX} y2={y} stroke="rgba(255,255,255,0.04)" strokeWidth="1" strokeDasharray="4 4" />
-                <text x={paddingX - 10} y={y + 3} fill="#4A5568" fontFamily="Space Mono, monospace" fontSize="8" textAnchor="end">Kp {val}</text>
+                <text x={paddingX - 10} y={y + 3} fill="var(--theme-text-faint, #7D8A9E)" fontFamily="Space Mono, monospace" fontSize="8" textAnchor="end">Kp {val}</text>
               </g>
             )
           })}
@@ -441,11 +441,11 @@ function ForecastChart() {
             return (
               <g key={idx}>
                 <line x1={x} y1={paddingY} x2={x} y2={height - paddingY} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-                <text x={x + 5} y={paddingY + 8} fill="#8892A4" fontFamily="Space Mono, monospace" fontSize="8">DAY {idx === 8 ? '2' : '3'}</text>
+                <text x={x + 5} y={paddingY + 8} fill="var(--theme-text-dim, #A0AEC0)" fontFamily="Space Mono, monospace" fontSize="8">DAY {idx === 8 ? '2' : '3'}</text>
               </g>
             )
           })}
-          <text x={paddingX + 5} y={paddingY + 8} fill="#8892A4" fontFamily="Space Mono, monospace" fontSize="8">DAY 1</text>
+          <text x={paddingX + 5} y={paddingY + 8} fill="var(--theme-text-dim, #A0AEC0)" fontFamily="Space Mono, monospace" fontSize="8">DAY 1</text>
 
           {/* Area Fill */}
           <path d={areaD} fill="url(#areaGrad)" />
@@ -489,12 +489,12 @@ function ForecastChart() {
             boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
             zIndex: 10,
           }}>
-            <div style={{ ...S, fontSize: 8, color: '#8892A4', marginBottom: 2 }}>{activePt.label}</div>
+            <div style={{ ...S, fontSize: 8, color: 'var(--theme-text-dim, #A0AEC0)', marginBottom: 2 }}>{activePt.label}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: activePt.val >= 5 ? '#FF3B3B' : activePt.val >= 4 ? '#FFD400' : '#00FF88' }} />
               <span style={{ ...S, fontSize: 11, color: '#fff', fontWeight: 'bold' }}>Kp {activePt.val}</span>
             </div>
-            <div style={{ ...S, fontSize: 7, color: '#4A5568', marginTop: 2 }}>
+            <div style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)', marginTop: 2 }}>
               {activePt.val >= 5 ? '⚠️ GEOMAGNETIC STORM' : activePt.val >= 4 ? 'UNSETTLED' : 'NOMINAL'}
             </div>
           </div>

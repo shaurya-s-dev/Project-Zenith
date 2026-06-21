@@ -110,7 +110,7 @@ export default function TabNav() {
                   ...S,
                   fontSize: 9,
                   letterSpacing: '0.15em',
-                  color: isActive ? '#000' : 'var(--theme-text-dim, #8892A4)',
+                  color: isActive ? '#000' : 'var(--theme-text-dim, #A0AEC0)',
                   background: isActive ? 'var(--theme-primary, #00D4FF)' : 'transparent',
                   borderRadius: 6,
                   padding: '6px 14px',
@@ -137,7 +137,7 @@ export default function TabNav() {
             }}
             style={{
               ...S, fontSize: 8, letterSpacing: '0.1em',
-              color: 'var(--theme-text-dim, #8892A4)', background: 'rgba(255,255,255,0.04)',
+              color: 'var(--theme-text-dim, #A0AEC0)', background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4,
               padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
             }}
@@ -150,7 +150,7 @@ export default function TabNav() {
             onClick={() => { setHologramOn(!hologramOn) }}
             style={{
               ...S, fontSize: 8, letterSpacing: '0.15em',
-              color: hologramOn ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #8892A4)',
+              color: hologramOn ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #A0AEC0)',
               background: hologramOn ? 'color-mix(in srgb, var(--theme-primary, #00D4FF) 8%, transparent)' : 'rgba(255,255,255,0.04)',
               border: `1px solid ${hologramOn ? 'color-mix(in srgb, var(--theme-primary, #00D4FF) 30%, transparent)' : 'rgba(255,255,255,0.1)'}`,
               borderRadius: 4, padding: '4px 8px', cursor: 'pointer',
@@ -166,7 +166,7 @@ export default function TabNav() {
             onClick={() => setTheme('deep-space')}
             style={{
               ...S, fontSize: 8, letterSpacing: '0.15em',
-              color: theme === 'deep-space' ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #8892A4)',
+              color: theme === 'deep-space' ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #A0AEC0)',
               background: theme === 'deep-space' ? 'color-mix(in srgb, var(--theme-primary, #00D4FF) 8%, transparent)' : 'rgba(255,255,255,0.04)',
               border: `1px solid ${theme === 'deep-space' ? 'color-mix(in srgb, var(--theme-primary, #00D4FF) 30%, transparent)' : 'rgba(255,255,255,0.1)'}`,
               borderRadius: 4, padding: '4px 8px', cursor: 'pointer',
@@ -182,7 +182,7 @@ export default function TabNav() {
               onClick={() => setThemeOpen(o => !o)}
               style={{
                 ...S, fontSize: 8, letterSpacing: '0.15em',
-                color: 'var(--theme-text-dim, #8892A4)', background: 'rgba(255,255,255,0.04)',
+                color: 'var(--theme-text-dim, #A0AEC0)', background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4,
                 padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
               }}
@@ -206,7 +206,7 @@ export default function TabNav() {
                     onClick={() => { setTheme(kt); setThemeOpen(false) }}
                     style={{
                       ...S, fontSize: 9, letterSpacing: '0.1em', width: '100%', textAlign: 'left',
-                      color: theme === kt ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #8892A4)',
+                      color: theme === kt ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #A0AEC0)',
                       background: theme === kt ? 'color-mix(in srgb, var(--theme-primary, #00D4FF) 8%, transparent)' : 'transparent',
                       border: 'none', borderRadius: 4, padding: '6px 10px', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', gap: 6,
@@ -255,7 +255,7 @@ export default function TabNav() {
                 backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', gap: 6,
                 boxShadow: '0 4px 15px rgba(0,0,0,0.6)'
               }}>
-                <div style={{ ...S, fontSize: 8, color: '#8892A4', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 4, fontWeight: 'bold' }}>API GATEWAY HEALTH</div>
+                <div style={{ ...S, fontSize: 8, color: 'var(--theme-text-dim, #A0AEC0)', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 4, fontWeight: 'bold' }}>API GATEWAY HEALTH</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ ...S, fontSize: 8, color: '#fff' }}>ISS TELEMETRY</span>
                   <span style={{ ...S, fontSize: 8, color: healthDetails.iss === 'ONLINE' ? '#00FF88' : '#FF3B3B' }}>{healthDetails.iss}</span>

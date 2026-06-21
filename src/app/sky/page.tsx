@@ -180,10 +180,10 @@ function Compass({ brg, overhead }: { brg: number | null; overhead: boolean }) {
         }} />
       </div>
 
-      <span style={{ position: 'absolute', left: '50%', top: 2, transform: 'translateX(-50%)', ...S, fontSize: 10, color: '#4A5568' }}>N</span>
-      <span style={{ position: 'absolute', right: 2, top: '50%', transform: 'translateY(-50%)', ...S, fontSize: 10, color: '#4A5568' }}>E</span>
-      <span style={{ position: 'absolute', left: '50%', bottom: 2, transform: 'translateX(-50%)', ...S, fontSize: 10, color: '#4A5568' }}>S</span>
-      <span style={{ position: 'absolute', left: 2, top: '50%', transform: 'translateY(-50%)', ...S, fontSize: 10, color: '#4A5568' }}>W</span>
+      <span style={{ position: 'absolute', left: '50%', top: 2, transform: 'translateX(-50%)', ...S, fontSize: 10, color: 'var(--theme-text-faint, #7D8A9E)' }}>N</span>
+      <span style={{ position: 'absolute', right: 2, top: '50%', transform: 'translateY(-50%)', ...S, fontSize: 10, color: 'var(--theme-text-faint, #7D8A9E)' }}>E</span>
+      <span style={{ position: 'absolute', left: '50%', bottom: 2, transform: 'translateX(-50%)', ...S, fontSize: 10, color: 'var(--theme-text-faint, #7D8A9E)' }}>S</span>
+      <span style={{ position: 'absolute', left: 2, top: '50%', transform: 'translateY(-50%)', ...S, fontSize: 10, color: 'var(--theme-text-faint, #7D8A9E)' }}>W</span>
 
       {brg !== null && (
         <div style={{
@@ -196,7 +196,7 @@ function Compass({ brg, overhead }: { brg: number | null; overhead: boolean }) {
       )}
 
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-        <span style={{ ...S, fontSize: 8, color: '#8892A4' }}>{overhead ? 'ISS OVERHEAD' : 'ISS BEARING'}</span>
+        <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-dim, #A0AEC0)' }}>{overhead ? 'ISS OVERHEAD' : 'ISS BEARING'}</span>
         <span className="text-glow" style={{ ...STYLE_DATA, fontSize: 20, color: overhead ? '#00FF88' : '#00D4FF', marginTop: 2 }}>{brg !== null ? Math.round(brg) + '°' : '—'}</span>
       </div>
     </div>
@@ -372,7 +372,7 @@ export default function SkyPage() {
                 </span>
               </div>
               <Compass brg={brg} overhead={overhead} />
-              <div style={{ ...S, fontSize: 7, color: '#4A5568', marginTop: 8, textAlign: 'center' }}>SOURCE: WHERETHEISS.AT · LIVE</div>
+              <div style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)', marginTop: 8, textAlign: 'center' }}>SOURCE: WHERETHEISS.AT · LIVE</div>
             </motion.div>
 
             {/* ISS Telemetry card */}
@@ -454,7 +454,7 @@ export default function SkyPage() {
                 ))}
               </div>
 
-              <div style={{ ...S, fontSize: 7, color: '#4A5568', marginTop: 10, textAlign: 'center' }}>SOURCE: WHERETHEISS.AT · LIVE</div>
+              <div style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)', marginTop: 10, textAlign: 'center' }}>SOURCE: WHERETHEISS.AT · LIVE</div>
             </motion.div>
           </div>
 
@@ -498,7 +498,7 @@ export default function SkyPage() {
               <div style={{ ...STYLE_SUBHEADER, fontSize: 10 }}>{illum}% illuminated</div>
             </div>
             <div style={{
-              ...S, fontSize: 8, color: '#8892A4',
+              ...S, fontSize: 8, color: 'var(--theme-text-dim, #A0AEC0)',
               display: 'flex', alignItems: 'center', gap: 4,
               flexShrink: 0,
             }}>
@@ -547,12 +547,12 @@ export default function SkyPage() {
                           const tooltipContent = (
                             <div style={{ ...S, fontSize: 9, display: 'flex', flexDirection: 'column', gap: 2 }}>
                               <div style={{ fontWeight: 'bold', color: info.color }}>{p.name} QUICK FACTS</div>
-                              <div><span style={{ color: '#8892A4' }}>Magnitude:</span> {p.mag}</div>
+                              <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>Magnitude:</span> {p.mag}</div>
                               {quick && (
                                 <>
-                                  <div><span style={{ color: '#8892A4' }}>Distance:</span> {quick.distance}</div>
-                                  <div><span style={{ color: '#8892A4' }}>Constellation:</span> {quick.constellation}</div>
-                                  <div><span style={{ color: '#8892A4' }}>Best Viewing:</span> {quick.bestTime}</div>
+                                  <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>Distance:</span> {quick.distance}</div>
+                                  <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>Constellation:</span> {quick.constellation}</div>
+                                  <div><span style={{ color: 'var(--theme-text-dim, #A0AEC0)' }}>Best Viewing:</span> {quick.bestTime}</div>
                                 </>
                               )}
                             </div>
@@ -602,25 +602,25 @@ export default function SkyPage() {
       }}>
         {/* Left: Search Indicator */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>🔍 SEARCH:</span>
+          <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>🔍 SEARCH:</span>
           <span style={{ ...S, fontSize: 8, color: '#00D4FF' }}>ACTIVE</span>
         </div>
         
         {/* Middle: Language & Battery */}
         <div style={{ display: 'flex', gap: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>🌐 LANG:</span>
+            <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>🌐 LANG:</span>
             <span style={{ ...S, fontSize: 8, color: '#00D4FF' }}>EN-US</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>🔋 BATTERY:</span>
+            <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>🔋 BATTERY:</span>
             <span style={{ ...S, fontSize: 8, color: '#00FF88' }}>100% (AC)</span>
           </div>
         </div>
 
         {/* Right: Time */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>🕒 TIME:</span>
+          <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)' }}>🕒 TIME:</span>
           <span style={{ ...S, fontSize: 8, color: '#00D4FF' }}>
             {now ? now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) + ' LMT' : '—'}
           </span>

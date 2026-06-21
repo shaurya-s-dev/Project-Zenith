@@ -237,14 +237,14 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
                   {object.name}
                 </h2>
                 {object.description && (
-                  <p style={{ ...S, fontSize: 9, color: '#8892A4', marginTop: 4 }}>{object.description}</p>
+                  <p style={{ ...S, fontSize: 9, color: 'var(--theme-text-dim, #A0AEC0)', marginTop: 4 }}>{object.description}</p>
                 )}
               </div>
               <motion.button
                 onClick={onClose}
                 whileHover={{ scale: 1.15, color: '#FF3B3B' }}
                 whileTap={{ scale: 0.95 }}
-                style={{ ...S, fontSize: 14, color: '#8892A4', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px', lineHeight: 1 }}
+                style={{ ...S, fontSize: 14, color: 'var(--theme-text-dim, #A0AEC0)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px', lineHeight: 1 }}
               >
                 ✕
               </motion.button>
@@ -261,7 +261,7 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
                     position: 'relative',
                     fontSize: 9,
                     letterSpacing: '0.2em',
-                    color: activeTab === tab.id ? '#00D4FF' : '#8892A4',
+                    color: activeTab === tab.id ? '#00D4FF' : 'var(--theme-text-dim, #A0AEC0)',
                     background: 'transparent',
                     border: 'none',
                     padding: '0 0 10px',
@@ -302,7 +302,7 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
                         ['LONGITUDE', object.lon !== undefined ? `${object.lon.toFixed(2)}°` : '—'],
                       ].map(([label, value]) => (
                         <div key={label} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                          <div style={{ ...S, fontSize: 8, color: '#4A5568', marginBottom: 4 }}>{label}</div>
+                          <div style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)', marginBottom: 4 }}>{label}</div>
                           <div style={{ ...S, fontSize: 13, color: typeColor }}>{value}</div>
                         </div>
                       ))}
@@ -310,7 +310,7 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
                     {object.type === 'ISS' && (
                       <div style={{ marginTop: 10, background: 'rgba(0,255,136,0.04)', border: '1px solid rgba(0,255,136,0.12)', borderRadius: 8, padding: '8px 12px' }}>
                         <div style={{ ...S, fontSize: 9, color: '#00FF88' }}>🛸 International Space Station</div>
-                        <div style={{ ...S, fontSize: 9, color: '#4A5568', marginTop: 3, lineHeight: 1.6 }}>Orbiting since 1998 · Continuous human habitation since 2000 · ~109m wide</div>
+                        <div style={{ ...S, fontSize: 9, color: 'var(--theme-text-faint, #7D8A9E)', marginTop: 3, lineHeight: 1.6 }}>Orbiting since 1998 · Continuous human habitation since 2000 · ~109m wide</div>
                       </div>
                     )}
                   </motion.div>
@@ -328,7 +328,7 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
                         ['APOGEE', object.alt ? `${(object.alt + 5).toFixed(0)} km` : '—'],
                       ].map(([label, value]) => (
                         <div key={label} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                          <div style={{ ...S, fontSize: 8, color: '#4A5568', marginBottom: 4 }}>{label}</div>
+                          <div style={{ ...S, fontSize: 8, color: 'var(--theme-text-faint, #7D8A9E)', marginBottom: 4 }}>{label}</div>
                           <div style={{ ...S, fontSize: 12, color: '#00D4FF' }}>{value}</div>
                         </div>
                       ))}
@@ -363,7 +363,7 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
 
             {/* Suggested Questions */}
             <div style={{ padding: '0 20px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div style={{ ...S, fontSize: 7, color: '#4A5568', letterSpacing: '0.15em', fontWeight: 600 }}>SUGGESTED QUESTIONS</div>
+              <div style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)', letterSpacing: '0.15em', fontWeight: 600 }}>SUGGESTED QUESTIONS</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {getQuickQuestions(object.name, object.type).map((q, idx) => (
                   <motion.button
@@ -442,7 +442,7 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
                   fontSize: 9,
                   letterSpacing: '0.15em',
                   color: '#000',
-                  background: aiLoading || !query.trim() ? '#4A5568' : '#00D4FF',
+                  background: aiLoading || !query.trim() ? 'var(--theme-text-faint, #7D8A9E)' : '#00D4FF',
                   border: 'none',
                   borderRadius: 8,
                   padding: '0 16px',
