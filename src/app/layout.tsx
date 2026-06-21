@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import TabNav from "@/components/TabNav";
+import CosmicBackground from "@/components/CosmicBackground";
 
 export const metadata: Metadata = {
   title: "Project Zenith — The Celestial Eye",
@@ -10,6 +12,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body style={{ background: '#000', color: '#fff', minHeight: '100vh' }}>
+        <CosmicBackground />
+        <TabNav />
+        <div className="scanline-overlay" />
         {children}
       </body>
     </html>

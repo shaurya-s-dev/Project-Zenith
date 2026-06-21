@@ -2,17 +2,15 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import Link from 'next/link'
+import { InfoRayButton } from '@/components/InfoRayButton'
+import InfoModal from '@/components/InfoModal'
 
-const NAV = [['MISSION CONTROL','/dashboard'],['SKY ABOVE ME','/sky'],['SPACE WEATHER','/weather'],['SKYLENS AI','/skylens']]
 const S = { fontFamily: 'Space Mono, monospace' }
 
 const KP_URL = 'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json'
 const WIND_URL = 'https://services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json'
 const XRAY_URL = 'https://services.swpc.noaa.gov/json/goes/primary/xrays-1-day.json'
 
-// NOAA endpoints sometimes return array-of-arrays with a header row,
-// sometimes array-of-objects. Normalize both into objects.
 function normalizeRows(raw: any[]): Record<string, any>[] {
   if (raw.length && Array.isArray(raw[0])) {
     const headers = raw[0] as string[]
@@ -88,19 +86,165 @@ function kpInfo(kp: number | null) {
   return         { label: 'EXTREME STORM',    color: '#FF3B3B', scale: 'G5' }
 }
 
+// SVG Semi-circular Kp gauge
+function KpGauge({ kp }: { kp: number | null }) {
+  const val = kp ?? 0
+  const normalized = Math.min(9, Math.max(0, val)) / 9
+  const angle = normalized * 180
+  const rad = (angle * Math.PI) / 180
+  const cx = 100, cy = 100, r = 75
+  const startAngle = -Math.PI
+
+  // Needle end
+  const nx = cx + r * Math.cos(startAngle + rad)
+  const ny = cy + r * Math.sin(startAngle + rad)
+
+  // Arc paths for each segment
+  const arcPath = (start: number, end: number, color: string) => {
+    const sA = startAngle + (start / 9) * Math.PI
+    const eA = startAngle + (end / 9) * Math.PI
+    const x1 = cx + r * Math.cos(sA)
+    const y1 = cy + r * Math.sin(sA)
+    const x2 = cx + r * Math.cos(eA)
+    const y2 = cy + r * Math.sin(eA)
+    const large = end - start > 4.5 ? 1 : 0
+    return <path d={`M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`} stroke={color} strokeWidth="14" fill="none" strokeLinecap="round" />
+  }
+
+  const info = kpInfo(kp)
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <svg width="200" height="140" viewBox="0 0 200 140">
+        {/* Background arc segments */}
+        {arcPath(0, 3, '#00FF88')}
+        {arcPath(3, 4, '#00D4FF')}
+        {arcPath(4, 5, '#FFD400')}
+        {arcPath(5, 6, '#FF6B35')}
+        {arcPath(6, 7, '#FF6B35')}
+        {arcPath(7, 8, '#FF3B3B')}
+        {arcPath(8, 9, '#FF3B3B')}
+
+        {/* Labels */}
+        {[0, 3, 6, 9].map(v => {
+          const a = startAngle + (v / 9) * Math.PI
+          const lx = cx + (r + 20) * Math.cos(a)
+          const ly = cy + (r + 20) * Math.sin(a)
+          return <text key={v} x={lx} y={ly} fill="#4A5568" fontFamily="Space Mono, monospace" fontSize="9" textAnchor="middle" dominantBaseline="middle">{v}</text>
+        })}
+
+        {/* Needle */}
+        <motion.g
+          initial={{ rotate: 0 }}
+          animate={{ rotate: angle }}
+          transition={{ type: 'spring', stiffness: 60, damping: 12 }}
+          style={{ transformOrigin: `${cx}px ${cy}px` }}
+        >
+          <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+          <circle cx={cx} cy={cy} r="5" fill="#fff" />
+        </motion.g>
+
+        {/* Center value */}
+        <text x={cx} y={cy + 5} fill="#fff" fontFamily="Space Mono, monospace" fontSize="18" textAnchor="middle" fontWeight="bold" dominantBaseline="middle">
+          {kp !== null ? kp.toFixed(2) : '—'}
+        </text>
+      </svg>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+        <span style={{ ...S, fontSize: 10, color: info.color }}>{info.scale}</span>
+        <span style={{ ...S, fontSize: 10, color: info.color }}>·</span>
+        <span style={{ ...S, fontSize: 10, color: info.color }}>{info.label}</span>
+      </div>
+    </div>
+  )
+}
+
+// Solar wind particle stream
+function SolarWindParticles({ windSpeed }: { windSpeed: number | null }) {
+  const speed = windSpeed ?? 400
+  // Map speed (300-800 km/s) to animation duration (4-10s)
+  const duration = Math.max(2, 10 - ((speed - 300) / 500) * 6)
+  return (
+    <div style={{ position: 'relative', height: 20, overflow: 'hidden', borderRadius: 4, background: 'rgba(0,0,0,0.3)', marginBottom: 8 }}>
+      {/* Glow line */}
+      <div style={{
+        position: 'absolute', top: '50%', left: 0, right: 0, height: 1,
+        background: 'linear-gradient(90deg, transparent, rgba(0,212,255,0.3), transparent)',
+        transform: 'translateY(-50%)',
+      }} />
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute', top: '50%', width: 3, height: 3, borderRadius: '50%',
+            background: '#00D4FF',
+            boxShadow: '0 0 4px #00D4FF',
+            animation: `particle-drift ${duration}s linear infinite`,
+            animationDelay: `${i * (duration / 8)}s`,
+            transform: 'translateY(-50%)',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+// Aurora oval SVG
+function AuroraOval({ kp }: { kp: number | null }) {
+  const val = kp ?? 2
+  const scale = 0.6 + (val / 9) * 0.4
+  const opacity = 0.2 + (val / 9) * 0.5
+
+  return (
+    <motion.svg
+      width="100%"
+      height="80"
+      viewBox="0 0 200 80"
+      animate={{ scale }}
+      transition={{ duration: 2, ease: 'easeInOut' }}
+      style={{ transformOrigin: 'center center' }}
+    >
+      <defs>
+        <radialGradient id="auroraGrad">
+          <stop offset="0%" stopColor="rgba(0,255,136,0)" />
+          <stop offset="60%" stopColor={`rgba(0,255,136,${opacity})`} />
+          <stop offset="80%" stopColor={`rgba(0,212,255,${opacity * 0.6})`} />
+          <stop offset="100%" stopColor="rgba(0,255,136,0)" />
+        </radialGradient>
+      </defs>
+      <ellipse cx="100" cy="40" rx="60" ry="20" fill="url(#auroraGrad)" style={{ animation: 'aurora-pulse 4s ease-in-out infinite' }} />
+    </motion.svg>
+  )
+}
+
 export default function WeatherPage() {
   const [kp, setKp] = useState<number | null>(null)
   const [wind, setWind] = useState<{ speed: number; density: number } | null>(null)
   const [flux, setFlux] = useState<number | null>(null)
-  const [status, setStatus] = useState<'loading'|'ok'|'partial'|'error'>('loading')
-  const [now, setNow] = useState<Date | null>(null)
+
+  const [modalKey, setModalKey] = useState<string | null>(null)
+
+  const INFO = {
+    kp: {
+      title: 'Kp Index — Geomagnetic Activity',
+      content: 'Measures global geomagnetic activity on a scale of 0-9. Higher values mean more aurora visibility but risk to satellites and power grids. Kp 5+ triggers G-scale storm warnings from NOAA SWPC.',
+    },
+    solar: {
+      title: 'Solar Wind — Coronal Mass Ejections',
+      content: 'Stream of charged particles from the Sun. Speed &gt; 500 km/s indicates a Coronal Mass Ejection (CME). CMEs can cause geomagnetic storms, disrupt GPS, and create stunning aurora displays.',
+    },
+    xray: {
+      title: 'X-Ray Flux — Solar Flares',
+      content: 'Class B is low background. C flares are common with little effect. M flares can cause minor radio blackouts. X flares are major events causing widespread radio blackouts and radiation storms. Classified by peak flux in the 0.1-0.8 nm band.',
+    },
+    aurora: {
+      title: 'Aurora Outlook — Northern & Southern Lights',
+      content: 'Auroras occur when charged solar particles collide with Earth\'s atmosphere, exciting oxygen and nitrogen. Kp 5+ is needed for mid-latitude visibility. The auroral oval expands during storms, bringing the lights further from the poles.',
+    },
+  }
 
   const loadAll = useCallback(async () => {
     const [k, w, x] = await Promise.all([fetchKp(), fetchWind(), fetchXray()])
     setKp(k); setWind(w); setFlux(x)
-    if (k === null && w === null && x === null) setStatus('error')
-    else if (k === null || w === null || x === null) setStatus('partial')
-    else setStatus('ok')
   }, [])
 
   useEffect(() => {
@@ -109,81 +253,62 @@ export default function WeatherPage() {
     return () => clearInterval(i)
   }, [loadAll])
 
-  useEffect(() => {
-    setNow(new Date())
-    const t = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(t)
-  }, [])
-
   const info = kpInfo(kp)
-  const kpPct = kp !== null ? Math.min(100, (kp / 9) * 100) : 0
   const auroraPossible = kp !== null && kp >= 5
 
   return (
-    <div style={{ minHeight: '100vh', background: '#000', color: '#fff' }}>
+    <div style={{ minHeight: 'calc(100vh - 52px)', color: '#fff' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '28px 24px 80px' }}>
 
-      <nav style={{ height: 56, background: 'rgba(0,0,0,0.9)', borderBottom: '1px solid rgba(0,212,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00D4FF', animation: 'pulse-cyan 2s infinite' }} />
-          <span style={{ ...S, color: '#00D4FF', letterSpacing: '0.3em', fontSize: 14, fontWeight: 700 }}>ZENITH</span>
-        </div>
-        <div style={{ display: 'flex', gap: 32 }}>
-          {NAV.map(([label, href]) => (
-            <Link key={label} href={href} style={{ ...S, fontSize: 10, letterSpacing: '0.2em', color: href === '/weather' ? '#00D4FF' : '#8892A4', textDecoration: 'none' }}>{label}</Link>
-          ))}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: status === 'ok' ? '#00FF88' : status === 'error' ? '#FF6B35' : '#FFD400', animation: 'blink 1s infinite' }} />
-          <span style={{ ...S, fontSize: 10, color: '#8892A4', letterSpacing: '0.15em' }}>{status === 'ok' ? 'LIVE' : status === 'partial' ? 'PARTIAL' : status === 'error' ? 'OFFLINE' : 'SYNCING'}</span>
-          <span style={{ ...S, fontSize: 11, color: '#8892A4' }}>{now ? now.toUTCString().split(' ')[4] + ' UTC' : '--:--:--'}</span>
-        </div>
-      </nav>
-
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px 80px' }}>
-
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 24 }}>
-          <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 32, fontWeight: 700, letterSpacing: '0.05em' }}>SPACE WEATHER</h1>
-          <p style={{ ...S, fontSize: 11, color: '#8892A4', marginTop: 6 }}>Live geomagnetic and solar activity, sourced from NOAA SWPC</p>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 20 }}>
+          <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 28, fontWeight: 700, letterSpacing: '0.05em' }} className="animate-flicker">SPACE WEATHER</h1>
+          <p style={{ ...S, fontSize: 10, color: '#8892A4', marginTop: 4 }}>Live geomagnetic and solar activity · NOAA SWPC</p>
         </motion.div>
 
-        {/* Top stat row */}
+        {/* Top stat row with InfoRayButtons */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
           {[
-            { label: 'GEOMAGNETIC (KP)', value: kp !== null ? kp.toFixed(2) : '—', sub: info.label, color: info.color },
-            { label: 'SOLAR WIND SPEED', value: wind ? Math.round(wind.speed).toLocaleString() + ' KM/S' : '—', sub: 'PLASMA VELOCITY', color: '#00D4FF' },
-            { label: 'X-RAY FLUX CLASS', value: flareClass(flux), sub: 'GOES LONG BAND', color: '#9B59FF' },
+            { label: 'GEOMAGNETIC (KP)', value: kp !== null ? kp.toFixed(2) : '—', sub: info.label, color: info.color, infoKey: 'kp' as const },
+            { label: 'SOLAR WIND SPEED', value: wind ? Math.round(wind.speed).toLocaleString() + ' KM/S' : '—', sub: 'PLASMA VELOCITY', color: '#00D4FF', infoKey: 'solar' as const },
+            { label: 'X-RAY FLUX CLASS', value: flareClass(flux), sub: 'GOES LONG BAND', color: '#9B59FF', infoKey: 'xray' as const },
           ].map((c, i) => (
             <motion.div key={c.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-              style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 12, padding: 18 }}>
-              <div style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em', marginBottom: 10 }}>{c.label}</div>
-              <div style={{ ...S, fontSize: 26, color: c.color, marginBottom: 4 }}>{c.value}</div>
+              className="animate-card-glow"
+              style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 12, padding: 16, position: 'relative' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>{c.label}</span>
+                <InfoRayButton onClick={() => setModalKey(c.infoKey)} color={c.color} size={20} />
+              </div>
+              <div style={{ ...S, fontSize: 24, color: c.color, marginBottom: 2 }}>{c.value}</div>
               <div style={{ ...S, fontSize: 9, color: '#4A5568' }}>{c.sub}</div>
             </motion.div>
           ))}
         </div>
 
         {/* Kp gauge */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 12, padding: 20, marginBottom: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-            <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>GEOMAGNETIC STORM SCALE</span>
-            <span style={{ ...S, fontSize: 9, color: info.color }}>{info.scale} · {info.label}</span>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+          className="animate-card-glow"
+          style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.08)', borderRadius: 12, padding: 20, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 24 }}>
+          <div style={{ flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>GEOMAGNETIC STORM SCALE</span>
+              <InfoRayButton onClick={() => setModalKey('kp')} color={info.color} size={20} />
+            </div>
+            <KpGauge kp={kp} />
           </div>
-          <div style={{ position: 'relative', height: 10, borderRadius: 5, overflow: 'hidden', background: 'linear-gradient(90deg, #00FF88 0%, #00FF88 44%, #00D4FF 44%, #00D4FF 55%, #FFD400 55%, #FFD400 66%, #FF6B35 66%, #FF6B35 88%, #FF3B3B 88%, #FF3B3B 100%)' }}>
-            <div style={{ position: 'absolute', left: `calc(${kpPct}% - 2px)`, top: -3, width: 4, height: 16, background: '#fff', borderRadius: 2, boxShadow: '0 0 6px rgba(255,255,255,0.8)' }} />
-          </div>
-          <div style={{ position: 'relative', height: 14, marginTop: 4 }}>
-            {[0,1,2,3,4,5,6,7,8,9].map(n => (
-              <span key={n} style={{ position: 'absolute', left: `${(n/9)*100}%`, transform: n===0 ? 'none' : n===9 ? 'translateX(-100%)' : 'translateX(-50%)', ...S, fontSize: 8, color: '#4A5568' }}>{n}</span>
-            ))}
-          </div>
+          <AuroraOval kp={kp} />
         </motion.div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-
+          {/* Solar Wind */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+            className="animate-card-glow"
             style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 12, padding: 18 }}>
-            <div style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em', marginBottom: 14 }}>SOLAR WIND PLASMA</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>SOLAR WIND PLASMA</span>
+              <InfoRayButton onClick={() => setModalKey('solar')} color="#00D4FF" size={20} />
+            </div>
+            <SolarWindParticles windSpeed={wind?.speed ?? null} />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <div style={{ background: '#111118', borderRadius: 6, padding: 10 }}>
                 <div style={{ ...S, fontSize: 8, color: '#4A5568', marginBottom: 4 }}>SPEED</div>
@@ -194,14 +319,28 @@ export default function WeatherPage() {
                 <div style={{ ...S, fontSize: 14, color: '#00D4FF' }}>{wind ? wind.density.toFixed(1) + ' P/CM³' : '—'}</div>
               </div>
             </div>
-            <div style={{ ...S, fontSize: 8, color: '#4A5568', marginTop: 12 }}>Solar wind drives geomagnetic activity — faster, denser streams raise Kp.</div>
           </motion.div>
 
+          {/* Aurora Outlook */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            style={{ background: 'rgba(10,10,15,0.8)', border: `1px solid ${auroraPossible ? 'rgba(0,255,136,0.25)' : 'rgba(255,255,255,0.06)'}`, borderRadius: 12, padding: 18 }}>
-            <div style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em', marginBottom: 10 }}>AURORA OUTLOOK</div>
+            className="animate-card-glow"
+            style={{
+              background: 'rgba(10,10,15,0.8)',
+              border: `1px solid ${auroraPossible ? 'rgba(0,255,136,0.25)' : 'rgba(255,255,255,0.06)'}`,
+              borderRadius: 12, padding: 18, position: 'relative', overflow: 'hidden',
+            }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>AURORA OUTLOOK</span>
+              <InfoRayButton onClick={() => setModalKey('aurora')} color={auroraPossible ? '#00FF88' : '#4A5568'} size={20} />
+            </div>
+            {/* Aurora background glow */}
+            <div style={{
+              position: 'absolute', top: -20, right: -20, width: 120, height: 120, borderRadius: '50%',
+              background: auroraPossible ? 'radial-gradient(circle, rgba(0,255,136,0.08), transparent)' : 'none',
+              pointerEvents: 'none',
+            }} />
             <div style={{ ...S, fontSize: 16, color: auroraPossible ? '#00FF88' : '#4A5568', marginBottom: 6 }}>
-              {auroraPossible ? 'ELEVATED CHANCE AT HIGH LATITUDES' : 'LOW CHANCE'}
+              {auroraPossible ? 'ELEVATED CHANCE' : 'LOW CHANCE'}
             </div>
             <div style={{ ...S, fontSize: 9, color: '#4A5568', lineHeight: 1.6 }}>
               {auroraPossible
@@ -211,10 +350,17 @@ export default function WeatherPage() {
           </motion.div>
         </div>
 
+        {/* Source note */}
         <div style={{ ...S, fontSize: 8, color: '#4A5568', marginTop: 20, textAlign: 'center' }}>
           SOURCE: NOAA SPACE WEATHER PREDICTION CENTER (SWPC) · UPDATES EVERY 60S
         </div>
       </div>
+
+      {/* Info modals */}
+      <InfoModal isOpen={modalKey === 'kp'} onClose={() => setModalKey(null)} title={INFO.kp.title} content={INFO.kp.content} color="#00FF88" />
+      <InfoModal isOpen={modalKey === 'solar'} onClose={() => setModalKey(null)} title={INFO.solar.title} content={INFO.solar.content} color="#00D4FF" />
+      <InfoModal isOpen={modalKey === 'xray'} onClose={() => setModalKey(null)} title={INFO.xray.title} content={INFO.xray.content} color="#9B59FF" />
+      <InfoModal isOpen={modalKey === 'aurora'} onClose={() => setModalKey(null)} title={INFO.aurora.title} content={INFO.aurora.content} color="#00FF88" />
     </div>
   )
 }
