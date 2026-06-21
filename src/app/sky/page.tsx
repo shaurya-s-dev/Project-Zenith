@@ -225,7 +225,7 @@ export default function SkyPage() {
         setLocStatus('ok')
       },
       () => { setUserLoc(FALLBACK_LOC); setLocStatus('denied') },
-      { timeout: 8000 }
+      { enableHighAccuracy: false, timeout: 2500, maximumAge: 600000 }
     )
   }, [])
 

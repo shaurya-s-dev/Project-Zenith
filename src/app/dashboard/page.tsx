@@ -448,8 +448,9 @@ export default function Dashboard() {
                   style={{
                     position: 'absolute',
                     bottom: 14,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
+                    left: 0,
+                    right: 0,
+                    margin: '0 auto',
                     zIndex: 10,
                     background: 'rgba(8,10,16,0.95)',
                     border: '1px solid rgba(0,212,255,0.18)',
