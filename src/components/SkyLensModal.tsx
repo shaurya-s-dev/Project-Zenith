@@ -93,7 +93,7 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
     const context = [
       object ? `Object: ${object.name} (${object.type || 'satellite'})` : '',
       object?.alt ? `Altitude: ${object.alt} km` : '',
-      object?.speed ? `Speed: ${object.speed.toLocaleString()} km/h` : '',
+      object?.speed ? `Speed: ${object.speed.toLocaleString('en-US')} km/h` : '',
       issContext || '',
     ].filter(Boolean).join('. ')
 
@@ -255,7 +255,7 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                       {[
                         ['ALTITUDE', object.alt ? `${object.alt} km` : '—'],
-                        ['SPEED', object.speed ? `${object.speed.toLocaleString()} km/h` : '—'],
+                        ['SPEED', object.speed ? `${object.speed.toLocaleString('en-US')} km/h` : '—'],
                         ['LATITUDE', object.lat !== undefined ? `${object.lat.toFixed(2)}°` : '—'],
                         ['LONGITUDE', object.lon !== undefined ? `${object.lon.toFixed(2)}°` : '—'],
                       ].map(([label, value]) => (

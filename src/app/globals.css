@@ -359,3 +359,28 @@ html, body, nav, header, footer, button, .animate-card-glow, .hover-lift {
 .cesium-viewer-fullscreenContainer {
   display: none !important;
 }
+
+/* ── Sky Above Me Radar Scanline & Text Glow ──────────────────── */
+@keyframes scanline-anim {
+  0% {
+    top: 0%;
+  }
+  100% {
+    top: 100%;
+  }
+}
+.radar-scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(180deg, rgba(0, 212, 255, 0.08) 0%, rgba(0, 212, 255, 0) 100%);
+  border-top: 1px solid rgba(0, 212, 255, 0.35);
+  pointer-events: none;
+  animation: scanline-anim 6s linear infinite;
+  z-index: 10;
+}
+.text-glow {
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(0, 212, 255, 0.1);
+}
+

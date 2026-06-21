@@ -55,7 +55,7 @@ export async function exportMissionLog(payload: PdfPayload) {
       pdf.setTextColor(255, 255, 255)
       pdf.text(obj.name, 20, y)
       pdf.setTextColor(136, 146, 164)
-      pdf.text(`ALT: ${obj.alt} km  SPD: ${obj.speed.toLocaleString()} km/h`, 90, y)
+      pdf.text(`ALT: ${obj.alt} km  SPD: ${obj.speed.toLocaleString('en-US')} km/h`, 90, y)
       y += 6
     }
 
@@ -70,7 +70,7 @@ export async function exportMissionLog(payload: PdfPayload) {
     y += 8
     pdf.setTextColor(255, 255, 255)
     pdf.text(`KP Index: ${payload.kp !== null ? payload.kp.toFixed(2) : '—'}`, 20, y)
-    pdf.text(`Solar Wind: ${payload.solarWind !== null ? Math.round(payload.solarWind).toLocaleString() + ' km/s' : '—'}`, 20, y + 7)
+    pdf.text(`Solar Wind: ${payload.solarWind !== null ? Math.round(payload.solarWind).toLocaleString('en-US') + ' km/s' : '—'}`, 20, y + 7)
 
     // Passes
     y += 18

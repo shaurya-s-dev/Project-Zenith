@@ -7,12 +7,10 @@ const S = { fontFamily: 'Space Mono, monospace' as const }
 interface Body { label: string; xPct: number; yPct: number; color: string; size: number; glow: string }
 
 const BODIES: Body[] = [
-  { label: 'SUN', xPct: 18, yPct: 68, color: '#FFD400', size: 18, glow: 'rgba(255,212,0,0.6)' },
-  { label: 'MOON', xPct: 52, yPct: 22, color: '#e8e0d0', size: 12, glow: 'rgba(232,224,208,0.4)' },
-  { label: 'VENUS', xPct: 28, yPct: 52, color: '#FFD400', size: 5, glow: 'rgba(255,212,0,0.3)' },
-  { label: 'JUPITER', xPct: 68, yPct: 32, color: '#FF6B35', size: 7, glow: 'rgba(255,107,53,0.3)' },
-  { label: 'MARS', xPct: 78, yPct: 45, color: '#FF3B3B', size: 4, glow: 'rgba(255,59,59,0.3)' },
-  { label: 'SATURN', xPct: 85, yPct: 60, color: '#9B59FF', size: 5, glow: 'rgba(155,89,255,0.3)' },
+  { label: 'VENUS', xPct: 22, yPct: 68, color: '#FFFFFF', size: 6, glow: 'rgba(255,255,255,0.7)' },
+  { label: 'SATURN', xPct: 78, yPct: 72, color: '#FCD34D', size: 4, glow: 'rgba(252,211,77,0.3)' },
+  { label: 'JUPITER', xPct: 48, yPct: 35, color: '#FED7AA', size: 8, glow: 'rgba(254,215,170,0.5)' },
+  { label: 'MARS', xPct: 64, yPct: 48, color: '#F87171', size: 5, glow: 'rgba(248,113,113,0.4)' },
 ]
 
 export default function TonightView() {
@@ -26,7 +24,6 @@ export default function TonightView() {
     if (!ctx) return
 
     let w = 0, h = 0, dpr = 1
-    let sweepAngle = 0
     const stars: { x: number; y: number; size: number; phase: number }[] = []
     const asteroids: { x: number; y: number; vx: number; size: number; opacity: number }[] = []
 
@@ -50,11 +47,11 @@ export default function TonightView() {
       }
 
       asteroids.length = 0
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 15; i++) {
         asteroids.push({
           x: Math.random() * rect.width,
           y: rect.height * 0.35 + (Math.random() - 0.5) * rect.height * 0.15,
-          vx: 0.05 + Math.random() * 0.1,
+          vx: 0.05 + Math.random() * 0.08,
           size: 0.8 + Math.random() * 1.2,
           opacity: 0.25 + Math.random() * 0.5,
         })
@@ -64,45 +61,22 @@ export default function TonightView() {
     resize()
     window.addEventListener('resize', resize)
 
+    let time = 0
     const draw = () => {
       const rect = canvas.getBoundingClientRect()
       const cw = rect.width
       const ch = rect.height
 
-      sweepAngle += 0.005
+      time += 0.005
       ctx.clearRect(0, 0, cw, ch)
 
-      // Sky gradient
+      // Sky gradient (dark navy-to-midnight matching)
       const skyGrad = ctx.createLinearGradient(0, 0, 0, ch)
-      skyGrad.addColorStop(0, '#0a0a1a')
-      skyGrad.addColorStop(0.5, '#1a1a3a')
-      skyGrad.addColorStop(0.75, '#2a1a3a')
-      skyGrad.addColorStop(0.9, '#4a2a20')
-      skyGrad.addColorStop(1, '#5a3a20')
+      skyGrad.addColorStop(0, '#070b14')
+      skyGrad.addColorStop(0.6, '#0f1a2e')
+      skyGrad.addColorStop(1, '#070b14')
       ctx.fillStyle = skyGrad
       ctx.fillRect(0, 0, cw, ch)
-
-      // Horizon arc
-      const horizonY = ch * 0.78
-      ctx.beginPath()
-      ctx.moveTo(0, horizonY)
-      ctx.quadraticCurveTo(cw / 2, horizonY - 20, cw, horizonY)
-      ctx.strokeStyle = 'rgba(255,180,100,0.3)'
-      ctx.lineWidth = 2
-      ctx.stroke()
-
-      // Ground below horizon
-      const groundGrad = ctx.createLinearGradient(0, horizonY, 0, ch)
-      groundGrad.addColorStop(0, 'rgba(30,20,10,0.6)')
-      groundGrad.addColorStop(1, 'rgba(10,8,5,0.8)')
-      ctx.fillStyle = groundGrad
-      ctx.beginPath()
-      ctx.moveTo(0, horizonY)
-      ctx.quadraticCurveTo(cw / 2, horizonY - 10, cw, horizonY)
-      ctx.lineTo(cw, ch)
-      ctx.lineTo(0, ch)
-      ctx.closePath()
-      ctx.fill()
 
       // Stars
       const now = Date.now()
@@ -123,9 +97,39 @@ export default function TonightView() {
         }
         ctx.beginPath()
         ctx.arc(a.x, a.y, a.size, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(224, 180, 140, ${a.opacity * 0.6})`
+        ctx.fillStyle = `rgba(224, 180, 140, ${a.opacity * 0.5})`
         ctx.fill()
       }
+
+      // 180° Semicircle Sky Dome Arc
+      const horizonY = ch * 0.8
+      const rx = cw * 0.42
+      ctx.beginPath()
+      ctx.arc(cw / 2, horizonY, rx, Math.PI, 0)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
+      ctx.lineWidth = 1
+      ctx.setLineDash([4, 4])
+      ctx.stroke()
+      ctx.setLineDash([]) // Reset
+
+      // Compass East/West labels on Dome Ends
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
+      ctx.font = '8px Space Mono, monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText('W', cw / 2 - rx - 12, horizonY + 3)
+      ctx.fillText('E', cw / 2 + rx + 12, horizonY + 3)
+
+      // Horizon line
+      ctx.beginPath()
+      ctx.moveTo(0, horizonY)
+      ctx.lineTo(cw, horizonY)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
+      ctx.lineWidth = 1.5
+      ctx.stroke()
+
+      // Ground below horizon
+      ctx.fillStyle = 'rgba(5, 7, 12, 0.9)'
+      ctx.fillRect(0, horizonY, cw, ch - horizonY)
 
       // Celestial bodies
       for (const b of BODIES) {
@@ -145,65 +149,16 @@ export default function TonightView() {
         ctx.fillStyle = b.color
         ctx.fill()
 
-        // Sun rays
-        if (b.label === 'SUN') {
-          ctx.save()
-          ctx.beginPath()
-          ctx.arc(bx, by, b.size * 1.6, 0, Math.PI * 2)
-          ctx.fillStyle = 'rgba(255,212,0,0.08)'
-          ctx.fill()
-          for (let i = 0; i < 8; i++) {
-            const a = (i / 8) * Math.PI * 2 + now * 0.0005
-            ctx.beginPath()
-            ctx.moveTo(bx + Math.cos(a) * b.size * 1.2, by + Math.sin(a) * b.size * 1.2)
-            ctx.lineTo(bx + Math.cos(a) * b.size * 2.2, by + Math.sin(a) * b.size * 2.2)
-            ctx.strokeStyle = 'rgba(255,212,0,0.15)'
-            ctx.lineWidth = 1.5
-            ctx.stroke()
-          }
-          ctx.restore()
-        }
-
-        // Moon crescent
-        if (b.label === 'MOON') {
-          ctx.beginPath()
-          ctx.arc(bx - 3, by - 2, b.size * 0.6, 0, Math.PI * 2)
-          ctx.fillStyle = 'rgba(0,0,0,0.4)'
-          ctx.fill()
-        }
-
-        // Label
-        ctx.fillStyle = 'rgba(255,255,255,0.7)'
-        ctx.font = '9px Space Mono, monospace'
+        // Label with white glow
+        ctx.save()
+        ctx.shadowColor = 'rgba(255,255,255,0.8)'
+        ctx.shadowBlur = 4
+        ctx.fillStyle = '#ffffff'
+        ctx.font = 'bold 9px Space Mono, monospace'
         ctx.textAlign = 'center'
-        ctx.fillText(b.label, bx, by + b.size + 14)
+        ctx.fillText(b.label, bx, by - b.size - 6)
+        ctx.restore()
       }
-
-      // Radar sweep
-      ctx.save()
-      ctx.beginPath()
-      ctx.moveTo(cw / 2, ch)
-      const sweepX = cw / 2 + Math.sin(sweepAngle) * cw * 0.6
-      const sweepY = ch - Math.cos(sweepAngle) * ch * 0.7
-      ctx.lineTo(sweepX, sweepY)
-      ctx.lineWidth = 1
-      ctx.strokeStyle = 'rgba(0,212,255,0.2)'
-      ctx.stroke()
-
-      // Sweep cone fill
-      ctx.beginPath()
-      ctx.moveTo(cw / 2, ch)
-      const sw2 = sweepAngle + 0.12
-      const sx1 = cw / 2 + Math.sin(sweepAngle) * cw * 0.6
-      const sy1 = ch - Math.cos(sweepAngle) * ch * 0.7
-      const sx2 = cw / 2 + Math.sin(sw2) * cw * 0.6
-      const sy2 = ch - Math.cos(sw2) * ch * 0.7
-      ctx.lineTo(sx1, sy1)
-      ctx.lineTo(sx2, sy2)
-      ctx.closePath()
-      ctx.fillStyle = 'rgba(0,212,255,0.04)'
-      ctx.fill()
-      ctx.restore()
 
       frameRef.current = requestAnimationFrame(draw)
     }
@@ -217,20 +172,24 @@ export default function TonightView() {
   }, [])
 
   return (
-    <div className="animate-card-glow" style={{
-      background: 'rgba(10,10,15,0.8)',
-      border: '1px solid rgba(0,212,255,0.1)',
+    <div style={{
+      background: 'rgba(7, 11, 20, 0.75)',
+      backdropFilter: 'blur(16px)',
+      border: '1px solid rgba(255,255,255,0.06)',
       borderRadius: 12, overflow: 'hidden', position: 'relative',
     }}>
       <div style={{
-        position: 'absolute', top: 10, left: 14, zIndex: 2,
-        display: 'flex', alignItems: 'center', gap: 8,
+        position: 'absolute', top: 12, left: 14, zIndex: 2,
+        display: 'flex', alignItems: 'center', gap: 6,
       }}>
         <span style={{ fontSize: 14 }}>🌅</span>
-        <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>TONIGHT&apos;S VIEW</span>
+        <span style={{ ...S, fontSize: 10, color: '#fff', fontWeight: 700, letterSpacing: '0.05em', textShadow: '0 0 10px rgba(255,255,255,0.2)' }}>
+          TONIGHT&apos;S VIEW – Estimated Positions
+        </span>
+        <span style={{ fontSize: 10, cursor: 'help', color: 'rgba(255,255,255,0.5)' }} title="Estimated sky positions from your location">ℹ️</span>
       </div>
       <div style={{
-        position: 'absolute', top: 10, right: 14, zIndex: 2,
+        position: 'absolute', top: 12, right: 14, zIndex: 2,
       }}>
         <span style={{ ...S, fontSize: 7, color: '#4A5568', letterSpacing: '0.1em' }}>Estimated positions · Real-time tracking</span>
       </div>

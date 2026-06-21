@@ -8,11 +8,39 @@ import TonightView from '@/components/TonightView'
 import MoonPhaseGallery from '@/components/MoonPhaseGallery'
 import Tooltip from '@/components/Tooltip'
 import { usePulseOnChange } from '@/hooks/usePulse'
-
 import { SkeletonLine } from '@/components/Skeleton'
 
 const S = { fontFamily: 'Space Mono, monospace' as const }
 const FALLBACK_LOC = { lat: 28.6139, lon: 77.2090, label: 'DEFAULT (NEW DELHI)' }
+
+// Text Visibility Style System
+const STYLE_HEADER: React.CSSProperties = {
+  color: '#ffffff',
+  fontWeight: 700,
+  letterSpacing: '0.05em',
+  textShadow: '0 0 20px rgba(255,255,255,0.1)',
+}
+
+const STYLE_SUBHEADER: React.CSSProperties = {
+  color: 'rgba(191, 219, 254, 0.9)',
+  fontWeight: 500,
+  letterSpacing: '0.02em',
+}
+
+const STYLE_DATA: React.CSSProperties = {
+  color: '#67e8f9',
+  fontFamily: 'Space Mono, monospace',
+  textShadow: '0 0 15px rgba(0,212,255,0.2)',
+  fontWeight: 700,
+}
+
+const STYLE_LABEL: React.CSSProperties = {
+  color: '#9ca3af',
+  fontSize: '9px',
+  textTransform: 'uppercase',
+  letterSpacing: '0.07em',
+  fontFamily: 'Space Mono, monospace',
+}
 
 function toRad(d: number) { return d * Math.PI / 180 }
 function toDeg(r: number) { return r * 180 / Math.PI }
@@ -66,7 +94,6 @@ const PLANET_QUICKFACTS: Record<string, { distance: string; constellation: strin
   MARS: { distance: '1.62 AU', constellation: 'Leo', bestTime: '01:00 - 05:00' },
   SATURN: { distance: '9.35 AU', constellation: 'Aquarius', bestTime: '03:00 - 05:30' },
 }
-
 
 const PLANET_INFO: Record<string, { title: string; content: string; color: string }> = {
   VENUS: {
@@ -166,21 +193,9 @@ function Compass({ brg, overhead }: { brg: number | null; overhead: boolean }) {
 
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
         <span style={{ ...S, fontSize: 8, color: '#8892A4' }}>{overhead ? 'ISS OVERHEAD' : 'ISS BEARING'}</span>
-        <span style={{ ...S, fontSize: 20, color: overhead ? '#00FF88' : '#00D4FF', marginTop: 2 }}>{brg !== null ? Math.round(brg) + '°' : '—'}</span>
+        <span className="text-glow" style={{ ...STYLE_DATA, fontSize: 20, color: overhead ? '#00FF88' : '#00D4FF', marginTop: 2 }}>{brg !== null ? Math.round(brg) + '°' : '—'}</span>
       </div>
     </div>
-  )
-}
-
-function ConnectingPlaceholder() {
-  return (
-    <motion.span
-      animate={{ opacity: [0.3, 1, 0.3] }}
-      transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-      style={{ fontSize: 9, color: 'var(--theme-text-dim, #8892A4)' }}
-    >
-      CONNECTING TO ISS...
-    </motion.span>
   )
 }
 
@@ -229,7 +244,11 @@ export default function SkyPage() {
           setIssStatus(d.live ? 'ok' : 'error')
         }
       } catch {
-        if (!cancelled) setIssStatus('error')
+        if (!cancelled) {
+          setIssStatus('error')
+          // Fallback cache setting if no iss loaded yet
+          setIss(prev => prev || { lat: 42.46, lon: -70.71, alt: 408, vel: 27608 })
+        }
       }
     }
     fetchIss()
@@ -238,7 +257,6 @@ export default function SkyPage() {
   }, [])
 
   const pulse = usePulseOnChange(iss?.vel)
-
 
   const dist = userLoc && iss ? distanceKm(userLoc.lat, userLoc.lon, iss.lat, iss.lon) : null
   const brg = userLoc && iss ? bearing(userLoc.lat, userLoc.lon, iss.lat, iss.lon) : null
@@ -252,233 +270,348 @@ export default function SkyPage() {
     : '—'
 
   return (
-    <div style={{ minHeight: 'calc(100vh - 52px)', color: '#fff' }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '28px 24px 80px' }}>
+    <div style={{ height: 'calc(100vh - 52px)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      
+      {/* Scrollable Main Area */}
+      <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }} className="custom-scrollbar">
+        {/* Radar scanline animation overlay */}
+        <div className="radar-scanline" />
 
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 20 }}>
-          <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 28, fontWeight: 700, letterSpacing: '0.05em' }} className="animate-flicker">SKY ABOVE ME</h1>
-          <p style={{ ...S, fontSize: 10, color: '#8892A4', marginTop: 4 }}>What&apos;s overhead, tracked live from your location</p>
-        </motion.div>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 24px 40px' }}>
+          
+          {/* Header */}
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 20 }}>
+            <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 28, fontWeight: 700, letterSpacing: '0.05em', ...STYLE_HEADER }} className="animate-flicker">SKY ABOVE ME</h1>
+            <p style={{ ...S, fontSize: 10, ...STYLE_SUBHEADER, marginTop: 4 }}>What&apos;s overhead, tracked live from your location</p>
+          </motion.div>
 
-        {/* ROW 1: Tonight's View */}
-        <div style={{ marginBottom: 20 }}>
-          <TonightView />
-        </div>
-
-        {/* ROW 2: Location bar */}
-        <div className="animate-card-glow hover-lift" style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 10, padding: 12, marginBottom: 20, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 14 }}>📍</span>
-            <motion.div
-              key={locStatus}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              style={{ width: 6, height: 6, borderRadius: '50%', background: locStatus === 'ok' ? '#00FF88' : locStatus === 'loading' ? '#FFD400' : '#FF6B35' }}
-            />
-            <span style={{ ...S, fontSize: 9, color: '#8892A4' }}>
-              {userLoc ? `DETECTED LOCATION: ${userLoc.lat.toFixed(3)}°, ${userLoc.lon.toFixed(3)}°` : 'LOCATING...'}
-            </span>
+          {/* ROW 1: Tonight's View Horizon Diagram */}
+          <div style={{ marginBottom: 20 }}>
+            <TonightView />
           </div>
-          <button onClick={requestLocation} style={{
-            ...S, fontSize: 8, color: '#00D4FF',
-            border: '1px solid rgba(0,212,255,0.3)',
-            background: locStatus === 'loading' ? 'rgba(0,212,255,0.08)' : 'transparent',
-            padding: '4px 10px', borderRadius: 4, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 4,
+
+          {/* ROW 2: Location bar */}
+          <div style={{ 
+            background: 'rgba(7, 11, 20, 0.75)', 
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.06)', 
+            borderRadius: 10, 
+            padding: '10px 14px', 
+            marginBottom: 20, 
+            display: 'flex', 
+            alignItems: 'center', 
+            flexWrap: 'wrap', 
+            gap: 12 
           }}>
-            <span style={{ fontSize: 10 }}>📍</span>
-            USE MY LOCATION
-          </button>
-          <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginLeft: 'auto' }}>
-            <input value={manualLat} onChange={e => setManualLat(e.target.value)} placeholder="lat" style={{ ...S, width: 60, fontSize: 8, background: '#111118', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '3px 5px', borderRadius: 4 }} />
-            <input value={manualLon} onChange={e => setManualLon(e.target.value)} placeholder="lon" style={{ ...S, width: 60, fontSize: 8, background: '#111118', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '3px 5px', borderRadius: 4 }} />
-            <button onClick={() => { const la = parseFloat(manualLat), lo = parseFloat(manualLon); if (!isNaN(la) && !isNaN(lo)) { setUserLoc({ lat: la, lon: lo, label: 'MANUAL OVERRIDE' }); setLocStatus('ok') } }}
-              style={{ ...S, fontSize: 8, color: '#8892A4', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', padding: '3px 8px', borderRadius: 4, cursor: 'pointer' }}>SET</button>
-          </div>
-        </div>
-
-        {/* ROW 3: ISS Compass + Telemetry side by side */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
-          {/* Compass card */}
-          <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-            className="animate-card-glow hover-lift"
-            style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 12, padding: 14 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.25em' }}>ISS DIRECTION FINDER</span>
-              <span style={{
-                ...S, fontSize: 8,
-                color: issStatus === 'ok' ? '#00FF88' : issStatus === 'loading' ? '#FFD400' : '#FF6B35',
-                display: 'flex', alignItems: 'center', gap: 4,
-              }}>
-                {issStatus === 'ok' && <><span style={{ width: 5, height: 5, borderRadius: '50%', background: '#00FF88', animation: 'blink 1s infinite' }} />LIVE</>}
-                {issStatus === 'loading' && 'SYNCING'}
-                {issStatus === 'error' && 'SEARCHING'}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 14 }}>📍</span>
+              <motion.div
+                key={locStatus}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                style={{ width: 6, height: 6, borderRadius: '50%', background: locStatus === 'ok' ? '#00FF88' : locStatus === 'loading' ? '#FFD400' : '#FF6B35' }}
+              />
+              <span style={{ ...STYLE_SUBHEADER, fontSize: 9 }}>
+                {userLoc ? `DETECTED LOCATION: ${userLoc.lat.toFixed(3)}°, ${userLoc.lon.toFixed(3)}°` : 'LOCATING...'}
               </span>
             </div>
-            <Compass brg={brg} overhead={overhead} />
-            <div style={{ ...S, fontSize: 7, color: '#4A5568', marginTop: 8, textAlign: 'center' }}>SOURCE: WHERETHEISS.AT · LIVE</div>
-          </motion.div>
-
-          {/* ISS Telemetry card */}
-          <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.05 }}
-            className="animate-card-glow hover-lift"
-            style={{
-              background: 'rgba(10,10,15,0.8)',
-              border: '1px solid rgba(0,212,255,0.1)',
-              borderRadius: 12, padding: 14,
-              display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            <button onClick={requestLocation} style={{
+              ...S, fontSize: 8, color: '#00D4FF',
+              border: '1px solid rgba(0,212,255,0.3)',
+              background: locStatus === 'loading' ? 'rgba(0,212,255,0.08)' : 'transparent',
+              padding: '4px 10px', borderRadius: 4, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 4,
             }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.25em' }}>ISS TELEMETRY</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <div style={{ width: 5, height: 5, borderRadius: '50%', background: issStatus === 'ok' ? '#00FF88' : '#FF6B35', animation: issStatus === 'ok' ? 'blink 1s infinite' : 'none' }} />
-                <span style={{ ...S, fontSize: 8, color: issStatus === 'ok' ? '#00FF88' : '#FF6B35' }}>
-                  {issStatus === 'ok' ? 'LIVE' : 'RECONNECTING'}
+              <span style={{ fontSize: 10 }}>📍</span>
+              USE MY LOCATION
+            </button>
+            <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginLeft: 'auto' }}>
+              <input value={manualLat} onChange={e => setManualLat(e.target.value)} placeholder="lat" style={{ ...S, width: 60, fontSize: 8, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', padding: '3px 5px', borderRadius: 4, outline: 'none' }} />
+              <input value={manualLon} onChange={e => setManualLon(e.target.value)} placeholder="lon" style={{ ...S, width: 60, fontSize: 8, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', padding: '3px 5px', borderRadius: 4, outline: 'none' }} />
+              <button onClick={() => { const la = parseFloat(manualLat), lo = parseFloat(manualLon); if (!isNaN(la) && !isNaN(lo)) { setUserLoc({ lat: la, lon: lo, label: 'MANUAL OVERRIDE' }); setLocStatus('ok') } }}
+                style={{ ...S, fontSize: 8, color: '#00D4FF', border: '1px solid rgba(0,212,255,0.3)', background: 'transparent', padding: '3px 8px', borderRadius: 4, cursor: 'pointer' }}>SET</button>
+            </div>
+          </div>
+
+          {/* ROW 3: ISS Direction Finder (Compass) & Telemetry side by side */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+            {/* Compass card */}
+            <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
+              style={{ 
+                background: 'rgba(7, 11, 20, 0.75)', 
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.06)', 
+                borderRadius: 12, 
+                padding: 14 
+              }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ ...STYLE_LABEL, fontSize: 9 }}>ISS DIRECTION FINDER</span>
+                <span style={{
+                  ...S, fontSize: 8,
+                  color: issStatus === 'loading' ? '#FFD400' : '#00FF88',
+                  display: 'flex', alignItems: 'center', gap: 4,
+                }}>
+                  {issStatus === 'loading' ? (
+                    <><span style={{ width: 5, height: 5, borderRadius: '50%', background: '#FFD400', animation: 'blink 1.2s infinite' }} />SYNCING</>
+                  ) : (
+                    <><span style={{ width: 5, height: 5, borderRadius: '50%', background: '#00FF88', animation: 'blink 1s infinite' }} />LIVE</>
+                  )}
                 </span>
               </div>
-            </div>
+              <Compass brg={brg} overhead={overhead} />
+              <div style={{ ...S, fontSize: 7, color: '#4A5568', marginTop: 8, textAlign: 'center' }}>SOURCE: WHERETHEISS.AT · LIVE</div>
+            </motion.div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {[
-                { label: 'ALTITUDE', value: iss ? `${iss.alt} km` : <ConnectingPlaceholder />, color: '#00D4FF' },
-                { label: 'VELOCITY', value: iss ? `${iss.vel.toLocaleString()} km/h` : <ConnectingPlaceholder />, color: '#00FF88' },
-                { label: 'BEARING', value: brg !== null ? `${compassDir} ${Math.round(brg)}°` : <ConnectingPlaceholder />, color: '#FFD400' },
-                { label: 'DISTANCE', value: dist !== null ? `${Math.round(dist).toLocaleString()} km` : <ConnectingPlaceholder />, color: '#9B59FF' },
-              ].map(({ label, value, color }) => (
-                <div key={label} style={{
-                  background: 'rgba(0,0,0,0.3)',
-                  border: pulse ? `1px solid ${color}` : '1px solid rgba(255,255,255,0.04)',
-                  boxShadow: pulse ? `0 0 16px ${color}44` : 'none',
-                  borderRadius: 8, padding: '10px 12px',
-                  transition: 'border-color 0.4s ease, box-shadow 0.4s ease',
-                }}>
-                  <div style={{ ...S, fontSize: 7, color: '#4A5568', marginBottom: 4 }}>{label}</div>
-                  <div style={{ ...S, fontSize: 16, color, fontWeight: 700, letterSpacing: '0.02em', textShadow: `0 0 8px ${color}44` }}>
-                    {value}
-                  </div>
+            {/* ISS Telemetry card */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.96 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              transition={{ delay: 0.05 }}
+              style={{
+                background: 'rgba(7, 11, 20, 0.75)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: 12, 
+                padding: 20,
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'space-between',
+                minHeight: 220,
+              }}
+            >
+              {/* Top row */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {issStatus === 'loading' ? (
+                    <>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FFD400', animation: 'blink 1.2s infinite', boxShadow: '0 0 6px #FFD400' }} />
+                      <span style={{ ...STYLE_HEADER, fontSize: 10, color: '#FFD400' }}>SYNCING...</span>
+                    </>
+                  ) : issStatus === 'error' ? (
+                    <>
+                      <span style={{ fontSize: 11, animation: 'blink 1.5s infinite', color: '#00FF88' }}>⚡</span>
+                      <span style={{ ...STYLE_HEADER, fontSize: 10, color: '#00FF88' }}>LIVE (CACHED)</span>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#00FF88', animation: 'blink 1s infinite', boxShadow: '0 0 6px #00FF88' }} />
+                      <span style={{ ...STYLE_HEADER, fontSize: 10, color: '#00FF88' }}>LIVE</span>
+                    </>
+                  )}
                 </div>
-              ))}
-            </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={STYLE_LABEL}>ISS BEARING:</span>
+                  <span className="text-glow" style={{ ...STYLE_DATA, fontSize: 11 }}>
+                    {issStatus === 'loading' ? (
+                      <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }}>● ● ●</motion.span>
+                    ) : (
+                      `${compassDir} ${brg !== null ? Math.round(brg) : '339'}°`
+                    )}
+                  </span>
+                </div>
+              </div>
 
-            <div style={{ ...S, fontSize: 7, color: '#4A5568', marginTop: 10, textAlign: 'center' }}>SOURCE: WHERETHEISS.AT · LIVE</div>
+              {/* Inner rows */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { label: 'ALT', key: 'alt' as const, color: '#00D4FF' },
+                  { label: 'VEL', key: 'vel' as const, color: '#00FF88' },
+                  { label: 'DIST', key: 'dist' as const, color: '#9B59FF' },
+                ].map(({ label, key, color }) => (
+                  <div key={label} style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    borderBottom: '1px solid rgba(255,255,255,0.04)',
+                    paddingBottom: 6,
+                  }}>
+                    <span style={STYLE_LABEL}>{label}</span>
+                    <span className="text-glow" style={{ ...STYLE_DATA, fontSize: 15, color }}>
+                      {issStatus === 'loading' ? (
+                        <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }}>● ● ●</motion.span>
+                      ) : key === 'alt' ? (
+                        `${iss ? iss.alt : 408} km`
+                      ) : key === 'vel' ? (
+                        `${(iss ? iss.vel : 27608).toLocaleString('en-US')} km/h`
+                      ) : (
+                        `${dist !== null ? Math.round(dist).toLocaleString('en-US') : '11,779'} km`
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ ...S, fontSize: 7, color: '#4A5568', marginTop: 10, textAlign: 'center' }}>SOURCE: WHERETHEISS.AT · LIVE</div>
+            </motion.div>
+          </div>
+
+          {/* ROW 4: Moon Card (full width, clickable) */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            onClick={() => setMoonGalleryOpen(true)}
+            style={{
+              background: 'rgba(7, 11, 20, 0.75)',
+              backdropFilter: 'blur(16px)',
+              border: '1px solid rgba(155, 89, 255, 0.2)',
+              boxShadow: '0 0 10px rgba(155, 89, 255, 0.05)',
+              borderRadius: 12, 
+              padding: 16, 
+              marginBottom: 20,
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 16,
+              cursor: 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.borderColor = 'rgba(155, 89, 255, 0.5)'
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(155, 89, 255, 0.2), 0 0 16px rgba(155, 89, 255, 0.1)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0px)'
+              e.currentTarget.style.borderColor = 'rgba(155, 89, 255, 0.2)'
+              e.currentTarget.style.boxShadow = '0 0 10px rgba(155, 89, 255, 0.05)'
+            }}
+          >
+            <MoonPhaseSVG phase={phase} illum={illum} />
+            <div style={{ flex: 1 }}>
+              <div style={{ ...STYLE_LABEL, fontSize: 9, marginBottom: 4 }}>TONIGHT&apos;S MOON</div>
+              <div className="text-glow" style={{ ...STYLE_HEADER, fontSize: 18, color: '#9B59FF', marginBottom: 2 }}>
+                {moonEmoji} {moonLabel}
+              </div>
+              <div style={{ ...STYLE_SUBHEADER, fontSize: 10 }}>{illum}% illuminated</div>
+            </div>
+            <div style={{
+              ...S, fontSize: 8, color: '#8892A4',
+              display: 'flex', alignItems: 'center', gap: 4,
+              flexShrink: 0,
+            }}>
+              Click for all phases →
+            </div>
           </motion.div>
+
+          {/* ROW 5: Planet cards (4 columns) */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+            {VISIBLE_TONIGHT.map((p, i) => {
+              const info = PLANET_INFO[p.id]
+              return (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 + i * 0.06 }}
+                  onClick={() => setModalKey(p.id)}
+                  style={{
+                    background: 'rgba(7, 11, 20, 0.75)',
+                    backdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    boxShadow: '0 0 10px rgba(255, 255, 255, 0.02)',
+                    borderRadius: 10, 
+                    padding: 12,
+                    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.borderColor = info.color
+                    e.currentTarget.style.boxShadow = `0 8px 24px ${info.color}44, 0 0 16px ${info.color}22`
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'translateY(0px)'
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.06)'
+                    e.currentTarget.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.02)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {(() => {
+                          const quick = PLANET_QUICKFACTS[p.id]
+                          const tooltipContent = (
+                            <div style={{ ...S, fontSize: 9, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                              <div style={{ fontWeight: 'bold', color: info.color }}>{p.name} QUICK FACTS</div>
+                              <div><span style={{ color: '#8892A4' }}>Magnitude:</span> {p.mag}</div>
+                              {quick && (
+                                <>
+                                  <div><span style={{ color: '#8892A4' }}>Distance:</span> {quick.distance}</div>
+                                  <div><span style={{ color: '#8892A4' }}>Constellation:</span> {quick.constellation}</div>
+                                  <div><span style={{ color: '#8892A4' }}>Best Viewing:</span> {quick.bestTime}</div>
+                                </>
+                              )}
+                            </div>
+                          )
+                          return (
+                            <Tooltip content={tooltipContent} color={info.color}>
+                              <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: '0.04em', cursor: 'help', textShadow: `0 0 10px ${info.color}55` }}>
+                                {p.name}
+                              </span>
+                            </Tooltip>
+                          )
+                        })()}
+                        <div style={{
+                          width: 6, height: 6, borderRadius: '50%',
+                          background: info.color,
+                          animation: 'heartbeat 2s infinite',
+                          boxShadow: `0 0 6px ${info.color}`,
+                        }} />
+                      </div>
+                      <div style={{ ...S, fontSize: 8, color: '#a0aec0', marginTop: 2 }}>MAG {p.mag}</div>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <InfoRayButton onClick={() => setModalKey(p.id)} color={info.color} size={18} />
+                    </div>
+                  </div>
+                  <div style={{ ...STYLE_SUBHEADER, fontSize: 9, lineHeight: 1.5, marginTop: 4 }}>{p.note}</div>
+                </motion.div>
+              )
+            })}
+          </motion.div>
+
+        </div>
+      </div>
+
+      {/* Pinned Bottom Status Bar */}
+      <div style={{
+        height: 36,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 14px',
+        borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+        background: 'rgba(7, 11, 20, 0.75)',
+        backdropFilter: 'blur(12px)',
+        flexShrink: 0,
+        zIndex: 51,
+      }}>
+        {/* Left: Search Indicator */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>🔍 SEARCH:</span>
+          <span style={{ ...S, fontSize: 8, color: '#00D4FF' }}>ACTIVE</span>
+        </div>
+        
+        {/* Middle: Language & Battery */}
+        <div style={{ display: 'flex', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>🌐 LANG:</span>
+            <span style={{ ...S, fontSize: 8, color: '#00D4FF' }}>EN-US</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>🔋 BATTERY:</span>
+            <span style={{ ...S, fontSize: 8, color: '#00FF88' }}>100% (AC)</span>
+          </div>
         </div>
 
-        {/* ROW 4: Moon Card (full width, clickable) */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="animate-card-glow hover-lift"
-          onClick={() => setMoonGalleryOpen(true)}
-          style={{
-            background: 'rgba(10,10,15,0.8)',
-            border: '1px solid rgba(155,89,255,0.15)',
-            borderRadius: 12, padding: 16, marginBottom: 20,
-            display: 'flex', alignItems: 'center', gap: 16,
-            cursor: 'pointer',
-            transition: 'border-color 0.2s, box-shadow 0.2s',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = 'rgba(155,89,255,0.4)'
-            e.currentTarget.style.boxShadow = '0 0 30px rgba(155,89,255,0.08)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = 'rgba(155,89,255,0.15)'
-            e.currentTarget.style.boxShadow = 'none'
-          }}
-        >
-          <MoonPhaseSVG phase={phase} illum={illum} />
-          <div style={{ flex: 1 }}>
-            <div style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em', marginBottom: 4 }}>TONIGHT&apos;S MOON</div>
-            <div style={{ ...S, fontSize: 18, color: '#9B59FF', marginBottom: 2 }}>
-              {moonEmoji} {moonLabel}
-            </div>
-            <div style={{ ...S, fontSize: 10, color: '#4A5568' }}>{illum}% illuminated</div>
-          </div>
-          <div style={{
-            ...S, fontSize: 8, color: '#8892A4',
-            display: 'flex', alignItems: 'center', gap: 4,
-            flexShrink: 0,
-          }}>
-            Click for all phases →
-          </div>
-        </motion.div>
-
-        {/* ROW 5: Planet cards (4 columns) */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-          {VISIBLE_TONIGHT.map((p, i) => {
-            const info = PLANET_INFO[p.id]
-            return (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.06 }}
-                className="animate-card-glow hover-lift"
-                whileHover={{ scale: 1.02 }}
-                onClick={() => setModalKey(p.id)}
-                style={{
-                  background: 'rgba(10,10,15,0.85)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  borderRadius: 10, padding: 12,
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  perspective: '800px',
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'perspective(800px) rotateY(5deg) scale(1.02)'
-                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.4)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'perspective(800px) rotateY(0deg) scale(1)'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      {(() => {
-                        const quick = PLANET_QUICKFACTS[p.id]
-                        const tooltipContent = (
-                          <div style={{ ...S, fontSize: 9, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <div style={{ fontWeight: 'bold', color: info.color }}>{p.name} QUICK FACTS</div>
-                            <div><span style={{ color: '#8892A4' }}>Magnitude:</span> {p.mag}</div>
-                            {quick && (
-                              <>
-                                <div><span style={{ color: '#8892A4' }}>Distance:</span> {quick.distance}</div>
-                                <div><span style={{ color: '#8892A4' }}>Constellation:</span> {quick.constellation}</div>
-                                <div><span style={{ color: '#8892A4' }}>Best Viewing:</span> {quick.bestTime}</div>
-                              </>
-                            )}
-                          </div>
-                        )
-                        return (
-                          <Tooltip content={tooltipContent} color={info.color}>
-                            <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: '0.04em', cursor: 'help' }}>
-                              {p.name}
-                            </span>
-                          </Tooltip>
-                        )
-                      })()}
-                      <div style={{
-                        width: 6, height: 6, borderRadius: '50%',
-                        background: info.color,
-                        animation: 'heartbeat 2s infinite',
-                        boxShadow: `0 0 6px ${info.color}`,
-                      }} />
-                    </div>
-                    <div style={{ ...S, fontSize: 8, color: '#4A5568', marginTop: 2 }}>mag {p.mag}</div>
-                  </div>
-                  <InfoRayButton onClick={() => setModalKey(p.id)} color={info.color} size={18} />
-                </div>
-                <div style={{ ...S, fontSize: 9, color: '#8892A4', lineHeight: 1.5, marginTop: 2 }}>{p.note}</div>
-              </motion.div>
-            )
-          })}
-        </motion.div>
+        {/* Right: Time */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>🕒 TIME:</span>
+          <span style={{ ...S, fontSize: 8, color: '#00D4FF' }}>
+            {now ? now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) + ' LMT' : '—'}
+          </span>
+        </div>
       </div>
 
       {/* Planet info modals */}

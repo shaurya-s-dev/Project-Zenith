@@ -219,7 +219,7 @@ export default function Globe({
             // Constellation star tooltip
             return `<div style="font-family:'Space Mono',monospace;font-size:10px;color:#9BDCFF;background:rgba(0,0,0,0.85);padding:6px 10px;border:1px solid rgba(155,220,255,0.25);border-radius:4px;max-width:200px">${d.label ? `⭐ ${d.label}<br/>` : ''}<span style="color:#8892A4">${d.constellationName}</span></div>`
           }
-          return `<div style="font-family:'Space Mono',monospace;font-size:11px;color:#00D4FF;background:rgba(0,0,0,0.85);padding:6px 10px;border:1px solid rgba(0,212,255,0.3);border-radius:4px">${d.name}<br/><span style="color:#8892A4">${d.alt}km · ${d.speed?.toLocaleString()}km/h</span></div>`
+          return `<div style="font-family:'Space Mono',monospace;font-size:11px;color:#00D4FF;background:rgba(0,0,0,0.85);padding:6px 10px;border:1px solid rgba(0,212,255,0.3);border-radius:4px">${d.name}<br/><span style="color:#8892A4">${d.alt}km · ${d.speed?.toLocaleString('en-US')}km/h</span></div>`
         }}
         onPointClick={(d: any) => {
           if (d.speed !== undefined) onSelect(d as Sat)

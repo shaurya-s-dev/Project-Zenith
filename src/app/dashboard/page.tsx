@@ -17,43 +17,8 @@ import { useTheme, THEME_ORDER } from '@/components/ThemeProvider'
 import { SkeletonLine } from '@/components/Skeleton'
 import Tooltip from '@/components/Tooltip'
 import { usePulseOnChange } from '@/hooks/usePulse'
+import { SAT_DATA } from '@/lib/satellites'
 
-const SAT_DATA = [
-  { id: 'ISS', name: 'ISS (ZARYA)', type: 'ISS', status: 'GREEN', lat: 42.46, lon: -70.71, alt: 408, speed: 27600 },
-  { id: 'TG', name: 'TIANGONG (CSS)', type: 'SAT', status: 'GREEN', lat: 33.94, lon: -118.12, alt: 390, speed: 27600 },
-  { id: 'HST', name: 'HUBBLE (HST)', type: 'SAT', status: 'GREEN', lat: 28.03, lon: -80.90, alt: 547, speed: 27300 },
-  { id: 'SL1007', name: 'STARLINK-1007', type: 'SAT', status: 'GREEN', lat: -12.65, lon: 131.02, alt: 550, speed: 27000 },
-  { id: 'SL1012', name: 'STARLINK-1012', type: 'SAT', status: 'GREEN', lat: 23.11, lon: -45.33, alt: 550, speed: 27000 },
-  { id: 'SL1023', name: 'STARLINK-1023', type: 'SAT', status: 'YELLOW', lat: 51.5, lon: -0.12, alt: 540, speed: 26900 },
-  { id: 'SL1045', name: 'STARLINK-1045', type: 'SAT', status: 'GREEN', lat: -23.5, lon: -46.6, alt: 550, speed: 27000 },
-  { id: 'SL1056', name: 'STARLINK-1056', type: 'SAT', status: 'GREEN', lat: -45.2, lon: 165.1, alt: 550, speed: 27000 },
-  { id: 'SL1067', name: 'STARLINK-1067', type: 'SAT', status: 'YELLOW', lat: 67.8, lon: 22.0, alt: 545, speed: 26950 },
-  { id: 'SL1078', name: 'STARLINK-1078', type: 'SAT', status: 'GREEN', lat: 11.0, lon: -165.0, alt: 550, speed: 27000 },
-  { id: 'SL1089', name: 'STARLINK-1089', type: 'SAT', status: 'GREEN', lat: -36.4, lon: -135.6, alt: 550, speed: 27000 },
-  { id: 'GPS1', name: 'GPS IIF-1', type: 'SAT', status: 'GREEN', lat: 55.22, lon: 44.11, alt: 20200, speed: 14000 },
-  { id: 'GPS2', name: 'GPS IIF-2', type: 'SAT', status: 'GREEN', lat: -10.2, lon: 120.4, alt: 20200, speed: 14000 },
-  { id: 'GPS3', name: 'GPS IIF-3', type: 'SAT', status: 'YELLOW', lat: 38.5, lon: -9.4, alt: 20180, speed: 13980 },
-  { id: 'IR1', name: 'IRIDIUM-1', type: 'SAT', status: 'GREEN', lat: 45.1, lon: 65.2, alt: 780, speed: 26800 },
-  { id: 'IR2', name: 'IRIDIUM-2', type: 'SAT', status: 'GREEN', lat: -5.6, lon: 35.8, alt: 780, speed: 26800 },
-  { id: 'IR3', name: 'IRIDIUM-3', type: 'SAT', status: 'GREEN', lat: 12.3, lon: -85.4, alt: 780, speed: 26800 },
-  { id: 'C2542', name: 'COSMOS-2542', type: 'CLASSIFIED', status: 'BLUE', lat: 62.4, lon: -25.7, alt: 360, speed: 27800 },
-  { id: 'C2543', name: 'COSMOS-2543', type: 'CLASSIFIED', status: 'BLUE', lat: -25.4, lon: 134.2, alt: 380, speed: 27750 },
-  { id: 'C2544', name: 'COSMOS-2544', type: 'CLASSIFIED', status: 'BLUE', lat: 48.7, lon: 42.3, alt: 370, speed: 27820 },
-  { id: 'N19', name: 'NOAA-19', type: 'SAT', status: 'GREEN', lat: 29.5, lon: 94.2, alt: 870, speed: 26100 },
-  { id: 'N20', name: 'NOAA-20', type: 'SAT', status: 'GREEN', lat: 1.3, lon: 103.8, alt: 824, speed: 26200 },
-  { id: 'N21', name: 'NOAA-21', type: 'SAT', status: 'GREEN', lat: -15.8, lon: -170.3, alt: 824, speed: 26200 },
-  { id: 'G16', name: 'GOES-16', type: 'SAT', status: 'GREEN', lat: 0.0, lon: -75.2, alt: 35786, speed: 11070 },
-  { id: 'G17', name: 'GOES-17', type: 'SAT', status: 'GREEN', lat: 0.0, lon: -137.2, alt: 35786, speed: 11070 },
-  { id: 'G18', name: 'GOES-18', type: 'SAT', status: 'GREEN', lat: 0.0, lon: -137.0, alt: 35780, speed: 11070 },
-  { id: 'S6A', name: 'SENTINEL-6A', type: 'SAT', status: 'GREEN', lat: 35.0, lon: -4.5, alt: 1336, speed: 25900 },
-  { id: 'S6B', name: 'SENTINEL-6B', type: 'SAT', status: 'GREEN', lat: -3.5, lon: 132.8, alt: 1336, speed: 25900 },
-  { id: 'L8', name: 'LANDSAT-8', type: 'SAT', status: 'GREEN', lat: 38.9, lon: -77.0, alt: 705, speed: 26600 },
-  { id: 'L9', name: 'LANDSAT-9', type: 'SAT', status: 'GREEN', lat: -23.6, lon: -46.5, alt: 705, speed: 26600 },
-  { id: 'DB22', name: 'DEBRIS-2022-041A', type: 'DEBRIS', status: 'RED', lat: -33.0, lon: 150.0, alt: 380, speed: 27800 },
-  { id: 'DB23', name: 'DEBRIS-2023-089B', type: 'DEBRIS', status: 'RED', lat: 40.7, lon: -74.0, alt: 420, speed: 27700 },
-  { id: 'DB24', name: 'DEBRIS-2024-012C', type: 'DEBRIS', status: 'RED', lat: 3.5, lon: 112.8, alt: 340, speed: 27950 },
-  { id: 'OBJ123', name: 'OBJECT 12345 (CLASSIFIED)', type: 'CLASSIFIED', status: 'BLUE', lat: 40.0, lon: -110.0, alt: 250, speed: 28200 }
-]
 
 const PASSES = [
   { sat: 'ISS', seconds: 1394, elevation: '72°', direction: 'NW→SE' },
@@ -122,6 +87,12 @@ function getSimulatedTime(offsetHours: number): string {
   const d = new Date()
   d.setTime(d.getTime() + offsetHours * 3600 * 1000)
   return d.toUTCString().split(' ')[4] + ' UTC'
+}
+
+const getNeedleColor = (speed: number) => {
+  if (speed < 10000) return '#00FF88'
+  if (speed < 20000) return '#FFD400'
+  return '#FF6B35'
 }
 
 const badge = (t: string) => ({
@@ -277,7 +248,11 @@ export default function Dashboard() {
 
   const list = SAT_DATA.filter(s => {
     const matchesFilter = filter === 'ALL' || s.type === filter
-    const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.type.toLowerCase().includes(searchQuery.toLowerCase())
+    const meta = getSatMeta(s)
+    const matchesSearch = 
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      s.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      meta.norad.includes(searchQuery)
     return matchesFilter && matchesSearch
   })
   const S = { fontFamily: 'Space Mono, monospace' }
@@ -297,7 +272,7 @@ export default function Dashboard() {
     window.addEventListener('zenith-export-pdf', handler)
     return () => window.removeEventListener('zenith-export-pdf', handler)
   }, [list, passes])
-  const issContextString = issPos.vel ? `ISS: lat ${issPos.lat}°, lon ${issPos.lon}°, altitude ${issPos.alt} km, velocity ${issPos.vel.toLocaleString()} km/h.` : ''
+  const issContextString = issPos.vel ? `ISS: lat ${issPos.lat}°, lon ${issPos.lon}°, altitude ${issPos.alt} km, velocity ${issPos.vel.toLocaleString('en-US')} km/h.` : ''
   const isTimeTravel = timeOffset !== 0
   const displayTime = isTimeTravel ? getSimulatedTime(timeOffset) : utc
   const speedColor = displaySpeed > 28000 ? '#FF6B35' : displaySpeed > 26000 ? '#FFD400' : '#00D4FF'
@@ -320,7 +295,7 @@ export default function Dashboard() {
             {/* Search Input */}
             <input
               type="text"
-              placeholder="🔍 Filter satellites..."
+              placeholder="🔍 Search satellites..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={{
@@ -382,7 +357,7 @@ export default function Dashboard() {
                   </div>
                   <div style={{ display: 'flex', gap: 10, marginLeft: 18 }}>
                     <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>ALT: {s.alt}km</span>
-                    <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>SPD: {s.speed.toLocaleString()}</span>
+                    <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>SPD: {s.speed.toLocaleString('en-US')}</span>
                   </div>
                 </motion.div>
               )
@@ -399,7 +374,7 @@ export default function Dashboard() {
                 </div>
                 <div style={{ ...S, fontSize: 10, color: '#00D4FF', marginBottom: 4 }}>{selected.name}</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-                  {[['LAT', selected.lat + '°'], ['LON', selected.lon + '°'], ['ALT', selected.alt + 'km'], ['SPD', selected.speed.toLocaleString()]].map(([k, v]) => (
+                  {[['LAT', selected.lat + '°'], ['LON', selected.lon + '°'], ['ALT', selected.alt + 'km'], ['SPD', selected.speed.toLocaleString('en-US')]].map(([k, v]) => (
                     <div key={k}><span style={{ ...S, fontSize: 7, color: '#4A5568' }}>{k} </span><span style={{ ...S, fontSize: 9, color: '#fff' }}>{v}</span></div>
                   ))}
                 </div>
@@ -511,39 +486,82 @@ export default function Dashboard() {
                     <StatusDot status={selected.status} />
                     <span style={{ ...S, fontSize: 7, color: '#8892A4', letterSpacing: '0.2em' }}>TACHOMETER</span>
                   </div>
-                  <div style={{ ...S, fontSize: 9, color: 'var(--theme-primary, #00D4FF)', marginBottom: 6, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{selected.name}</div>
+                  <div style={{ ...S, fontSize: 11, fontWeight: 700, color: 'var(--theme-primary, #00D4FF)', marginBottom: 8, textAlign: 'center', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', letterSpacing: '0.05em' }}>
+                    {selected.name}
+                  </div>
                   
                   {/* Speed Tachometer SVG */}
                   <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', marginBottom: 6 }}>
-                    <svg width="140" height="85" viewBox="0 0 140 85">
+                    <svg width="140" height="115" viewBox="0 0 140 115">
                       <defs>
                         <linearGradient id="speedGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                           <stop offset="0%" stopColor="#00FF88" />
                           <stop offset="60%" stopColor="#00D4FF" />
                           <stop offset="100%" stopColor="#FF6B35" />
                         </linearGradient>
+                        <filter id="needleGlow" x="-50%" y="-50%" width="200%" height="200%">
+                          <feGaussianBlur stdDeviation="2.5" result="blur" />
+                          <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
                       </defs>
                       {/* Dial Arc */}
-                      <path d="M 20 75 A 50 50 0 0 1 120 75" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" strokeLinecap="round" />
+                      <path d="M 26.7 95 A 50 50 0 1 1 113.3 95" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" strokeLinecap="round" />
                       <path 
-                        d="M 20 75 A 50 50 0 0 1 120 75" 
+                        d="M 26.7 95 A 50 50 0 1 1 113.3 95" 
                         fill="none" 
                         stroke="url(#speedGrad)" 
                         strokeWidth="6" 
-                        strokeDasharray="157" 
-                        strokeDashoffset={157 - (Math.min(displaySpeed, 30000) / 30000) * 157} 
+                        strokeDasharray="209.4" 
+                        strokeDashoffset={209.4 - (Math.min(displaySpeed, 30000) / 30000) * 209.4} 
                         strokeLinecap="round" 
-                        style={{ transition: 'stroke-dashoffset 0.5s ease-out' }}
+                        style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
                       />
+                      
+                      {/* Tick Marks & Labels */}
+                      {[0, 5000, 10000, 15000, 20000, 25000, 30000].map((tickSpeed) => {
+                        const angle = -120 + (tickSpeed / 30000) * 240
+                        const angleRad = (angle * Math.PI) / 180
+                        const rStart = 43
+                        const rEnd = 50
+                        const rLabel = 59
+                        const x1 = 70 + rStart * Math.sin(angleRad)
+                        const y1 = 70 - rStart * Math.cos(angleRad)
+                        const x2 = 70 + rEnd * Math.sin(angleRad)
+                        const y2 = 70 - rEnd * Math.cos(angleRad)
+                        const xl = 70 + rLabel * Math.sin(angleRad)
+                        const yl = 70 - rLabel * Math.cos(angleRad)
+                        const labelText = tickSpeed === 0 ? '0' : `${tickSpeed / 1000}k`
+                        return (
+                          <g key={tickSpeed}>
+                            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                            <text
+                              x={xl}
+                              y={yl}
+                              fill="rgba(255,255,255,0.4)"
+                              fontSize="6.5"
+                              fontFamily="Space Mono, monospace"
+                              textAnchor="middle"
+                              alignmentBaseline="middle"
+                            >
+                              {labelText}
+                            </text>
+                          </g>
+                        )
+                      })}
+
                       {/* Needle */}
                       <g style={{ 
-                        transform: `rotate(${(-180 + (Math.min(displaySpeed, 30000) / 30000) * 180)}deg)`, 
-                        transformOrigin: '70px 75px',
-                        transition: 'transform 0.5s cubic-bezier(0.1, 0.8, 0.3, 1)'
+                        transform: `rotate(${-120 + (Math.min(displaySpeed, 30000) / 30000) * 240}deg)`, 
+                        transformOrigin: '70px 70px',
+                        transition: 'transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)'
                       }}>
-                        <line x1="70" y1="75" x2="25" y2="75" stroke="var(--theme-primary, #00D4FF)" strokeWidth="2.5" strokeLinecap="round" />
+                        <line x1="70" y1="70" x2="70" y2="28" stroke={getNeedleColor(displaySpeed)} strokeWidth="2.5" strokeLinecap="round" />
+                        <circle cx="70" cy="28" r="3" fill={getNeedleColor(displaySpeed)} filter="url(#needleGlow)" />
                       </g>
-                      <circle cx="70" cy="75" r="4.5" fill="#fff" stroke="var(--theme-primary, #00D4FF)" strokeWidth="1.5" />
+                      <circle cx="70" cy="70" r="4.5" fill="#fff" stroke={getNeedleColor(displaySpeed)} strokeWidth="1.5" />
                     </svg>
                   </div>
 
@@ -552,7 +570,7 @@ export default function Dashboard() {
                       key={Math.floor(displaySpeed / 100)}
                       style={{ ...S, fontSize: 18, color: speedColor, fontWeight: 700 }}
                     >
-                      {displaySpeed.toLocaleString()}
+                      {displaySpeed.toLocaleString('en-US')}
                     </motion.span>
                     <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>KM/H</span>
                   </div>

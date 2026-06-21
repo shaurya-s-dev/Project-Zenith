@@ -2,6 +2,31 @@
 
 import { useEffect, useRef } from 'react'
 
+interface Star {
+  x: number
+  y: number
+  size: number
+  phase: number
+  speed: number
+}
+
+const CONSTELLATIONS = [
+  // Constellation A
+  [[0.15, 0.2], [0.25, 0.15]],
+  [[0.25, 0.15], [0.35, 0.3]],
+  [[0.35, 0.3], [0.45, 0.25]],
+  [[0.35, 0.3], [0.3, 0.45]],
+  // Constellation B
+  [[0.6, 0.4], [0.7, 0.25]],
+  [[0.7, 0.25], [0.8, 0.35]],
+  [[0.8, 0.35], [0.85, 0.55]],
+  [[0.85, 0.55], [0.75, 0.6]],
+  [[0.8, 0.35], [0.75, 0.6]],
+  // Constellation C (subtle)
+  [[0.45, 0.7], [0.55, 0.75]],
+  [[0.55, 0.75], [0.5, 0.85]],
+]
+
 export default function AuroraBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const frameRef = useRef<number>(0)
@@ -13,54 +38,74 @@ export default function AuroraBackground() {
     if (!ctx) return
 
     let w = 0, h = 0
-    let time = 0
+    let stars: Star[] = []
 
     const resize = () => {
       w = window.innerWidth
       h = window.innerHeight
       canvas.width = w
       canvas.height = h
+
+      // Re-populate stars based on size
+      const count = Math.floor((w * h) / 6000) // ~250 stars on 1080p
+      const newStars: Star[] = []
+      for (let i = 0; i < count; i++) {
+        newStars.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          size: 0.4 + Math.random() * 1.2,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.5 + Math.random() * 1.5,
+        })
+      }
+      stars = newStars
     }
 
     resize()
     window.addEventListener('resize', resize)
 
+    let time = 0
     const draw = () => {
-      time += 0.004
+      time += 0.01
       ctx.clearRect(0, 0, w, h)
 
-      for (let i = 0; i < 5; i++) {
-        const yBase = h * (0.2 + i * 0.15)
-        const amp = 40 + i * 12
-        const freq = 0.002 + i * 0.0008
-        const hue = 160 + i * 20 + Math.sin(time * 0.3 + i) * 15
-        const alpha = 0.04 + (1 - i * 0.18)
-
+      // Draw constellation lines
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)'
+      ctx.lineWidth = 0.8
+      for (const edge of CONSTELLATIONS) {
+        const [p1, p2] = edge
         ctx.beginPath()
-        for (let x = 0; x <= w; x += 2) {
-          const y = yBase + Math.sin(x * freq + time * 1.2 + i * 2) * amp
-            + Math.sin(x * freq * 2.3 + time * 0.9 + i) * amp * 0.4
-          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
-        }
-        ctx.strokeStyle = `hsla(${hue}, 80%, 60%, ${alpha})`
-        ctx.lineWidth = 20 + i * 8
+        ctx.moveTo(p1[0] * w, p1[1] * h)
+        ctx.lineTo(p2[0] * w, p2[1] * h)
         ctx.stroke()
       }
 
-      for (let i = 0; i < 3; i++) {
-        const yBase = h * (0.3 + i * 0.2)
-        const amp = 30 + i * 10
-        const freq = 0.003 + i * 0.001
-        const hue = 280 + i * 15 + Math.sin(time * 0.2 + i * 0.5) * 10
+      // Draw constellation vertices with a small glow
+      for (const edge of CONSTELLATIONS) {
+        for (const pt of edge) {
+          const px = pt[0] * w
+          const py = pt[1] * h
+          const glow = 2 + Math.sin(time * 2 + px) * 1
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'
+          ctx.beginPath()
+          ctx.arc(px, py, 1.5, 0, Math.PI * 2)
+          ctx.fill()
 
-        ctx.beginPath()
-        for (let x = 0; x <= w; x += 2) {
-          const y = yBase + Math.sin(x * freq + time * 0.8 + i * 3) * amp
-          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
+          ctx.lineWidth = 1
+          ctx.beginPath()
+          ctx.arc(px, py, glow + 2, 0, Math.PI * 2)
+          ctx.stroke()
         }
-        ctx.strokeStyle = `hsla(${hue}, 70%, 65%, 0.03)`
-        ctx.lineWidth = 15 + i * 6
-        ctx.stroke()
+      }
+
+      // Draw stars
+      for (const s of stars) {
+        const opacity = 0.2 + 0.8 * Math.sin(s.phase + time * s.speed)
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`
+        ctx.beginPath()
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2)
+        ctx.fill()
       }
 
       frameRef.current = requestAnimationFrame(draw)
@@ -75,13 +120,20 @@ export default function AuroraBackground() {
   }, [])
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'fixed', inset: 0, width: '100vw', height: '100vh',
-        zIndex: -1, pointerEvents: 'none', display: 'block',
-      }}
-      aria-hidden="true"
-    />
+    <div style={{
+      position: 'fixed', inset: 0, width: '100vw', height: '100vh',
+      zIndex: -1, pointerEvents: 'none', display: 'block',
+      background: 'radial-gradient(ellipse at 30% 50%, #0f1a2e 0%, #070b14 100%)',
+    }}>
+      <canvas
+        ref={canvasRef}
+        style={{
+          width: '100%', height: '100%',
+          pointerEvents: 'none', display: 'block',
+          opacity: 0.6,
+        }}
+        aria-hidden="true"
+      />
+    </div>
   )
 }

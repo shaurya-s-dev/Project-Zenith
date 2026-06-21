@@ -207,7 +207,7 @@ export default function WeatherPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
           {[
             { label: 'GEOMAGNETIC (KP)', value: kp !== null ? kp.toFixed(2) : '—', sub: info.label, color: info.color, infoKey: 'kp' as const, pulsed: kpPulse },
-            { label: 'SOLAR WIND SPEED', value: wind ? Math.round(wind.speed).toLocaleString() + ' KM/S' : '—', sub: 'PLASMA VELOCITY', color: '#00D4FF', infoKey: 'solar' as const, pulsed: windPulse },
+            { label: 'SOLAR WIND SPEED', value: wind ? Math.round(wind.speed).toLocaleString('en-US') + ' KM/S' : '—', sub: 'PLASMA VELOCITY', color: '#00D4FF', infoKey: 'solar' as const, pulsed: windPulse },
             { label: 'X-RAY FLUX CLASS', value: flareClass(flux), sub: 'GOES LONG BAND', color: '#9B59FF', infoKey: 'xray' as const, pulsed: fluxPulse },
           ].map((c, i) => (
             <motion.div key={c.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
