@@ -8,8 +8,6 @@ import SkyLensModal from '@/components/SkyLensModal'
 import ConjunctionWarning from '@/components/ConjunctionWarning'
 import SysMon from '@/components/SysMon'
 import LaunchCountdownWidget from '@/components/LaunchCountdownWidget'
-import HolographicGrid from '@/components/HolographicGrid'
-import { useHologram } from '@/components/TabNav'
 import { exportMissionLog } from '@/lib/exportPdf'
 import { useISSData } from '@/hooks/useISSData'
 import KeyboardShortcuts from '@/components/KeyboardShortcuts'
@@ -145,7 +143,6 @@ export default function Dashboard() {
   const globeRef = useRef<HTMLDivElement>(null)
 
   const { data: issPos = NO_DATA } = useISSData()
-  const { hologramOn } = useHologram()
   const { setTheme } = useTheme()
 
   const prevSpeedDisplay = useRef(0)
@@ -1159,7 +1156,6 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      <HolographicGrid enabled={hologramOn} />
       <SysMon apiLatency={issPos.latencyMs ?? null} tleLastUpdated={new Date().toISOString().slice(11, 19)} />
       <KeyboardShortcuts {...kbdCallbacks} />
     </div>
