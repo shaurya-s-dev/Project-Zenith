@@ -19,7 +19,7 @@ interface Sat {
 interface GlobeProps {
   satellites: Sat[]
   selected: Sat | null
-  onSelect: (s: Sat) => void
+  onSelect: (s: Sat | null) => void
   timeOffsetHours?: number
   showConstellations?: boolean
   onConstellationClick?: (c: Constellation) => void
@@ -207,6 +207,10 @@ export default function Globe({
       // Smooth fly-to on new selection, instant tracking on time offset updates
       const transitionMs = isNewSelection ? 900 : 0
       globeRef.current.pointOfView({ lat: pos.lat, lng: pos.lon, altitude: 1.4 }, transitionMs)
+    } else if (!selected && globeRef.current && lastSelectedIdRef.current !== null) {
+      // Smoothly zoom out to default overview when selection is cleared
+      globeRef.current.pointOfView({ lat: 20, lng: 10, altitude: 2.2 }, 900)
+      lastSelectedIdRef.current = null
     } else {
       lastSelectedIdRef.current = null
     }
@@ -238,6 +242,7 @@ export default function Globe({
         backgroundColor="rgba(0,0,0,0)"
         atmosphereColor="#00D4FF"
         atmosphereAltitude={0.2}
+        onGlobeClick={() => onSelect(null)}
         onGlobeReady={() => {
           if (!globeRef.current) return
           const controls = globeRef.current.controls()

@@ -175,7 +175,7 @@ export default function Dashboard() {
 
   const kbdCallbacks = {
     onTogglePause: () => setGlobePaused(p => !p),
-    onResetCamera: () => {},
+    onResetCamera: () => setSelected(null),
     onToggleFullscreen: () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen() },
     onToggleSkylens: () => {
       setModalObject(selected || SAT_DATA.find(s => s.id === 'ISS') || null)
@@ -289,13 +289,17 @@ export default function Dashboard() {
             onClick={() => setShowConstellations(c => !c)}
             style={{
               ...S, fontSize: 8, letterSpacing: '0.15em',
-              color: showConstellations ? '#9BDCFF' : 'var(--theme-text-faint, #7D8A9E)',
-              background: showConstellations ? 'rgba(155,220,255,0.08)' : 'transparent',
-              border: showConstellations ? '1px solid rgba(155,220,255,0.25)' : '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 4, padding: '2px 8px', cursor: 'pointer',
+              color: showConstellations ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #A0AEC0)',
+              background: showConstellations ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.04)',
+              border: showConstellations ? '1px solid rgba(0,212,255,0.3)' : '1px solid rgba(255,255,255,0.12)',
+              borderRadius: 6, padding: '4px 10px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 5,
+              backdropFilter: 'blur(8px)',
+              transition: 'all 0.2s',
             }}
           >
-            ✦ CONSTELLATIONS {showConstellations ? 'ON' : 'OFF'}
+            <span style={{ fontSize: 10, color: showConstellations ? 'var(--theme-primary, #00D4FF)' : 'var(--theme-text-dim, #A0AEC0)' }}>✦</span>
+            CONSTELLATIONS {showConstellations ? 'ON' : 'OFF'}
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ ...S, fontSize: 10, color: isTimeTravel ? '#FFD400' : '#00D4FF' }}>{displayTime}</span>
@@ -416,6 +420,10 @@ export default function Dashboard() {
               satellites={SAT_DATA}
               selected={selected}
               onSelect={(s) => {
+                if (!s) {
+                  setSelected(null)
+                  return
+                }
                 const found = SAT_DATA.find(x => x.id === s.id)
                 if (found) setSelected(found)
               }}
@@ -461,8 +469,28 @@ export default function Dashboard() {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                     <span style={{ ...S, fontSize: 8, color: 'var(--theme-text-dim, #A0AEC0)', letterSpacing: '0.15em' }}>SELECTED TARGET</span>
-                    <div onClick={(e) => e.stopPropagation()}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={(e) => e.stopPropagation()}>
                       <InfoRayButton onClick={() => handleInfoClick(selected)} color="#00D4FF" size={18} />
+                      <button
+                        onClick={() => setSelected(null)}
+                        style={{
+                          fontFamily: "'Space Mono', monospace",
+                          fontSize: 8,
+                          color: '#FF6B35',
+                          background: 'rgba(255,107,53,0.1)',
+                          border: '1px solid rgba(255,107,53,0.25)',
+                          borderRadius: 4,
+                          padding: '2px 6px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 3,
+                          transition: 'all 0.2s',
+                        }}
+                        className="hover-lift"
+                      >
+                        ✕ DESELECT
+                      </button>
                     </div>
                   </div>
                   <div style={{ ...S, fontSize: 11, color: '#fff', fontWeight: 700, marginBottom: 6 }}>
