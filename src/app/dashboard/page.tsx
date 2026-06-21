@@ -16,6 +16,7 @@ import KeyboardShortcuts from '@/components/KeyboardShortcuts'
 import { useTheme, THEME_ORDER } from '@/components/ThemeProvider'
 import { SkeletonLine } from '@/components/Skeleton'
 import Tooltip from '@/components/Tooltip'
+import { usePulseOnChange } from '@/hooks/usePulse'
 
 const SAT_DATA = [
   { id: 'ISS', name: 'ISS (ZARYA)', type: 'ISS', status: 'GREEN', lat: 42.46, lon: -70.71, alt: 408, speed: 27600 },
@@ -89,7 +90,7 @@ function getSatMeta(s: { id: string; name: string; type: string; alt: number }) 
   }
 }
 
-const NO_DATA = { lat: 0, lon: 0, alt: 0, vel: 0 }
+const NO_DATA = { lat: 0, lon: 0, alt: 0, vel: 0, live: false, latencyMs: undefined as number | undefined }
 
 function fmt(s: number) {
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60
@@ -171,6 +172,9 @@ export default function Dashboard() {
   // Odometer digit animation
   const prevSpeedDisplay = useRef(0)
   const [displaySpeed, setDisplaySpeed] = useState(0)
+
+  const speedTier = Math.floor(displaySpeed / 500)
+  const speedPulse = usePulseOnChange(speedTier)
 
   useEffect(() => {
     const t = () => setUtc(new Date().toUTCString().split(' ')[4] + ' UTC')
@@ -283,7 +287,7 @@ export default function Dashboard() {
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {/* LEFT PANEL - Tracked Objects */}
-        <div className="animate-card-glow" style={{ width: 280, flexShrink: 0, background: 'rgba(8,10,16,0.92)', borderRight: '1px solid rgba(0,212,255,0.12)', display: 'flex', flexDirection: 'column' }}>
+        <div className="animate-card-glow hover-lift" style={{ width: 280, flexShrink: 0, background: 'rgba(8,10,16,0.92)', borderRight: '1px solid rgba(0,212,255,0.12)', display: 'flex', flexDirection: 'column' }}>
           <ConjunctionWarning satellites={SAT_DATA} />
 
           <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -326,27 +330,42 @@ export default function Dashboard() {
           </div>
 
           <div className="custom-scrollbar" style={{ flex: 1, maxHeight: 450, overflowY: 'auto' }}>
-            {list.map((s, i) => (
-              <motion.div key={s.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.02 }}
-                onClick={() => setSelected(s)}
-                style={{
-                  padding: '7px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer',
-                  background: selected?.id === s.id ? 'rgba(0,212,255,0.06)' : 'transparent',
-                  transition: 'background 0.15s',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                  <StatusDot status={s.status} />
-                  <span style={{ ...S, fontSize: 8, padding: '1px 5px', borderRadius: 3, ...badge(s.type) }}>{s.type}</span>
-                  <span style={{ ...S, fontSize: 10, color: '#fff', flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{s.name}</span>
-                  <InfoRayButton onClick={() => handleInfoClick(s)} color={s.status === 'GREEN' ? '#00FF88' : s.status === 'YELLOW' ? '#FFD400' : s.status === 'RED' ? '#FF3B3B' : '#00D4FF'} size={20} />
+            {list.map((s, i) => {
+              const meta = getSatMeta(s)
+              const tooltipContent = (
+                <div style={{ ...S, fontSize: 9, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <div style={{ fontWeight: 'bold', color: 'var(--theme-primary, #00D4FF)' }}>{s.name}</div>
+                  <div><span style={{ color: '#8892A4' }}>NORAD ID:</span> {meta.norad}</div>
+                  <div><span style={{ color: '#8892A4' }}>Launch:</span> {meta.launch}</div>
+                  <div><span style={{ color: '#8892A4' }}>Operator:</span> {meta.operator}</div>
+                  <div><span style={{ color: '#8892A4' }}>Orbit:</span> {meta.orbit}</div>
                 </div>
-                <div style={{ display: 'flex', gap: 10, marginLeft: 18 }}>
-                  <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>ALT: {s.alt}km</span>
-                  <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>SPD: {s.speed.toLocaleString()}</span>
-                </div>
-              </motion.div>
-            ))}
+              )
+              return (
+                <motion.div key={s.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.02 }}
+                  onClick={() => setSelected(s)}
+                  className="hover-lift"
+                  style={{
+                    padding: '7px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer',
+                    background: selected?.id === s.id ? 'rgba(0,212,255,0.06)' : 'transparent',
+                    transition: 'background 0.15s, transform 0.2s, box-shadow 0.2s',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                    <StatusDot status={s.status} />
+                    <span style={{ ...S, fontSize: 8, padding: '1px 5px', borderRadius: 3, ...badge(s.type) }}>{s.type}</span>
+                    <Tooltip content={tooltipContent} color={s.status === 'GREEN' ? '#00FF88' : s.status === 'YELLOW' ? '#FFD400' : s.status === 'RED' ? '#FF3B3B' : '#00D4FF'}>
+                      <span style={{ ...S, fontSize: 10, color: '#fff', flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', cursor: 'help' }}>{s.name}</span>
+                    </Tooltip>
+                    <InfoRayButton onClick={() => handleInfoClick(s)} color={s.status === 'GREEN' ? '#00FF88' : s.status === 'YELLOW' ? '#FFD400' : s.status === 'RED' ? '#FF3B3B' : '#00D4FF'} size={20} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, marginLeft: 18 }}>
+                    <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>ALT: {s.alt}km</span>
+                    <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>SPD: {s.speed.toLocaleString()}</span>
+                  </div>
+                </motion.div>
+              )
+            })}
           </div>
 
           {/* Selected target details */}
@@ -373,7 +392,7 @@ export default function Dashboard() {
           <LaunchCountdownWidget />
 
           {/* NEO Alert Widget */}
-          <div className="animate-card-glow" style={{
+          <div className="animate-card-glow hover-lift" style={{
             background: 'rgba(10,10,15,0.8)',
             border: '1px solid rgba(155,89,255,0.15)',
             borderRadius: 10, padding: 12, marginTop: 10, marginBottom: 10,
@@ -444,10 +463,12 @@ export default function Dashboard() {
                   exit={{ opacity: 0, x: 20 }}
                   style={{
                     position: 'absolute', top: 14, right: 14, zIndex: 10,
-                    background: 'rgba(8,10,16,0.92)', border: '1px solid rgba(0,212,255,0.15)',
+                    background: 'rgba(8,10,16,0.92)',
+                    border: speedPulse ? `1px solid ${speedColor}` : '1px solid rgba(0,212,255,0.15)',
+                    boxShadow: speedPulse ? `0 0 20px ${speedColor}66` : '0 0 20px rgba(0,212,255,0.06)',
                     borderRadius: 12, padding: 12, width: 200,
                     backdropFilter: 'blur(12px)',
-                    boxShadow: '0 0 20px rgba(0,212,255,0.06)',
+                    transition: 'border-color 0.4s ease, box-shadow 0.4s ease',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
@@ -734,7 +755,7 @@ export default function Dashboard() {
       />
 
       <HolographicGrid enabled={hologramOn} />
-      <SysMon apiLatency={null} tleLastUpdated={new Date().toISOString().slice(11, 19)} />
+      <SysMon apiLatency={issPos.latencyMs ?? null} tleLastUpdated={new Date().toISOString().slice(11, 19)} />
       <KeyboardShortcuts {...kbdCallbacks} />
     </div>
   )

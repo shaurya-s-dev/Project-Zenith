@@ -90,11 +90,22 @@ export default function Globe({
     }
   }), [satellites, selected, timeOffsetHours])
 
-  // ISS ring stays on propagated position
+  // ISS and Selected satellite rings
   const ringsData = useMemo(() => {
+    const rings: any[] = []
     const iss = pointsData.find(s => s.type === 'ISS')
-    return iss ? [{ lat: iss.lat, lng: iss.lon }] : []
-  }, [pointsData])
+    if (iss) {
+      rings.push({ lat: iss.lat, lng: iss.lon, type: 'ISS' })
+    }
+    if (selected && selected.type !== 'ISS') {
+      const selProp = pointsData.find(s => s.id === selected.id)
+      if (selProp) {
+        rings.push({ lat: selProp.lat, lng: selProp.lon, type: 'SELECTED' })
+      }
+    }
+    return rings
+  }, [pointsData, selected])
+
 
   // Part 7: Constellation arc lines as custom arcs on the globe
   // We use arcsData to draw lines between star pairs
@@ -169,6 +180,15 @@ export default function Globe({
     controls.autoRotate = !isPaused
   }, [isPaused])
 
+  // Fly to selected satellite position when it changes
+  useEffect(() => {
+    if (selected && globeRef.current) {
+      const pos = propagateSat(selected, timeOffsetHours)
+      globeRef.current.pointOfView({ lat: pos.lat, lng: pos.lon, altitude: 1.4 }, 900)
+    }
+  }, [selected, timeOffsetHours])
+
+
   // Combined points: satellite points + constellation stars
   const allPoints = useMemo(() => [
     ...pointsData,
@@ -205,11 +225,11 @@ export default function Globe({
           if (d.speed !== undefined) onSelect(d as Sat)
         }}
 
-        // ISS pulse ring
+        // ISS / Selected pulse ring
         ringsData={ringsData}
         ringLat="lat"
         ringLng="lng"
-        ringColor={() => 'rgba(0,255,136,0.6)'}
+        ringColor={(d: any) => d.type === 'ISS' ? 'rgba(0,255,136,0.6)' : 'rgba(255,170,0,0.8)'}
         ringMaxRadius={5}
         ringPropagationSpeed={2}
         ringRepeatPeriod={1000}

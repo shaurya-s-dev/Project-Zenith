@@ -6,6 +6,10 @@ import { InfoRayButton } from '@/components/InfoRayButton'
 import InfoModal from '@/components/InfoModal'
 import TonightView from '@/components/TonightView'
 import MoonPhaseGallery from '@/components/MoonPhaseGallery'
+import Tooltip from '@/components/Tooltip'
+import { usePulseOnChange } from '@/hooks/usePulse'
+
+import { SkeletonLine } from '@/components/Skeleton'
 
 const S = { fontFamily: 'Space Mono, monospace' as const }
 const FALLBACK_LOC = { lat: 28.6139, lon: 77.2090, label: 'DEFAULT (NEW DELHI)' }
@@ -55,6 +59,14 @@ const VISIBLE_TONIGHT = [
   { id: 'MARS', name: 'MARS', note: 'Reddish tint, mid-sky', mag: '+0.7' },
   { id: 'SATURN', name: 'SATURN', note: 'Faint, requires dark sky', mag: '+0.5' },
 ]
+
+const PLANET_QUICKFACTS: Record<string, { distance: string; constellation: string; bestTime: string }> = {
+  VENUS: { distance: '0.84 AU', constellation: 'Gemini', bestTime: '20:00 - 21:30' },
+  JUPITER: { distance: '4.21 AU', constellation: 'Taurus', bestTime: '23:30 - 04:00' },
+  MARS: { distance: '1.62 AU', constellation: 'Leo', bestTime: '01:00 - 05:00' },
+  SATURN: { distance: '9.35 AU', constellation: 'Aquarius', bestTime: '03:00 - 05:30' },
+}
+
 
 const PLANET_INFO: Record<string, { title: string; content: string; color: string }> = {
   VENUS: {
@@ -213,6 +225,9 @@ export default function SkyPage() {
     return () => { cancelled = true; clearInterval(i) }
   }, [])
 
+  const pulse = usePulseOnChange(iss?.vel)
+
+
   const dist = userLoc && iss ? distanceKm(userLoc.lat, userLoc.lon, iss.lat, iss.lon) : null
   const brg = userLoc && iss ? bearing(userLoc.lat, userLoc.lon, iss.lat, iss.lon) : null
   const overhead = dist !== null && dist < 2200
@@ -240,7 +255,7 @@ export default function SkyPage() {
         </div>
 
         {/* ROW 2: Location bar */}
-        <div className="animate-card-glow" style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 10, padding: 12, marginBottom: 20, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+        <div className="animate-card-glow hover-lift" style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 10, padding: 12, marginBottom: 20, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 14 }}>📍</span>
             <motion.div
@@ -275,7 +290,7 @@ export default function SkyPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
           {/* Compass card */}
           <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-            className="animate-card-glow"
+            className="animate-card-glow hover-lift"
             style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 12, padding: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
               <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.25em' }}>ISS DIRECTION FINDER</span>
@@ -295,7 +310,7 @@ export default function SkyPage() {
 
           {/* ISS Telemetry card */}
           <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.05 }}
-            className="animate-card-glow"
+            className="animate-card-glow hover-lift"
             style={{
               background: 'rgba(10,10,15,0.8)',
               border: '1px solid rgba(0,212,255,0.1)',
@@ -314,15 +329,17 @@ export default function SkyPage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {[
-                { label: 'ALTITUDE', value: iss ? `${iss.alt} km` : '—', color: '#00D4FF' },
-                { label: 'VELOCITY', value: iss ? `${iss.vel.toLocaleString()} km/h` : '—', color: '#00FF88' },
-                { label: 'BEARING', value: brg !== null ? `${compassDir} ${Math.round(brg)}°` : '—', color: '#FFD400' },
-                { label: 'DISTANCE', value: dist !== null ? `${Math.round(dist).toLocaleString()} km` : '—', color: '#9B59FF' },
+                { label: 'ALTITUDE', value: iss ? `${iss.alt} km` : <SkeletonLine w={60} h={16} />, color: '#00D4FF' },
+                { label: 'VELOCITY', value: iss ? `${iss.vel.toLocaleString()} km/h` : <SkeletonLine w={85} h={16} />, color: '#00FF88' },
+                { label: 'BEARING', value: brg !== null ? `${compassDir} ${Math.round(brg)}°` : issStatus === 'loading' ? <SkeletonLine w={50} h={16} /> : '—', color: '#FFD400' },
+                { label: 'DISTANCE', value: dist !== null ? `${Math.round(dist).toLocaleString()} km` : issStatus === 'loading' ? <SkeletonLine w={70} h={16} /> : '—', color: '#9B59FF' },
               ].map(({ label, value, color }) => (
                 <div key={label} style={{
                   background: 'rgba(0,0,0,0.3)',
-                  border: '1px solid rgba(255,255,255,0.04)',
+                  border: pulse ? `1px solid ${color}` : '1px solid rgba(255,255,255,0.04)',
+                  boxShadow: pulse ? `0 0 16px ${color}44` : 'none',
                   borderRadius: 8, padding: '10px 12px',
+                  transition: 'border-color 0.4s ease, box-shadow 0.4s ease',
                 }}>
                   <div style={{ ...S, fontSize: 7, color: '#4A5568', marginBottom: 4 }}>{label}</div>
                   <div style={{ ...S, fontSize: 16, color, fontWeight: 700, letterSpacing: '0.02em', textShadow: `0 0 8px ${color}44` }}>
@@ -341,7 +358,7 @@ export default function SkyPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="animate-card-glow"
+          className="animate-card-glow hover-lift"
           onClick={() => setMoonGalleryOpen(true)}
           style={{
             background: 'rgba(10,10,15,0.8)',
@@ -388,7 +405,7 @@ export default function SkyPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.06 }}
-                className="animate-card-glow"
+                className="animate-card-glow hover-lift"
                 whileHover={{ scale: 1.02 }}
                 onClick={() => setModalKey(p.id)}
                 style={{
@@ -411,9 +428,29 @@ export default function SkyPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: '0.04em' }}>
-                        {p.name}
-                      </span>
+                      {(() => {
+                        const quick = PLANET_QUICKFACTS[p.id]
+                        const tooltipContent = (
+                          <div style={{ ...S, fontSize: 9, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <div style={{ fontWeight: 'bold', color: info.color }}>{p.name} QUICK FACTS</div>
+                            <div><span style={{ color: '#8892A4' }}>Magnitude:</span> {p.mag}</div>
+                            {quick && (
+                              <>
+                                <div><span style={{ color: '#8892A4' }}>Distance:</span> {quick.distance}</div>
+                                <div><span style={{ color: '#8892A4' }}>Constellation:</span> {quick.constellation}</div>
+                                <div><span style={{ color: '#8892A4' }}>Best Viewing:</span> {quick.bestTime}</div>
+                              </>
+                            )}
+                          </div>
+                        )
+                        return (
+                          <Tooltip content={tooltipContent} color={info.color}>
+                            <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: '0.04em', cursor: 'help' }}>
+                              {p.name}
+                            </span>
+                          </Tooltip>
+                        )
+                      })()}
                       <div style={{
                         width: 6, height: 6, borderRadius: '50%',
                         background: info.color,

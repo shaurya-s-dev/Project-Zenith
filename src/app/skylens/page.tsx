@@ -234,44 +234,116 @@ export default function SkyLensPage() {
             </motion.div>
           )}
 
-          {messages.map((m, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              style={{
-                display: 'flex',
-                justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
-              }}
-            >
-              <div style={{
-                maxWidth: '82%',
-                padding: '12px 16px',
-                borderRadius: m.role === 'user' ? '16px 16px 2px 16px' : '16px 16px 16px 2px',
-                background: m.role === 'user'
-                  ? 'rgba(0, 212, 255, 0.08)'
-                  : 'rgba(155, 89, 255, 0.05)',
-                border: m.role === 'user'
-                  ? '1px solid rgba(0, 212, 255, 0.25)'
-                  : '1px solid rgba(155, 89, 255, 0.2)',
-                boxShadow: m.role === 'user'
-                  ? '0 4px 12px rgba(0, 212, 255, 0.05)'
-                  : '0 4px 15px rgba(155, 89, 255, 0.08), 0 0 10px rgba(155, 89, 255, 0.05)',
-                fontFamily: 'Space Grotesk, sans-serif',
-                fontSize: 13.5,
-                lineHeight: 1.6,
-                color: '#fff',
-                whiteSpace: 'pre-wrap',
-                backdropFilter: 'blur(12px)',
-              }}>
-                {m.content || (isLoading && i === messages.length - 1 ? (
-                  <span style={{ ...S, color: 'var(--theme-accent, #9B59FF)' }}>
-                    SkyLens is thinking{dots}
-                  </span>
-                ) : '')}
+          {messages.map((m, i) => {
+            const isLast = i === messages.length - 1
+            const showFollowups = isLast && m.role === 'assistant' && !isLoading
+            const prevMsg = i > 0 ? messages[i - 1]?.content : ''
+            const combinedText = prevMsg + ' ' + m.content
+            const followups = showFollowups ? (() => {
+              const t = combinedText.toLowerCase()
+              if (t.includes('iss') || t.includes('zarya') || t.includes('station')) {
+                return ["🛰️ Where is the ISS heading now?", "🔬 What science is done on the ISS?"]
+              }
+              if (t.includes('kp') || t.includes('storm') || t.includes('weather') || t.includes('wind') || t.includes('flare')) {
+                return ["🌡️ How do solar storms affect GPS?", "📡 How does NOAA predict space weather?"]
+              }
+              if (t.includes('jupiter') || t.includes('planet') || t.includes('venus') || t.includes('mars') || t.includes('saturn')) {
+                return ["🪐 Tell me about Jupiter's moons.", "🔭 How do I spot planets tonight?"]
+              }
+              if (t.includes('satellite') || t.includes('orbit') || t.includes('starlink') || t.includes('hubble')) {
+                return ["🛰️ How do satellites avoid collisions?", "📡 What is a geostationary orbit?"]
+              }
+              if (t.includes('moon') || t.includes('lunar') || t.includes('phase')) {
+                return ["🌙 What causes a lunar eclipse?", "🚀 Tell me about the Artemis missions."]
+              }
+              if (t.includes('neo') || t.includes('asteroid') || t.includes('comet') || t.includes('meteor')) {
+                return ["☄️ Are any asteroids a threat to Earth?", "🌌 How do we deflect an asteroid?"]
+              }
+              return ["❓ Tell me another space fact.", "🌌 What is the nearest star system?"]
+            })() : []
+
+            return (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{
+                    display: 'flex',
+                    justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
+                    width: '100%',
+                  }}
+                >
+                  <div style={{
+                    maxWidth: '82%',
+                    padding: '12px 16px',
+                    borderRadius: m.role === 'user' ? '16px 16px 2px 16px' : '16px 16px 16px 2px',
+                    background: m.role === 'user'
+                      ? 'rgba(0, 212, 255, 0.08)'
+                      : 'rgba(155, 89, 255, 0.05)',
+                    border: m.role === 'user'
+                      ? '1px solid rgba(0, 212, 255, 0.25)'
+                      : '1px solid rgba(155, 89, 255, 0.2)',
+                    boxShadow: m.role === 'user'
+                      ? '0 4px 12px rgba(0, 212, 255, 0.05)'
+                      : '0 4px 15px rgba(155, 89, 255, 0.08), 0 0 10px rgba(155, 89, 255, 0.05)',
+                    fontFamily: 'Space Grotesk, sans-serif',
+                    fontSize: 13.5,
+                    lineHeight: 1.6,
+                    color: '#fff',
+                    whiteSpace: 'pre-wrap',
+                    backdropFilter: 'blur(12px)',
+                  }}>
+                    {m.content || (isLoading && i === messages.length - 1 ? (
+                      <span style={{ ...S, color: 'var(--theme-accent, #9B59FF)' }}>
+                        SkyLens is thinking{dots}
+                      </span>
+                    ) : '')}
+                  </div>
+                </motion.div>
+                {showFollowups && followups.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{
+                      display: 'flex',
+                      gap: 8,
+                      marginTop: 8,
+                      flexWrap: 'wrap',
+                      paddingLeft: 8,
+                    }}
+                  >
+                    {followups.map((f, fIdx) => (
+                      <button
+                        key={fIdx}
+                        onClick={() => send(f)}
+                        style={{
+                          ...S,
+                          fontSize: 9,
+                          color: 'var(--theme-primary, #00D4FF)',
+                          background: 'rgba(0, 212, 255, 0.05)',
+                          border: '1px solid rgba(0, 212, 255, 0.2)',
+                          borderRadius: 16,
+                          padding: '4px 10px',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s',
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.background = 'rgba(0, 212, 255, 0.12)'
+                          e.currentTarget.style.borderColor = 'rgba(0, 212, 255, 0.4)'
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.background = 'rgba(0, 212, 255, 0.05)'
+                          e.currentTarget.style.borderColor = 'rgba(0, 212, 255, 0.2)'
+                        }}
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
               </div>
-            </motion.div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Input Bar */}

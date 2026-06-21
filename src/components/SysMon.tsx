@@ -12,6 +12,7 @@ interface SysMonProps {
 export default function SysMon({ apiLatency, tleLastUpdated }: SysMonProps) {
   const [collapsed, setCollapsed] = useState(true)
   const [fps, setFps] = useState(0)
+  const [memory, setMemory] = useState<string>('N/A')
   const frameRef = useRef<number>(0)
   const lastTimeRef = useRef(performance.now())
   const framesRef = useRef(0)
@@ -32,6 +33,29 @@ export default function SysMon({ apiLatency, tleLastUpdated }: SysMonProps) {
     frameRef.current = requestAnimationFrame(tick)
     return () => { running = false; cancelAnimationFrame(frameRef.current) }
   }, [])
+
+  useEffect(() => {
+    const updateMemory = () => {
+      const perf = typeof window !== 'undefined' ? (window.performance as any) : null
+      if (perf && perf.memory) {
+        setMemory(`${Math.round(perf.memory.usedJSHeapSize / 1048576)}MB`)
+      } else {
+        setMemory('N/A')
+      }
+    }
+    updateMemory()
+    const i = setInterval(updateMemory, 2000)
+    return () => clearInterval(i)
+  }, [])
+
+  let latencyColor = '#8892A4'
+  let latencyText = '—'
+  if (apiLatency !== undefined && apiLatency !== null) {
+    latencyText = `${apiLatency}ms`
+    if (apiLatency < 200) latencyColor = '#00FF88'
+    else if (apiLatency < 500) latencyColor = '#FFD400'
+    else latencyColor = '#FF3B3B'
+  }
 
   return (
     <div style={{
@@ -60,9 +84,10 @@ export default function SysMon({ apiLatency, tleLastUpdated }: SysMonProps) {
           <div style={{ ...S, fontSize: 7, color: '#00D4FF', letterSpacing: '0.2em', marginBottom: 6 }}>SYSTEM MONITOR</div>
           {[
             ['FPS', `${fps}`, fps > 50 ? '#00FF88' : fps > 30 ? '#FFD400' : '#FF6B35'],
-            ['API LATENCY', apiLatency !== null ? `${apiLatency}ms` : '—', '#00D4FF'],
+            ['API LATENCY', latencyText, latencyColor],
             ['TLE AGE', tleLastUpdated || '—', '#8892A4'],
-            ['WS CONN', '0', '#4A5568'],
+            ['MEMORY', memory, memory === 'N/A' ? '#4A5568' : '#00D4FF'],
+            ['WS CONN', 'N/A (no WS)', '#4A5568'],
           ].map(([label, value, color]) => (
             <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
               <span style={{ ...S, fontSize: 7, color: '#4A5568' }}>{label}</span>

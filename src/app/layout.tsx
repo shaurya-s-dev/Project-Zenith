@@ -6,6 +6,8 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { SkyLensProvider } from "@/components/SkyLensContext";
 import QueryProvider from "@/components/QueryProvider";
 
+import PageTransition from "@/components/PageTransition";
+
 export const metadata: Metadata = {
   title: "Project Zenith — The Celestial Eye",
   description: "Real-time cosmic radar. Track satellites, ISS, planets and constellations above any point on Earth.",
@@ -30,10 +32,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <DynamicBackground />
               <TabNav />
               <div className="scanline-overlay" />
-              {children}
+              <PageTransition>
+                {children}
+              </PageTransition>
             </SkyLensProvider>
           </ThemeProvider>
         </QueryProvider>
+
         <script
           dangerouslySetInnerHTML={{
             __html: `

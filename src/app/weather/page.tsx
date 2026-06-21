@@ -6,6 +6,7 @@ import { InfoRayButton } from '@/components/InfoRayButton'
 import InfoModal from '@/components/InfoModal'
 import { useSpaceWeather } from '@/hooks/useSpaceWeather'
 import { SkeletonLine, SkeletonRect, SkeletonCircle } from '@/components/Skeleton'
+import { usePulseOnChange } from '@/hooks/usePulse'
 
 const S = { fontFamily: 'Space Mono, monospace' }
 
@@ -165,6 +166,10 @@ export default function WeatherPage() {
   const wind = sw?.windSpeed != null ? { speed: sw.windSpeed, density: sw.windDensity ?? 0 } : null
   const flux = sw?.xrayFlux ?? null
 
+  const kpPulse = usePulseOnChange(kp)
+  const windPulse = usePulseOnChange(wind?.speed)
+  const fluxPulse = usePulseOnChange(flux)
+
   const [modalKey, setModalKey] = useState<string | null>(null)
 
   const INFO = {
@@ -201,13 +206,19 @@ export default function WeatherPage() {
         {/* Top stat row with InfoRayButtons */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
           {[
-            { label: 'GEOMAGNETIC (KP)', value: kp !== null ? kp.toFixed(2) : '—', sub: info.label, color: info.color, infoKey: 'kp' as const },
-            { label: 'SOLAR WIND SPEED', value: wind ? Math.round(wind.speed).toLocaleString() + ' KM/S' : '—', sub: 'PLASMA VELOCITY', color: '#00D4FF', infoKey: 'solar' as const },
-            { label: 'X-RAY FLUX CLASS', value: flareClass(flux), sub: 'GOES LONG BAND', color: '#9B59FF', infoKey: 'xray' as const },
+            { label: 'GEOMAGNETIC (KP)', value: kp !== null ? kp.toFixed(2) : '—', sub: info.label, color: info.color, infoKey: 'kp' as const, pulsed: kpPulse },
+            { label: 'SOLAR WIND SPEED', value: wind ? Math.round(wind.speed).toLocaleString() + ' KM/S' : '—', sub: 'PLASMA VELOCITY', color: '#00D4FF', infoKey: 'solar' as const, pulsed: windPulse },
+            { label: 'X-RAY FLUX CLASS', value: flareClass(flux), sub: 'GOES LONG BAND', color: '#9B59FF', infoKey: 'xray' as const, pulsed: fluxPulse },
           ].map((c, i) => (
             <motion.div key={c.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-              className="animate-card-glow"
-              style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 12, padding: 16, position: 'relative' }}>
+              className="animate-card-glow hover-lift"
+              style={{
+                background: 'rgba(10,10,15,0.8)',
+                border: c.pulsed ? `1px solid ${c.color}` : '1px solid rgba(0,212,255,0.1)',
+                boxShadow: c.pulsed ? `0 0 16px ${c.color}44` : 'none',
+                borderRadius: 12, padding: 16, position: 'relative',
+                transition: 'border-color 0.4s ease, box-shadow 0.4s ease',
+              }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>{c.label}</span>
                 <InfoRayButton onClick={() => setModalKey(c.infoKey)} color={c.color} size={20} />
@@ -229,7 +240,7 @@ export default function WeatherPage() {
 
         {/* Kp gauge */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-          className="animate-card-glow"
+          className="animate-card-glow hover-lift"
           style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.08)', borderRadius: 12, padding: 20, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 24 }}>
           <div style={{ flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -244,7 +255,7 @@ export default function WeatherPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
           {/* Solar Wind */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-            className="animate-card-glow"
+            className="animate-card-glow hover-lift"
             style={{ background: 'rgba(10,10,15,0.8)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 12, padding: 18 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
               <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>SOLAR WIND PLASMA</span>
@@ -302,10 +313,34 @@ export default function WeatherPage() {
       </div>
 
       {/* Info modals */}
-      <InfoModal isOpen={modalKey === 'kp'} onClose={() => setModalKey(null)} title={INFO.kp.title} content={INFO.kp.content} color="#00FF88" />
-      <InfoModal isOpen={modalKey === 'solar'} onClose={() => setModalKey(null)} title={INFO.solar.title} content={INFO.solar.content} color="#00D4FF" />
-      <InfoModal isOpen={modalKey === 'xray'} onClose={() => setModalKey(null)} title={INFO.xray.title} content={INFO.xray.content} color="#9B59FF" />
-      <InfoModal isOpen={modalKey === 'aurora'} onClose={() => setModalKey(null)} title={INFO.aurora.title} content={INFO.aurora.content} color="#00FF88" />
+      <InfoModal
+        isOpen={modalKey === 'kp'}
+        onClose={() => setModalKey(null)}
+        title={INFO.kp.title}
+        content={`${INFO.kp.content}\n\nRight now: Current Kp is ${kp !== null ? kp.toFixed(2) : '—'} (${kpInfo(kp).label}).`}
+        color="#00FF88"
+      />
+      <InfoModal
+        isOpen={modalKey === 'solar'}
+        onClose={() => setModalKey(null)}
+        title={INFO.solar.title}
+        content={`${INFO.solar.content}\n\nRight now: Solar wind speed is ${wind ? Math.round(wind.speed) : '—'} km/s, which is ${wind && wind.speed > 500 ? 'above' : 'below'} the CME threshold (500 km/s).`}
+        color="#00D4FF"
+      />
+      <InfoModal
+        isOpen={modalKey === 'xray'}
+        onClose={() => setModalKey(null)}
+        title={INFO.xray.title}
+        content={`${INFO.xray.content}\n\nRight now: Solar X-ray flux is ${flareClass(flux)}, indicating a ${flux && flux >= 1e-5 ? 'HIGH' : 'LOW'} risk of HF radio blackout.`}
+        color="#9B59FF"
+      />
+      <InfoModal
+        isOpen={modalKey === 'aurora'}
+        onClose={() => setModalKey(null)}
+        title={INFO.aurora.title}
+        content={`${INFO.aurora.content}\n\nRight now: Geomagnetic index Kp is ${kp !== null ? kp.toFixed(2) : '—'}. Aurora visibility verdict: ${auroraPossible ? 'VISIBLE AT HIGH/MID LATITUDES' : 'LOW VISIBILITY OUTSIDE POLAR REGIONS'}.`}
+        color="#00FF88"
+      />
     </div>
   )
 }

@@ -42,7 +42,7 @@ export default function LaunchCountdownWidget() {
   const totalMs = nextLaunch.date.getTime() - Date.now()
 
   return totalMs <= 0 ? null : (
-    <div className="animate-card-glow" style={{
+    <div className="animate-card-glow hover-lift" style={{
       background: 'rgba(10,10,15,0.8)',
       border: '1px solid rgba(255,107,53,0.15)',
       borderRadius: 10, padding: 12, marginTop: 10,
