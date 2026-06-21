@@ -167,6 +167,7 @@ export default function Dashboard() {
 
   const [factIndex, setFactIndex] = useState(0)
   useEffect(() => {
+    if (SPACE_FACTS.length <= 1) return
     const i = setInterval(() => {
       setFactIndex(fi => (fi + 1) % SPACE_FACTS.length)
     }, 10000)
@@ -357,7 +358,7 @@ export default function Dashboard() {
             </div>
 
             {/* Scrollable list container */}
-            <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', minHeight: 300 }}>
+            <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', maxHeight: 450, minHeight: 300 }}>
               {list.map((s, i) => {
                 const meta = getSatMeta(s)
                 const tooltipContent = (
@@ -397,28 +398,6 @@ export default function Dashboard() {
                 )
               })}
             </div>
-
-            {/* Selected Target card */}
-            <div style={{ padding: 12, background: '#0a0a0f', borderTop: '1px solid rgba(0,212,255,0.1)', minHeight: 90 }}>
-              {selected ? (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <span style={{ ...S, fontSize: 8, color: '#8892A4' }}>SELECTED TARGET</span>
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <InfoRayButton onClick={() => handleInfoClick(selected)} color="#FFD400" size={22} />
-                    </div>
-                  </div>
-                  <div style={{ ...S, fontSize: 10, color: '#00D4FF', marginBottom: 4 }}>{selected.name}</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-                    {[['LAT', selected.lat + '°'], ['LON', selected.lon + '°'], ['ALT', selected.alt + 'km'], ['SPD', selected.speed.toLocaleString('en-US')]].map(([k, v]) => (
-                      <div key={k}><span style={{ ...S, fontSize: 7, color: '#4A5568' }}>{k} </span><span style={{ ...S, fontSize: 9, color: '#fff' }}>{v}</span></div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div style={{ ...S, fontSize: 9, color: '#4A5568', textAlign: 'center', paddingTop: 16 }}>SELECT A TARGET FOR ANALYSIS</div>
-              )}
-            </div>
           </div>
 
           {/* RIGHT PANEL - 3D Globe Card */}
@@ -442,6 +421,61 @@ export default function Dashboard() {
               showConstellations={showConstellations}
               isPaused={globePaused}
             />
+
+            {/* Selected Target Info Overlay */}
+            <AnimatePresence>
+              {selected && (
+                <motion.div
+                  key="targetinfo"
+                  initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    textShadow: [
+                      '0 0 4px rgba(0,212,255,0.1)',
+                      '0 0 12px rgba(0,212,255,0.3)',
+                      '0 0 4px rgba(0,212,255,0.1)'
+                    ]
+                  }}
+                  exit={{ opacity: 0, y: 15, scale: 0.98 }}
+                  transition={{
+                    textShadow: { repeat: Infinity, duration: 4, ease: "easeInOut" },
+                    duration: 0.4
+                  }}
+                  style={{
+                    position: 'absolute',
+                    bottom: 14,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 10,
+                    background: 'rgba(8,10,16,0.95)',
+                    border: '1px solid rgba(0,212,255,0.18)',
+                    boxShadow: '0 0 20px rgba(0,212,255,0.1)',
+                    borderRadius: 12,
+                    padding: '10px 16px',
+                    width: 320,
+                    backdropFilter: 'blur(12px)',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                    <span style={{ ...S, fontSize: 8, color: '#8892A4', letterSpacing: '0.15em' }}>SELECTED TARGET</span>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <InfoRayButton onClick={() => handleInfoClick(selected)} color="#00D4FF" size={18} />
+                    </div>
+                  </div>
+                  <div style={{ ...S, fontSize: 11, color: '#fff', fontWeight: 700, marginBottom: 6 }}>
+                    {selected.name}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 12px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 6 }}>
+                    <div><span style={{ ...S, fontSize: 7, color: '#4A5568' }}>LAT:</span> <span style={{ ...S, fontSize: 9, color: '#fff' }}>{selected.lat.toFixed(2)}°</span></div>
+                    <div><span style={{ ...S, fontSize: 7, color: '#4A5568' }}>LON:</span> <span style={{ ...S, fontSize: 9, color: '#fff' }}>{selected.lon.toFixed(2)}°</span></div>
+                    <div><span style={{ ...S, fontSize: 7, color: '#4A5568' }}>ALT:</span> <span style={{ ...S, fontSize: 9, color: '#fff' }}>{(selected.id === 'ISS' && issPos.vel ? issPos.alt : selected.alt).toLocaleString('en-US')} km</span></div>
+                    <div><span style={{ ...S, fontSize: 7, color: '#4A5568' }}>SPD:</span> <span style={{ ...S, fontSize: 9, color: '#fff' }}>{(selected.id === 'ISS' && issPos.vel ? issPos.vel : selected.speed).toLocaleString('en-US')} km/h</span></div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* HUD tachometer overlay on Globe */}
             <AnimatePresence>
@@ -776,7 +810,7 @@ export default function Dashboard() {
         </div>
 
         {/* Row 3: Space Fact of the Day (Full Width) */}
-        <div className="animate-card-glow hover-lift" style={{
+        <div className="animate-card-glow" style={{
           background: 'rgba(8,10,16,0.92)',
           border: '1px solid rgba(0,212,255,0.15)',
           borderRadius: 12, padding: '16px 20px',
@@ -787,16 +821,48 @@ export default function Dashboard() {
           </div>
           <div style={{ minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <AnimatePresence mode="wait">
-              <motion.div
-                key={factIndex}
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                transition={{ duration: 0.5 }}
-                style={{ ...S, fontSize: 12, color: '#fff', textAlign: 'center', lineHeight: 1.6, maxWidth: 800, textShadow: '0 0 10px rgba(255,255,255,0.1)' }}
-              >
-                "{SPACE_FACTS[factIndex]}"
-              </motion.div>
+              {SPACE_FACTS.length > 1 ? (
+                <motion.div
+                  key={factIndex}
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{
+                    opacity: [1, 0.8, 1],
+                    scale: [1, 0.99, 1],
+                    textShadow: [
+                      '0 0 8px rgba(255,255,255,0.2)',
+                      '0 0 16px rgba(0,212,255,0.4)',
+                      '0 0 8px rgba(255,255,255,0.2)'
+                    ]
+                  }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{
+                    opacity: { repeat: Infinity, duration: 5, ease: "easeInOut" },
+                    scale: { repeat: Infinity, duration: 5, ease: "easeInOut" },
+                    textShadow: { repeat: Infinity, duration: 5, ease: "easeInOut" },
+                    duration: 0.5
+                  }}
+                  style={{ ...S, fontSize: 12, color: '#fff', textAlign: 'center', lineHeight: 1.6, maxWidth: 800 }}
+                >
+                  "{SPACE_FACTS[factIndex]}"
+                </motion.div>
+              ) : SPACE_FACTS.length === 1 ? (
+                <motion.div
+                  key="single-fact"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  style={{
+                    ...S,
+                    fontSize: 12,
+                    color: '#fff',
+                    textAlign: 'center',
+                    lineHeight: 1.6,
+                    maxWidth: 800,
+                    textShadow: '0 0 12px rgba(0,212,255,0.6)'
+                  }}
+                >
+                  "{SPACE_FACTS[0]}"
+                </motion.div>
+              ) : null}
             </AnimatePresence>
           </div>
         </div>
