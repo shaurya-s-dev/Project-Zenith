@@ -123,7 +123,7 @@ export default function AuroraBackground() {
     <div style={{
       position: 'fixed', inset: 0, width: '100vw', height: '100vh',
       zIndex: -1, pointerEvents: 'none', display: 'block',
-      background: 'radial-gradient(ellipse at 30% 50%, #0f1a2e 0%, #070b14 100%)',
+      background: 'radial-gradient(circle at 30% 50%, #0a0f1d 0%, #05070f 100%)',
     }}>
       <canvas
         ref={canvasRef}

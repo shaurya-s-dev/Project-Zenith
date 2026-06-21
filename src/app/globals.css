@@ -398,7 +398,7 @@ html, body, nav, header, footer, button, .animate-card-glow, .hover-lift {
 }
 
 .sky-above-me-container {
-  background: radial-gradient(ellipse at 30% 50%, #0f1a2e 0%, #070b14 100%);
+  background: transparent;
   min-height: 100vh;
 }
 
