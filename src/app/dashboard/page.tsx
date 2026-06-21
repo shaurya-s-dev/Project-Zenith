@@ -64,6 +64,18 @@ const PASSES = [
 
 const PASS_MAX = Math.max(...PASSES.map(p => p.seconds))
 
+const SPACE_FACTS = [
+  "One day on Venus is longer than one year on Venus. It takes Venus 243 Earth days to rotate once on its axis, but only 225 Earth days to travel around the Sun.",
+  "Neutron stars are so dense that a single teaspoon of their material would weigh about 6 billion tons on Earth.",
+  "The footprint left by the Apollo astronauts on the Moon will probably stay there for at least 100 million years because the Moon has no atmosphere.",
+  "Light from the Sun takes approximately 8 minutes and 20 seconds to travel to Earth.",
+  "There are more trees on Earth than stars in the Milky Way galaxy. Earth has about 3 trillion trees, while the Milky Way has between 100 and 400 billion stars.",
+  "Olympus Mons on Mars is the largest volcano in the solar system, three times taller than Mount Everest.",
+  "Space is completely silent because there is no atmosphere for sound waves to travel through.",
+  "About 95% of the universe's mass-energy is made of dark matter and dark energy, which are completely invisible to us.",
+]
+
+
 const SAT_META: Record<string, { norad: string; launch: string; operator: string; orbit: string }> = {
   ISS:  { norad: '25544', launch: '1998-11-20', operator: 'NASA / Roscosmos / ESA / JAXA / CSA', orbit: 'LEO' },
   HST:  { norad: '20580', launch: '1990-04-24', operator: 'NASA / ESA',                          orbit: 'LEO' },
@@ -185,6 +197,15 @@ export default function Dashboard() {
     const i = setInterval(() => setPasses(p => p.map(x => ({ ...x, seconds: Math.max(0, x.seconds - 1) }))), 1000)
     return () => clearInterval(i)
   }, [])
+
+  const [factIndex, setFactIndex] = useState(0)
+  useEffect(() => {
+    const i = setInterval(() => {
+      setFactIndex(fi => (fi + 1) % SPACE_FACTS.length)
+    }, 10000)
+    return () => clearInterval(i)
+  }, [])
+
 
   // Keyboard shortcut callbacks
   const kbdCallbacks = {
@@ -412,6 +433,21 @@ export default function Dashboard() {
                   <span style={{ ...S, fontSize: 7, color: '#4A5568' }}>VEL: 14.8 KM/S</span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Space Fact of the Day */}
+          <div className="animate-card-glow hover-lift" style={{
+            background: 'rgba(10,10,15,0.8)',
+            border: '1px solid rgba(0,212,255,0.15)',
+            borderRadius: 10, padding: 12, marginTop: 10, marginBottom: 10,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <span style={{ fontSize: 12 }}>✨</span>
+              <span style={{ ...S, fontSize: 8, color: 'var(--theme-primary, #00D4FF)', letterSpacing: '0.2em' }}>SPACE FACT OF THE DAY</span>
+            </div>
+            <div style={{ ...S, fontSize: 9, color: '#fff', lineHeight: 1.5, minHeight: 45 }}>
+              {SPACE_FACTS[factIndex]}
             </div>
           </div>
         </div>

@@ -86,7 +86,7 @@ export default function BackgroundDebris() {
       ref={canvasRef}
       style={{
         position: 'fixed', inset: 0, width: '100vw', height: '100vh',
-        zIndex: 0, pointerEvents: 'none', display: 'block',
+        zIndex: -50, pointerEvents: 'none', display: 'block',
       }}
       aria-hidden="true"
     />

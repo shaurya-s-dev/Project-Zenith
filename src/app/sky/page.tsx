@@ -172,6 +172,18 @@ function Compass({ brg, overhead }: { brg: number | null; overhead: boolean }) {
   )
 }
 
+function ConnectingPlaceholder() {
+  return (
+    <motion.span
+      animate={{ opacity: [0.3, 1, 0.3] }}
+      transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+      style={{ fontSize: 9, color: 'var(--theme-text-dim, #8892A4)' }}
+    >
+      CONNECTING TO ISS...
+    </motion.span>
+  )
+}
+
 export default function SkyPage() {
   const [userLoc, setUserLoc] = useState<{ lat: number; lon: number; label: string } | null>(null)
   const [locStatus, setLocStatus] = useState<'idle'|'loading'|'ok'|'denied'>('idle')
@@ -329,10 +341,10 @@ export default function SkyPage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {[
-                { label: 'ALTITUDE', value: iss ? `${iss.alt} km` : <SkeletonLine w={60} h={16} />, color: '#00D4FF' },
-                { label: 'VELOCITY', value: iss ? `${iss.vel.toLocaleString()} km/h` : <SkeletonLine w={85} h={16} />, color: '#00FF88' },
-                { label: 'BEARING', value: brg !== null ? `${compassDir} ${Math.round(brg)}°` : issStatus === 'loading' ? <SkeletonLine w={50} h={16} /> : '—', color: '#FFD400' },
-                { label: 'DISTANCE', value: dist !== null ? `${Math.round(dist).toLocaleString()} km` : issStatus === 'loading' ? <SkeletonLine w={70} h={16} /> : '—', color: '#9B59FF' },
+                { label: 'ALTITUDE', value: iss ? `${iss.alt} km` : <ConnectingPlaceholder />, color: '#00D4FF' },
+                { label: 'VELOCITY', value: iss ? `${iss.vel.toLocaleString()} km/h` : <ConnectingPlaceholder />, color: '#00FF88' },
+                { label: 'BEARING', value: brg !== null ? `${compassDir} ${Math.round(brg)}°` : <ConnectingPlaceholder />, color: '#FFD400' },
+                { label: 'DISTANCE', value: dist !== null ? `${Math.round(dist).toLocaleString()} km` : <ConnectingPlaceholder />, color: '#9B59FF' },
               ].map(({ label, value, color }) => (
                 <div key={label} style={{
                   background: 'rgba(0,0,0,0.3)',

@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
+import { SkeletonLine } from '@/components/Skeleton'
+
 const S = { fontFamily: 'Space Mono, monospace' }
 
 interface CelestialObject {
@@ -299,12 +301,17 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
                         {aiLoading ? '⟳ SKYLENS AI THINKING...' : 'SKYLENS AI'}
                       </div>
                       <div style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 13, color: '#fff', lineHeight: 1.65 }}>
-                        {aiLoading
-                          ? <span style={{ color: '#9B59FF' }}>···</span>
-                          : aiResponse
-                            ? aiResponse
-                            : <TypewriterText text={fact} />
-                        }
+                        {aiLoading ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            <SkeletonLine w="100%" h={10} style={{ background: 'rgba(155, 89, 255, 0.15)' }} />
+                            <SkeletonLine w="85%" h={10} style={{ background: 'rgba(155, 89, 255, 0.15)' }} />
+                            <SkeletonLine w="60%" h={10} style={{ background: 'rgba(155, 89, 255, 0.15)' }} />
+                          </div>
+                        ) : aiResponse ? (
+                          aiResponse
+                        ) : (
+                          <TypewriterText text={fact} />
+                        )}
                       </div>
                     </div>
                   </motion.div>
