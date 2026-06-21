@@ -166,28 +166,59 @@ export default function Globe({
     })
   }, [showConstellations])
 
-  useEffect(() => {
-    if (!globeRef.current) return
-    const controls = globeRef.current.controls()
-    controls.autoRotate = !isPaused
-    controls.autoRotateSpeed = 0.35
-    globeRef.current.pointOfView({ lat: 20, lng: 10, altitude: 2.2 }, 0)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // Selected satellite orbit path
+  const selectedPathData = useMemo(() => {
+    if (!selected) return []
 
-  useEffect(() => {
-    if (!globeRef.current) return
-    const controls = globeRef.current.controls()
-    controls.autoRotate = !isPaused
-  }, [isPaused])
+    const altKm = selected.alt
+    const periodHours = altKm < 2000
+      ? 1.5  // LEO ~90 min
+      : altKm < 10000
+      ? 6    // MEO
+      : 24   // GEO
+
+    const coords: { lat: number; lon: number; alt: number }[] = []
+    const steps = 120
+    for (let i = 0; i <= steps; i++) {
+      const t = timeOffsetHours + (i / steps) * periodHours
+      const pos = propagateSat(selected, t)
+      coords.push({
+        lat: pos.lat,
+        lon: pos.lon,
+        alt: altKm / 6371,
+      })
+    }
+
+    return [{
+      coords,
+      color: selected.type === 'ISS' ? '#00FF88' : selected.type === 'DEBRIS' ? '#FF6B35' : '#00D4FF',
+    }]
+  }, [selected, timeOffsetHours])
+
+  const lastSelectedIdRef = useRef<string | null>(null)
 
   // Fly to selected satellite position when it changes
   useEffect(() => {
     if (selected && globeRef.current) {
       const pos = propagateSat(selected, timeOffsetHours)
-      globeRef.current.pointOfView({ lat: pos.lat, lng: pos.lon, altitude: 1.4 }, 900)
+      const isNewSelection = lastSelectedIdRef.current !== selected.id
+      lastSelectedIdRef.current = selected.id
+
+      // Smooth fly-to on new selection, instant tracking on time offset updates
+      const transitionMs = isNewSelection ? 900 : 0
+      globeRef.current.pointOfView({ lat: pos.lat, lng: pos.lon, altitude: 1.4 }, transitionMs)
+    } else {
+      lastSelectedIdRef.current = null
     }
   }, [selected, timeOffsetHours])
+
+  useEffect(() => {
+    if (!globeRef.current) return
+    const controls = globeRef.current.controls()
+    if (controls) {
+      controls.autoRotate = !isPaused
+    }
+  }, [isPaused])
 
 
   // Combined points: satellite points + constellation stars
@@ -207,6 +238,15 @@ export default function Globe({
         backgroundColor="rgba(0,0,0,0)"
         atmosphereColor="#00D4FF"
         atmosphereAltitude={0.2}
+        onGlobeReady={() => {
+          if (!globeRef.current) return
+          const controls = globeRef.current.controls()
+          if (controls) {
+            controls.autoRotate = !isPaused
+            controls.autoRotateSpeed = 0.35
+          }
+          globeRef.current.pointOfView({ lat: 20, lng: 10, altitude: 2.2 }, 0)
+        }}
 
         // Satellite + constellation star points
         pointsData={allPoints}
@@ -271,6 +311,19 @@ export default function Globe({
         onLabelClick={(d: any) => {
           if (d.con && onConstellationClick) onConstellationClick(d.con)
         }}
+
+        // Selected satellite 3D orbit path
+        pathsData={selectedPathData}
+        pathPoints="coords"
+        pathPointLat="lat"
+        pathPointLng="lon"
+        pathPointAlt="alt"
+        pathColor="color"
+        pathStroke={1.8}
+        pathDashLength={0.08}
+        pathDashGap={0.04}
+        pathDashAnimateTime={6000}
+        pathTransitionDuration={0}
       />
     </div>
   )
