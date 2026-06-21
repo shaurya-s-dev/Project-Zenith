@@ -116,6 +116,11 @@ const PLANET_INFO: Record<string, { title: string; content: string; color: strin
     content: 'The Ringed Jewel. Magnitude +0.5. Faint, requires dark skies. Its rings are made of billions of ice and rock particles. Requires a telescope to see the rings clearly.',
     color: '#9B59FF',
   },
+  TONIGHT_VIEW_INFO: {
+    title: "Tonight's Celestial Outlook",
+    content: "This sky diagram displays the calculated positions of the brightest planets and the Moon relative to the horizon line at your current time. Tap directly on any planet or the Moon in the SVG diagram to open their deep telemetry details, active magnitude, and astronomical facts.",
+    color: '#00D4FF',
+  },
 }
 
 function MoonPhaseSVG({ phase, illum }: { phase: number; illum: number }) {
@@ -274,8 +279,6 @@ export default function SkyPage() {
       
       {/* Scrollable Main Area */}
       <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }} className="custom-scrollbar">
-        {/* Radar scanline animation overlay */}
-        <div className="radar-scanline" />
 
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 24px 40px' }}>
           
@@ -287,7 +290,11 @@ export default function SkyPage() {
 
           {/* ROW 1: Tonight's View Horizon Diagram */}
           <div style={{ marginBottom: 20 }}>
-            <TonightView />
+            <TonightView 
+              onSelectPlanet={(id) => setModalKey(id)} 
+              onSelectMoon={() => setMoonGalleryOpen(true)}
+              onOpenInfo={() => setModalKey('TONIGHT_VIEW_INFO')}
+            />
           </div>
 
           {/* ROW 2: Location bar */}
