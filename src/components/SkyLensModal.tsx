@@ -3,105 +3,68 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const S = { fontFamily: 'Space Mono, monospace' }
-
-interface CelestialObject {
-  name: string
-  type?: string
-  lat?: number
-  lon?: number
-  alt?: number
-  speed?: number
-  description?: string
-  [key: string]: any
-}
-
 interface SkyLensModalProps {
   isOpen: boolean
   onClose: () => void
-  object: CelestialObject | null
-  issContext?: string
+  objectName: string
+  orbitData?: { label: string; value: string }[]
+  overviewText?: string
+  context?: string
 }
 
-type Tab = 'overview' | 'orbit' | 'aifact'
+interface Msg { role: 'user' | 'assistant'; content: string }
 
-const GROQ_FACTS: Record<string, string> = {
-  ISS: 'The ISS travels at ~7.66 km/s — fast enough to circle Earth in ~92 minutes. At that speed, astronauts see 16 sunrises and sunsets every day.',
-  HUBBLE: 'Hubble has peered back 13.4 billion years, observing galaxies formed just 400 million years after the Big Bang.',
-  TIANGONG: 'China\'s Tiangong station operates independently of the ISS and hosts rotating crews on 6-month missions. Its modular design allows future expansion.',
-  DEBRIS: 'Space debris travels at ~7-8 km/s in LEO. A 1 cm fragment carries the kinetic energy equivalent to a hand grenade.',
-  DEFAULT: 'Satellites in LEO experience atmospheric drag from residual gas at altitudes below 600 km, requiring periodic reboosts to maintain their orbits.',
+const TABS = ['OVERVIEW', 'ORBIT DATA', 'AI FUN FACT'] as const
+type Tab = typeof TABS[number]
+
+// Safely access browser Speech API — avoids TypeScript window.SpeechRecognition errors
+function getSpeechRecognition(): any {
+  if (typeof window === 'undefined') return null
+  return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null
 }
 
-function getDefaultFact(name: string, type?: string) {
-  if (name.includes('ISS') || name.includes('ZARYA')) return GROQ_FACTS.ISS
-  if (name.includes('HUBBLE')) return GROQ_FACTS.HUBBLE
-  if (name.includes('TIANGONG')) return GROQ_FACTS.TIANGONG
-  if (type === 'DEBRIS') return GROQ_FACTS.DEBRIS
-  return GROQ_FACTS.DEFAULT
-}
-
-function TypewriterText({ text }: { text: string }) {
-  const [displayed, setDisplayed] = useState('')
-  useEffect(() => {
-    setDisplayed('')
-    let i = 0
-    const interval = setInterval(() => {
-      if (i < text.length) {
-        setDisplayed(text.slice(0, i + 1))
-        i++
-      } else {
-        clearInterval(interval)
-      }
-    }, 18)
-    return () => clearInterval(interval)
-  }, [text])
-  return <span>{displayed}<span style={{ animation: 'blink 0.8s infinite', opacity: displayed.length < text.length ? 1 : 0 }}>_</span></span>
-}
-
-export default function SkyLensModal({ isOpen, onClose, object, issContext }: SkyLensModalProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('overview')
+export function SkyLensModal({
+  isOpen,
+  onClose,
+  objectName,
+  orbitData = [],
+  overviewText = '',
+  context = '',
+}: SkyLensModalProps) {
+  const [activeTab, setActiveTab] = useState<Tab>('OVERVIEW')
   const [query, setQuery] = useState('')
-  const [aiResponse, setAiResponse] = useState('')
-  const [aiLoading, setAiLoading] = useState(false)
-  const [isListening, setIsListening] = useState(false)
+  const [messages, setMessages] = useState<Msg[]>([])
+  const [loading, setLoading] = useState(false)
+  const [listening, setListening] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  const S = { fontFamily: 'Space Mono, monospace' }
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setVoiceSupported(!!(window.SpeechRecognition || (window as any).webkitSpeechRecognition))
-    }
+    // Must run client-side only
+    setVoiceSupported(!!getSpeechRecognition())
   }, [])
 
   useEffect(() => {
-    if (isOpen) {
-      setActiveTab('overview')
-      setQuery('')
-      setAiResponse('')
-    }
-  }, [isOpen, object])
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
+  }, [messages])
 
-  const handleAskSkyLens = async (text: string) => {
-    if (!text.trim() || aiLoading) return
-    setAiLoading(true)
-    setAiResponse('')
-    setActiveTab('aifact')
-
-    const context = [
-      object ? `Object: ${object.name} (${object.type || 'satellite'})` : '',
-      object?.alt ? `Altitude: ${object.alt} km` : '',
-      object?.speed ? `Speed: ${object.speed.toLocaleString()} km/h` : '',
-      issContext || '',
-    ].filter(Boolean).join('. ')
+  const handleAsk = async (text: string) => {
+    if (!text.trim() || loading) return
+    const next = [...messages, { role: 'user' as const, content: text }]
+    setMessages(next)
+    setQuery('')
+    setLoading(true)
+    setMessages(m => [...m, { role: 'assistant' as const, content: '' }])
 
     try {
       const res = await fetch('/api/skylens', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{ role: 'user', content: text }],
-          context,
+          messages: next,
+          context: `The user is viewing data about: ${objectName}. ${context}`,
         }),
       })
       if (!res.body) throw new Error('no stream')
@@ -112,269 +75,165 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
         const { done, value } = await reader.read()
         if (done) break
         acc += decoder.decode(value, { stream: true })
-        setAiResponse(acc)
+        setMessages(m => {
+          const copy = [...m]
+          copy[copy.length - 1] = { role: 'assistant', content: acc }
+          return copy
+        })
       }
     } catch {
-      setAiResponse('SIGNAL LOST — could not reach SkyLens core.')
+      setMessages(m => {
+        const copy = [...m]
+        copy[copy.length - 1] = { role: 'assistant', content: 'SkyLens core unreachable. Check GROQ_API_KEY.' }
+        return copy
+      })
     } finally {
-      setAiLoading(false)
+      setLoading(false)
     }
   }
 
   const startVoice = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    if (!SpeechRecognition) return
-    const recognition = new SpeechRecognition()
+    const SR = getSpeechRecognition()
+    if (!SR) { alert('Voice not supported in this browser.'); return }
+    const recognition = new SR()
     recognition.lang = 'en-US'
-    recognition.onstart = () => setIsListening(true)
-    recognition.onend = () => setIsListening(false)
+    recognition.onstart = () => setListening(true)
+    recognition.onend = () => setListening(false)
+    recognition.onerror = () => setListening(false)
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript
       setQuery(transcript)
-      handleAskSkyLens(transcript)
+      setActiveTab('AI FUN FACT')
+      handleAsk(transcript)
     }
-    recognition.onerror = () => setIsListening(false)
     recognition.start()
   }
-
-  if (!object) return null
-
-  const fact = getDefaultFact(object.name, object.type)
-
-  const TABS: { id: Tab; label: string }[] = [
-    { id: 'overview', label: 'OVERVIEW' },
-    { id: 'orbit', label: 'ORBIT DATA' },
-    { id: 'aifact', label: 'AI FUN FACT' },
-  ]
-
-  const typeColor = object.type === 'ISS' ? '#00FF88' : object.type === 'DEBRIS' ? '#FF6B35' : '#00D4FF'
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(4px)',
-              zIndex: 1000,
-            }}
-          />
-
-          {/* Modal - slides up from bottom */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.75)',
+            backdropFilter: 'blur(10px)',
+            zIndex: 200,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            padding: '0 16px 16px',
+          }}
+        >
           <motion.div
             initial={{ y: '100%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 26, stiffness: 280 }}
+            transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+            onClick={e => e.stopPropagation()}
             style={{
-              position: 'fixed',
-              bottom: 0,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '100%',
-              maxWidth: 560,
-              background: 'rgba(8, 10, 20, 0.97)',
+              background: 'rgba(8,12,24,0.97)',
               backdropFilter: 'blur(24px)',
-              border: '1px solid rgba(0,212,255,0.18)',
-              borderBottom: 'none',
-              borderRadius: '16px 16px 0 0',
-              zIndex: 1001,
+              border: '1px solid rgba(0,212,255,0.2)',
+              borderRadius: 20,
+              width: '100%', maxWidth: 580, maxHeight: '80vh',
+              display: 'flex', flexDirection: 'column',
               overflow: 'hidden',
               boxShadow: '0 -20px 60px rgba(0,212,255,0.08)',
             }}
           >
-            {/* Drag handle */}
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0' }}>
-              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.15)' }} />
-            </div>
-
             {/* Header */}
-            <div style={{ padding: '12px 20px 0', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ ...S, fontSize: 8, padding: '2px 6px', borderRadius: 3, background: `${typeColor}18`, color: typeColor, border: `1px solid ${typeColor}40` }}>
-                    {object.type || 'SAT'}
-                  </span>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: typeColor, animation: 'blink 1.2s infinite' }} />
+            <div style={{ padding: '18px 20px 0', flexShrink: 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <div>
+                  <div style={{ ...S, fontSize: 8, color: '#4A5568', letterSpacing: '0.25em', marginBottom: 3 }}>SKYLENS INTEL</div>
+                  <div style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 20, fontWeight: 700, color: '#fff' }}>{objectName}</div>
                 </div>
-                <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 20, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '0.04em' }}>
-                  {object.name}
-                </h2>
-                {object.description && (
-                  <p style={{ ...S, fontSize: 9, color: '#8892A4', marginTop: 4 }}>{object.description}</p>
-                )}
+                <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#8892A4', cursor: 'pointer', borderRadius: 8, width: 32, height: 32, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
               </div>
-              <button
-                onClick={onClose}
-                style={{ ...S, fontSize: 16, color: '#4A5568', background: 'transparent', border: 'none', cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}
-              >
-                ✕
-              </button>
+
+              {/* Tabs */}
+              <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                {TABS.map(tab => (
+                  <button key={tab} onClick={() => setActiveTab(tab)} style={{ ...S, fontSize: 8, letterSpacing: '0.15em', padding: '8px 14px', background: 'transparent', border: 'none', cursor: 'pointer', color: activeTab === tab ? '#00D4FF' : '#4A5568', borderBottom: activeTab === tab ? '2px solid #00D4FF' : '2px solid transparent', marginBottom: -1 }}>
+                    {tab}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Tabs */}
-            <div style={{ display: 'flex', gap: 0, padding: '14px 20px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              {TABS.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  style={{
-                    ...S,
-                    fontSize: 9,
-                    letterSpacing: '0.2em',
-                    color: activeTab === tab.id ? '#00D4FF' : '#4A5568',
-                    background: 'transparent',
-                    border: 'none',
-                    borderBottom: activeTab === tab.id ? '2px solid #00D4FF' : '2px solid transparent',
-                    padding: '0 0 10px',
-                    marginRight: 20,
-                    cursor: 'pointer',
-                    transition: 'color 0.15s',
-                  }}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Tab content */}
-            <div style={{ padding: '16px 20px', minHeight: 140 }}>
+            {/* Content */}
+            <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
               <AnimatePresence mode="wait">
-                {activeTab === 'overview' && (
-                  <motion.div key="overview" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                      {[
-                        ['ALTITUDE', object.alt ? `${object.alt} km` : '—'],
-                        ['SPEED', object.speed ? `${object.speed.toLocaleString()} km/h` : '—'],
-                        ['LATITUDE', object.lat !== undefined ? `${object.lat.toFixed(2)}°` : '—'],
-                        ['LONGITUDE', object.lon !== undefined ? `${object.lon.toFixed(2)}°` : '—'],
-                      ].map(([label, value]) => (
-                        <div key={label} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                          <div style={{ ...S, fontSize: 8, color: '#4A5568', marginBottom: 4 }}>{label}</div>
-                          <div style={{ ...S, fontSize: 13, color: typeColor }}>{value}</div>
-                        </div>
-                      ))}
-                    </div>
-                    {object.type === 'ISS' && (
-                      <div style={{ marginTop: 10, background: 'rgba(0,255,136,0.04)', border: '1px solid rgba(0,255,136,0.12)', borderRadius: 8, padding: '8px 12px' }}>
-                        <div style={{ ...S, fontSize: 9, color: '#00FF88' }}>🛸 International Space Station</div>
-                        <div style={{ ...S, fontSize: 9, color: '#4A5568', marginTop: 3, lineHeight: 1.6 }}>Orbiting since 1998 · Continuous human habitation since 2000 · ~109m wide</div>
+                {activeTab === 'OVERVIEW' && (
+                  <motion.div key="overview" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
+                    <p style={{ ...S, fontSize: 11, color: '#c8d6e5', lineHeight: 1.8 }}>
+                      {overviewText || `Real-time data for ${objectName}. Select a tab for orbit details or ask SkyLens AI for a fun fact.`}
+                    </p>
+                  </motion.div>
+                )}
+                {activeTab === 'ORBIT DATA' && (
+                  <motion.div key="orbit" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
+                    {orbitData.length > 0 ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                        {orbitData.map(d => (
+                          <div key={d.label} style={{ background: 'rgba(0,212,255,0.04)', border: '1px solid rgba(0,212,255,0.1)', borderRadius: 10, padding: 12 }}>
+                            <div style={{ ...S, fontSize: 8, color: '#4A5568', marginBottom: 4 }}>{d.label}</div>
+                            <div style={{ ...S, fontSize: 13, color: '#00D4FF' }}>{d.value}</div>
+                          </div>
+                        ))}
                       </div>
+                    ) : (
+                      <p style={{ ...S, fontSize: 11, color: '#4A5568' }}>No orbit data available.</p>
                     )}
                   </motion.div>
                 )}
-
-                {activeTab === 'orbit' && (
-                  <motion.div key="orbit" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                      {[
-                        ['ORBIT TYPE', object.alt && object.alt < 2000 ? 'LEO' : object.alt && object.alt < 35000 ? 'MEO' : 'GEO'],
-                        ['PERIOD', object.alt ? `~${(Math.sqrt(Math.pow((6371 + object.alt) / 6371, 3)) * 90).toFixed(0)} min` : '—'],
-                        ['INCLINATION', object.lat !== undefined ? `~${Math.abs(object.lat).toFixed(0)}°` : '—'],
-                        ['ECCENTRICITY', '~0.0002'],
-                        ['PERIGEE', object.alt ? `${(object.alt - 5).toFixed(0)} km` : '—'],
-                        ['APOGEE', object.alt ? `${(object.alt + 5).toFixed(0)} km` : '—'],
-                      ].map(([label, value]) => (
-                        <div key={label} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                          <div style={{ ...S, fontSize: 8, color: '#4A5568', marginBottom: 4 }}>{label}</div>
-                          <div style={{ ...S, fontSize: 12, color: '#00D4FF' }}>{value}</div>
+                {activeTab === 'AI FUN FACT' && (
+                  <motion.div key="ai" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
+                    {messages.length === 0 && !loading && (
+                      <div style={{ textAlign: 'center', paddingTop: 16 }}>
+                        <div style={{ fontSize: 28, marginBottom: 8 }}>🔭</div>
+                        <p style={{ ...S, fontSize: 10, color: '#4A5568' }}>Ask SkyLens AI about {objectName} below</p>
+                      </div>
+                    )}
+                    {messages.map((m, i) => (
+                      <div key={i} style={{ marginBottom: 12 }}>
+                        <div style={{ ...S, fontSize: 8, color: m.role === 'user' ? '#00D4FF' : '#9B59FF', marginBottom: 4 }}>
+                          {m.role === 'user' ? 'YOU' : 'SKYLENS AI'}
                         </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-
-                {activeTab === 'aifact' && (
-                  <motion.div key="aifact" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                    <div style={{ background: 'rgba(155,89,255,0.06)', border: '1px solid rgba(155,89,255,0.15)', borderRadius: 10, padding: 14, minHeight: 80 }}>
-                      <div style={{ ...S, fontSize: 8, color: '#9B59FF', marginBottom: 8, letterSpacing: '0.2em' }}>
-                        {aiLoading ? '⟳ SKYLENS AI THINKING...' : 'SKYLENS AI'}
+                        <div style={{ ...S, fontSize: 10, color: '#c8d6e5', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+                          {m.content || (loading && i === messages.length - 1 ? '···' : '')}
+                        </div>
                       </div>
-                      <div style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 13, color: '#fff', lineHeight: 1.65 }}>
-                        {aiLoading
-                          ? <span style={{ color: '#9B59FF' }}>···</span>
-                          : aiResponse
-                            ? aiResponse
-                            : <TypewriterText text={fact} />
-                        }
-                      </div>
-                    </div>
+                    ))}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            {/* Input bar */}
-            <div style={{ padding: '0 20px 20px', display: 'flex', gap: 8 }}>
-              <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <input
-                  ref={inputRef}
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') { handleAskSkyLens(query); setQuery('') } }}
-                  placeholder={`Ask SkyLens about ${object.name}...`}
-                  style={{
-                    ...S,
-                    flex: 1,
-                    width: '100%',
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: 8,
-                    padding: '9px 38px 9px 12px',
-                    color: '#fff',
-                    fontSize: 11,
-                    outline: 'none',
-                  }}
-                />
+            {/* Input */}
+            <div style={{ padding: '12px 16px 18px', borderTop: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 {voiceSupported && (
-                  <button
-                    onClick={startVoice}
-                    style={{
-                      position: 'absolute',
-                      right: 8,
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: 14,
-                      opacity: isListening ? 1 : 0.5,
-                      animation: isListening ? 'blink 0.8s infinite' : 'none',
-                    }}
-                    title="Voice input"
-                  >
+                  <button onClick={startVoice} title="Voice input" style={{ width: 36, height: 36, borderRadius: 8, background: listening ? 'rgba(255,107,53,0.2)' : 'rgba(255,255,255,0.05)', border: `1px solid ${listening ? 'rgba(255,107,53,0.5)' : 'rgba(255,255,255,0.1)'}`, cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     🎙️
                   </button>
                 )}
+                <input
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { setActiveTab('AI FUN FACT'); handleAsk(query) } }}
+                  placeholder={`Ask about ${objectName}...`}
+                  style={{ ...S, flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 11, outline: 'none' }}
+                />
+                <button onClick={() => { setActiveTab('AI FUN FACT'); handleAsk(query) }} disabled={loading} style={{ ...S, fontSize: 9, letterSpacing: '0.15em', color: '#000', background: loading ? '#4A5568' : '#00D4FF', border: 'none', borderRadius: 8, padding: '0 16px', height: 36, cursor: loading ? 'default' : 'pointer', flexShrink: 0 }}>
+                  {loading ? '...' : 'ASK'}
+                </button>
               </div>
-              <button
-                onClick={() => { handleAskSkyLens(query); setQuery('') }}
-                disabled={aiLoading || !query.trim()}
-                style={{
-                  ...S,
-                  fontSize: 9,
-                  letterSpacing: '0.15em',
-                  color: '#000',
-                  background: aiLoading || !query.trim() ? '#4A5568' : '#00D4FF',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '0 16px',
-                  cursor: aiLoading || !query.trim() ? 'default' : 'pointer',
-                  height: 38,
-                  flexShrink: 0,
-                }}
-              >
-                ASK
-              </button>
             </div>
           </motion.div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   )
