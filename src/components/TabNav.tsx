@@ -2,11 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useContext, createContext } from 'react'
 import { useTheme, THEME_LABELS, THEME_ORDER } from './ThemeProvider'
 import type { ThemeKey } from './ThemeProvider'
 
 const S = { fontFamily: 'Space Mono, monospace' }
+
+export const HologramCtx = createContext({ hologramOn: false, setHologramOn: (v: boolean) => {} })
 
 const TABS = [
   { label: 'DASHBOARD', href: '/dashboard', icon: '◉' },
@@ -19,8 +21,11 @@ export default function TabNav() {
   const activeHref = '/' + pathname.split('/')[1]
   const { theme, setTheme } = useTheme()
   const [themeOpen, setThemeOpen] = useState(false)
+  const [hologramOn, setHologramOn] = useState(false)
+  const [hologramOpen, setHologramOpen] = useState(false)
 
   return (
+    <HologramCtx.Provider value={{ hologramOn, setHologramOn }}>
     <nav style={{
       height: 52,
       background: 'rgba(0,0,0,0.85)',
@@ -68,7 +73,38 @@ export default function TabNav() {
         })}
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Export PDF */}
+        <button
+          id="export-pdf-btn"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('zenith-export-pdf'))
+          }}
+          style={{
+            ...S, fontSize: 8, letterSpacing: '0.1em',
+            color: '#8892A4', background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4,
+            padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
+          }}
+        >
+          📄 EXPORT
+        </button>
+
+        {/* Hologram toggle */}
+        <button
+          onClick={() => { setHologramOn(v => !v) }}
+          style={{
+            ...S, fontSize: 8, letterSpacing: '0.1em',
+            color: hologramOn ? '#00D4FF' : '#8892A4',
+            background: hologramOn ? 'rgba(0,212,255,0.08)' : 'rgba(255,255,255,0.04)',
+            border: `1px solid ${hologramOn ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.1)'}`,
+            borderRadius: 4, padding: '4px 8px', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 4,
+          }}
+        >
+          🧊 HOLO {hologramOn ? 'ON' : 'OFF'}
+        </button>
+
         {/* Theme picker */}
         <div style={{ position: 'relative' }}>
           <button
@@ -122,5 +158,10 @@ export default function TabNav() {
         <span style={{ ...S, fontSize: 9, color: '#00FF88', letterSpacing: '0.15em' }}>SYSTEMS ONLINE</span>
       </div>
     </nav>
+    </HologramCtx.Provider>
   )
+}
+
+export function useHologram() {
+  return useContext(HologramCtx)
 }

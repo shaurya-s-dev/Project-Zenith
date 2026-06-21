@@ -1,70 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { InfoRayButton } from '@/components/InfoRayButton'
 import InfoModal from '@/components/InfoModal'
+import { useSpaceWeather } from '@/hooks/useSpaceWeather'
+import { SkeletonLine, SkeletonRect, SkeletonCircle } from '@/components/Skeleton'
 
 const S = { fontFamily: 'Space Mono, monospace' }
-
-const KP_URL = 'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json'
-const WIND_URL = 'https://services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json'
-const XRAY_URL = 'https://services.swpc.noaa.gov/json/goes/primary/xrays-1-day.json'
-
-function normalizeRows(raw: any[]): Record<string, any>[] {
-  if (raw.length && Array.isArray(raw[0])) {
-    const headers = raw[0] as string[]
-    return raw.slice(1).map((row: any[]) => {
-      const obj: Record<string, any> = {}
-      headers.forEach((h, i) => { obj[h] = row[i] })
-      return obj
-    })
-  }
-  return raw
-}
-
-function findVal(obj: Record<string, any>, includes: string) {
-  const key = Object.keys(obj).find(k => k.toLowerCase().includes(includes))
-  return key ? obj[key] : undefined
-}
-
-async function fetchKp(): Promise<number | null> {
-  try {
-    const res = await fetch(KP_URL)
-    const rows = normalizeRows(await res.json())
-    const last = rows[rows.length - 1]
-    const v = findVal(last, 'kp_index') ?? findVal(last, 'estimated_kp') ?? findVal(last, 'kp')
-    const n = parseFloat(v)
-    return isNaN(n) ? null : n
-  } catch { return null }
-}
-
-async function fetchWind(): Promise<{ speed: number; density: number } | null> {
-  try {
-    const res = await fetch(WIND_URL)
-    const rows = normalizeRows(await res.json())
-    for (let i = rows.length - 1; i >= 0; i--) {
-      const speed = parseFloat(findVal(rows[i], 'speed'))
-      const density = parseFloat(findVal(rows[i], 'density'))
-      if (!isNaN(speed) && !isNaN(density)) return { speed, density }
-    }
-    return null
-  } catch { return null }
-}
-
-async function fetchXray(): Promise<number | null> {
-  try {
-    const res = await fetch(XRAY_URL)
-    const rows = normalizeRows(await res.json())
-    const longBand = rows.filter(r => String(findVal(r, 'energy') || '').includes('0.1-0.8'))
-    const pool = longBand.length ? longBand : rows
-    for (let i = pool.length - 1; i >= 0; i--) {
-      const flux = parseFloat(findVal(pool[i], 'flux'))
-      if (!isNaN(flux) && flux > 0) return flux
-    }
-    return null
-  } catch { return null }
-}
 
 function flareClass(flux: number | null) {
   if (flux === null) return '—'
@@ -217,9 +160,10 @@ function AuroraOval({ kp }: { kp: number | null }) {
 }
 
 export default function WeatherPage() {
-  const [kp, setKp] = useState<number | null>(null)
-  const [wind, setWind] = useState<{ speed: number; density: number } | null>(null)
-  const [flux, setFlux] = useState<number | null>(null)
+  const { data: sw, isFetching } = useSpaceWeather()
+  const kp = sw?.kp ?? null
+  const wind = sw?.windSpeed != null ? { speed: sw.windSpeed, density: sw.windDensity ?? 0 } : null
+  const flux = sw?.xrayFlux ?? null
 
   const [modalKey, setModalKey] = useState<string | null>(null)
 
@@ -241,17 +185,6 @@ export default function WeatherPage() {
       content: 'Auroras occur when charged solar particles collide with Earth\'s atmosphere, exciting oxygen and nitrogen. Kp 5+ is needed for mid-latitude visibility. The auroral oval expands during storms, bringing the lights further from the poles.',
     },
   }
-
-  const loadAll = useCallback(async () => {
-    const [k, w, x] = await Promise.all([fetchKp(), fetchWind(), fetchXray()])
-    setKp(k); setWind(w); setFlux(x)
-  }, [])
-
-  useEffect(() => {
-    loadAll()
-    const i = setInterval(loadAll, 60000)
-    return () => clearInterval(i)
-  }, [loadAll])
 
   const info = kpInfo(kp)
   const auroraPossible = kp !== null && kp >= 5
@@ -279,8 +212,17 @@ export default function WeatherPage() {
                 <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>{c.label}</span>
                 <InfoRayButton onClick={() => setModalKey(c.infoKey)} color={c.color} size={20} />
               </div>
-              <div style={{ ...S, fontSize: 24, color: c.color, marginBottom: 2 }}>{c.value}</div>
-              <div style={{ ...S, fontSize: 9, color: '#4A5568' }}>{c.sub}</div>
+              {isFetching && kp === null ? (
+                <>
+                  <SkeletonLine w="80%" h={28} style={{ marginBottom: 4 }} />
+                  <SkeletonLine w="50%" h={12} />
+                </>
+              ) : (
+                <>
+                  <div style={{ ...S, fontSize: 24, color: c.color, marginBottom: 2 }}>{c.value}</div>
+                  <div style={{ ...S, fontSize: 9, color: '#4A5568' }}>{c.sub}</div>
+                </>
+              )}
             </motion.div>
           ))}
         </div>

@@ -1,10 +1,20 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Globe from '@/components/Globe'
 import { InfoRayButton } from '@/components/InfoRayButton'
 import SkyLensModal from '@/components/SkyLensModal'
+import ConjunctionWarning from '@/components/ConjunctionWarning'
+import SysMon from '@/components/SysMon'
+import LaunchCountdownWidget from '@/components/LaunchCountdownWidget'
+import HolographicGrid from '@/components/HolographicGrid'
+import { useHologram } from '@/components/TabNav'
+import { exportMissionLog } from '@/lib/exportPdf'
+import { useISSData } from '@/hooks/useISSData'
+import KeyboardShortcuts from '@/components/KeyboardShortcuts'
+import { useTheme, THEME_ORDER } from '@/components/ThemeProvider'
+import { SkeletonLine } from '@/components/Skeleton'
 
 const SAT_DATA = [
   { id: 'ISS', name: 'ISS (ZARYA)', type: 'ISS', lat: 42.46, lon: -70.71, alt: 408, speed: 27600 },
@@ -95,7 +105,6 @@ export default function Dashboard() {
   const [filter, setFilter] = useState('ALL')
   const [selected, setSelected] = useState<typeof SAT_DATA[0] | null>(null)
   const [utc, setUtc] = useState('')
-  const [issPos, setIssPos] = useState(NO_DATA)
   const [passes, setPasses] = useState(PASSES.map(p => ({ ...p })))
   const [modalOpen, setModalOpen] = useState(false)
   const [modalObject, setModalObject] = useState<typeof SAT_DATA[0] | null>(null)
@@ -109,6 +118,12 @@ export default function Dashboard() {
   const playRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [showConstellations, setShowConstellations] = useState(false)
   const [globePaused, setGlobePaused] = useState(false)
+  const [skylensOpen, setSkylensOpen] = useState(false)
+  const globeRef = useRef<HTMLDivElement>(null)
+
+  const { data: issPos = NO_DATA, isFetching: issFetching } = useISSData()
+  const { hologramOn } = useHologram()
+  const { setTheme } = useTheme()
 
   // Odometer digit animation
   const prevSpeedDisplay = useRef(0)
@@ -120,22 +135,18 @@ export default function Dashboard() {
   }, [])
 
   useEffect(() => {
-    let cancelled = false
-    const poll = async () => {
-      try {
-        const res = await fetch('/api/iss')
-        const d = await res.json()
-        if (!cancelled) setIssPos({ lat: +d.latitude.toFixed(2), lon: +d.longitude.toFixed(2), alt: Math.round(d.altitude), vel: Math.round(d.velocity) })
-      } catch { /* use fallback */ }
-    }
-    poll(); const i = setInterval(poll, 5000)
-    return () => { cancelled = true; clearInterval(i) }
-  }, [])
-
-  useEffect(() => {
     const i = setInterval(() => setPasses(p => p.map(x => ({ ...x, seconds: Math.max(0, x.seconds - 1) }))), 1000)
     return () => clearInterval(i)
   }, [])
+
+  // Keyboard shortcut callbacks
+  const kbdCallbacks = {
+    onTogglePause: () => setGlobePaused(p => !p),
+    onResetCamera: () => {},
+    onToggleFullscreen: () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen() },
+    onToggleSkylens: () => setSkylensOpen(o => !o),
+    onTheme: (idx: number) => setTheme(THEME_ORDER[idx % THEME_ORDER.length]),
+  }
 
   // Speed tracker with odometer effect
   useEffect(() => {
@@ -184,6 +195,22 @@ export default function Dashboard() {
 
   const list = SAT_DATA.filter(s => filter === 'ALL' || s.type === filter)
   const S = { fontFamily: 'Space Mono, monospace' }
+
+  // PDF export listener (must come after list declaration)
+  useEffect(() => {
+    const handler = () => {
+      exportMissionLog({
+        globeElement: globeRef.current,
+        trackedObjects: list,
+        kp: null,
+        solarWind: null,
+        passes: passes.map(p => ({ sat: p.sat, time: fmt(p.seconds), elevation: p.elevation })),
+        location: 'Dashboard',
+      })
+    }
+    window.addEventListener('zenith-export-pdf', handler)
+    return () => window.removeEventListener('zenith-export-pdf', handler)
+  }, [list, passes])
   const issContextString = issPos.vel ? `ISS: lat ${issPos.lat}°, lon ${issPos.lon}°, altitude ${issPos.alt} km, velocity ${issPos.vel.toLocaleString()} km/h.` : ''
   const isTimeTravel = timeOffset !== 0
   const displayTime = isTimeTravel ? getSimulatedTime(timeOffset) : utc
@@ -196,6 +223,8 @@ export default function Dashboard() {
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {/* LEFT PANEL - Tracked Objects */}
         <div className="animate-card-glow" style={{ width: 280, flexShrink: 0, background: 'rgba(8,10,16,0.92)', borderRight: '1px solid rgba(0,212,255,0.12)', display: 'flex', flexDirection: 'column' }}>
+          <ConjunctionWarning satellites={SAT_DATA} />
+
           <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.3em' }}>TRACKED OBJECTS</span>
@@ -256,6 +285,9 @@ export default function Dashboard() {
               <div style={{ ...S, fontSize: 9, color: '#4A5568', textAlign: 'center', paddingTop: 12 }}>SELECT A TARGET</div>
             )}
           </div>
+
+          {/* Launch Countdown */}
+          <LaunchCountdownWidget />
         </div>
 
         {/* CENTER - Globe + HUD */}
@@ -572,6 +604,10 @@ export default function Dashboard() {
         object={modalObject}
         issContext={issContextString}
       />
+
+      <HolographicGrid enabled={hologramOn} />
+      <SysMon apiLatency={null} tleLastUpdated={new Date().toISOString().slice(11, 19)} />
+      <KeyboardShortcuts {...kbdCallbacks} />
     </div>
   )
 }

@@ -248,6 +248,12 @@ body {
   50%      { opacity: 0.7; transform: scaleY(1.08); }
 }
 
+/* ── Shimmer loading animation ─────────────────────── */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* ── respect prefers-reduced-motion ─────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .animate-float,
