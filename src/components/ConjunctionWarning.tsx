@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import InfoModal from './InfoModal'
 
@@ -22,7 +22,7 @@ function haversineDistKm(lat1: number, lon1: number, lat2: number, lon2: number,
   const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1)
   const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
   const ground = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  const altDiff = Math.abs(alt1 - alt2) / 1000
+  const altDiff = Math.abs(alt1 - alt2)
   return Math.sqrt(ground * ground + altDiff * altDiff)
 }
 

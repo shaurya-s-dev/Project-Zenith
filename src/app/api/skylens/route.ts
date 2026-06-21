@@ -1,9 +1,8 @@
 import Groq from 'groq-sdk'
 import { NextRequest } from 'next/server'
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
-
 export async function POST(req: NextRequest) {
+  const apiKey = process.env.GROQ_API_KEY || 'MISSING_API_KEY'
   const { messages, context } = await req.json()
 
   const systemPrompt = `You are SkyLens AI, the onboard intelligence system for Project Zenith: The Celestial Eye, a NASA Mission Control style satellite and space tracking platform.
@@ -13,6 +12,11 @@ You answer questions about astronomy, satellites, the ISS, space weather, orbita
 ${context ? `CURRENT LIVE TELEMETRY CONTEXT:\n${context}` : ''}`
 
   try {
+    if (apiKey === 'MISSING_API_KEY') {
+      throw new Error('missing api key')
+    }
+
+    const groq = new Groq({ apiKey })
     const stream = await groq.chat.completions.create({
       model: 'openai/gpt-oss-120b',
       messages: [
@@ -41,7 +45,7 @@ ${context ? `CURRENT LIVE TELEMETRY CONTEXT:\n${context}` : ''}`
     })
 
     return new Response(readable, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
-  } catch (err) {
-    return new Response('SkyLens core unreachable. Check GROQ_API_KEY.', { status: 500 })
+  } catch {
+    return new Response('CONNECTION ERROR — could not reach SkyLens core. Check your GROQ_API_KEY and restart the dev server.', { status: 500 })
   }
 }

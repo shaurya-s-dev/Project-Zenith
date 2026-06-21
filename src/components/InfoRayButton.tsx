@@ -12,7 +12,7 @@ export const InfoRayButton = ({ onClick, color = '#FFD400', size = 32 }: InfoRay
   const [isBursting, setIsBursting] = useState(false)
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => { setMounted(true) }, [])
+  useEffect(() => { setTimeout(() => setMounted(true), 0) }, [])
 
   const handleClick = () => {
     setIsBursting(true)
@@ -55,9 +55,6 @@ export const InfoRayButton = ({ onClick, color = '#FFD400', size = 32 }: InfoRay
       {/* Rays burst */}
       {mounted && isBursting && rays.map((i) => {
         const angle = (i / RAY_COUNT) * 360
-        const angleRad = (angle * Math.PI) / 180
-        const endX = Math.cos(angleRad) * (size * 1.4)
-        const endY = Math.sin(angleRad) * (size * 1.4)
         return (
           <div
             key={i}
@@ -71,11 +68,12 @@ export const InfoRayButton = ({ onClick, color = '#FFD400', size = 32 }: InfoRay
               marginTop: -(size * 0.55),
               transformOrigin: '50% 100%',
               transform: `rotate(${angle}deg)`,
+              '--r': `${angle}deg`,
               borderRadius: 2,
               background: `linear-gradient(to top, transparent, ${i % 2 === 0 ? color : '#00D4FF'})`,
               animation: 'rayBurst 0.6s ease-out forwards',
               pointerEvents: 'none',
-            }}
+            } as React.CSSProperties & { '--r': string }}
           />
         )
       })}

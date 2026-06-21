@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useSkyLens } from '@/components/SkyLensContext'
 
 const S = { fontFamily: 'Space Mono, monospace' as const }
@@ -40,7 +40,10 @@ export default function SkyLensPage() {
   }, [messages, isLoading])
 
   useEffect(() => {
-    if (!isLoading) { setDots(''); return }
+    if (!isLoading) {
+      setTimeout(() => setDots(''), 0)
+      return
+    }
     const i = setInterval(() => setDots(p => p.length >= 3 ? '' : p + '.'), 400)
     return () => clearInterval(i)
   }, [isLoading])

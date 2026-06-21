@@ -8,14 +8,15 @@ import { SkeletonLine } from '@/components/Skeleton'
 const S = { fontFamily: 'Space Mono, monospace' }
 
 interface CelestialObject {
+  id?: string
   name: string
   type?: string
   lat?: number
   lon?: number
   alt?: number
   speed?: number
+  status?: string
   description?: string
-  [key: string]: any
 }
 
 interface SkyLensModalProps {
@@ -46,7 +47,7 @@ function getDefaultFact(name: string, type?: string) {
 function TypewriterText({ text }: { text: string }) {
   const [displayed, setDisplayed] = useState('')
   useEffect(() => {
-    setDisplayed('')
+    setTimeout(() => setDisplayed(''), 0)
     let i = 0
     const interval = setInterval(() => {
       if (i < text.length) {
@@ -72,15 +73,19 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setVoiceSupported(!!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition))
+      const win = window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }
+      const supported = !!(win.SpeechRecognition || win.webkitSpeechRecognition)
+      setTimeout(() => setVoiceSupported(supported), 0)
     }
   }, [])
 
   useEffect(() => {
     if (isOpen) {
-      setActiveTab('overview')
-      setQuery('')
-      setAiResponse('')
+      setTimeout(() => {
+        setActiveTab('overview')
+        setQuery('')
+        setAiResponse('')
+      }, 0)
     }
   }, [isOpen, object])
 
@@ -124,12 +129,15 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
   }
 
   const startVoice = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    const win = window as unknown as { SpeechRecognition?: new () => unknown; webkitSpeechRecognition?: new () => unknown }
+    const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition
     if (!SpeechRecognition) return
-    const recognition = new SpeechRecognition()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const recognition = new (SpeechRecognition as any)()
     recognition.lang = 'en-US'
     recognition.onstart = () => setIsListening(true)
     recognition.onend = () => setIsListening(false)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript
       setQuery(transcript)
@@ -171,28 +179,25 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
           />
 
           {/* Modal - slides up from bottom */}
-          <motion.div
-            initial={{ y: '100%', opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: '100%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 26, stiffness: 280 }}
-            style={{
-              position: 'fixed',
-              bottom: 0,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '100%',
-              maxWidth: 560,
-              background: 'rgba(8, 10, 20, 0.97)',
-              backdropFilter: 'blur(24px)',
-              border: '1px solid rgba(0,212,255,0.18)',
-              borderBottom: 'none',
-              borderRadius: '16px 16px 0 0',
-              zIndex: 1001,
-              overflow: 'hidden',
-              boxShadow: '0 -20px 60px rgba(0,212,255,0.08)',
-            }}
-          >
+          <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 1001, pointerEvents: 'none' }}>
+            <motion.div
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 26, stiffness: 280 }}
+              style={{
+                width: '100%',
+                maxWidth: 560,
+                background: 'rgba(8, 10, 20, 0.97)',
+                backdropFilter: 'blur(24px)',
+                border: '1px solid rgba(0,212,255,0.18)',
+                borderBottom: 'none',
+                borderRadius: '16px 16px 0 0',
+                overflow: 'hidden',
+                boxShadow: '0 -20px 60px rgba(0,212,255,0.08)',
+                pointerEvents: 'auto',
+              }}
+            >
             {/* Drag handle */}
             <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0' }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.15)' }} />
@@ -380,7 +385,8 @@ export default function SkyLensModal({ isOpen, onClose, object, issContext }: Sk
                 ASK
               </button>
             </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

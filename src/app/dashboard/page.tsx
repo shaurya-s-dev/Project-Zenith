@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Globe from '@/components/Globe'
+import Globe from '@/components/GlobeDynamic'
 import { InfoRayButton } from '@/components/InfoRayButton'
 import SkyLensModal from '@/components/SkyLensModal'
 import ConjunctionWarning from '@/components/ConjunctionWarning'
@@ -14,7 +14,6 @@ import { exportMissionLog } from '@/lib/exportPdf'
 import { useISSData } from '@/hooks/useISSData'
 import KeyboardShortcuts from '@/components/KeyboardShortcuts'
 import { useTheme, THEME_ORDER } from '@/components/ThemeProvider'
-import { SkeletonLine } from '@/components/Skeleton'
 import Tooltip from '@/components/Tooltip'
 import { usePulseOnChange } from '@/hooks/usePulse'
 import { SAT_DATA } from '@/lib/satellites'
@@ -26,7 +25,6 @@ const PASSES = [
   { sat: 'TIANGONG', seconds: 7511, elevation: '58°', direction: 'W→E' },
 ]
 
-const PASS_MAX = Math.max(...PASSES.map(p => p.seconds))
 
 const SPACE_FACTS = [
   "One day on Venus is longer than one year on Venus. It takes Venus 243 Earth days to rotate once on its axis, but only 225 Earth days to travel around the Sun.",
@@ -133,7 +131,6 @@ export default function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false)
   const [modalObject, setModalObject] = useState<typeof SAT_DATA[0] | null>(null)
   const [currentSpeed, setCurrentSpeed] = useState(0)
-  const [speedDelta, setSpeedDelta] = useState(0)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isDragging, setIsDragging] = useState(false)
   const prevSpeedRef = useRef(0)
@@ -142,10 +139,9 @@ export default function Dashboard() {
   const playRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [showConstellations, setShowConstellations] = useState(false)
   const [globePaused, setGlobePaused] = useState(false)
-  const [skylensOpen, setSkylensOpen] = useState(false)
   const globeRef = useRef<HTMLDivElement>(null)
 
-  const { data: issPos = NO_DATA, isFetching: issFetching } = useISSData()
+  const { data: issPos = NO_DATA } = useISSData()
   const { hologramOn } = useHologram()
   const { setTheme } = useTheme()
 
@@ -178,14 +174,19 @@ export default function Dashboard() {
     onTogglePause: () => setGlobePaused(p => !p),
     onResetCamera: () => {},
     onToggleFullscreen: () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen() },
-    onToggleSkylens: () => setSkylensOpen(o => !o),
+    onToggleSkylens: () => {
+      setModalObject(selected || SAT_DATA.find(s => s.id === 'ISS') || null)
+      setModalOpen(o => !o)
+    },
     onTheme: (idx: number) => setTheme(THEME_ORDER[idx % THEME_ORDER.length]),
   }
 
   useEffect(() => {
     if (!selected) return
-    setCurrentSpeed(selected.speed)
-    setDisplaySpeed(selected.speed)
+    setTimeout(() => {
+      setCurrentSpeed(selected.speed)
+      setDisplaySpeed(selected.speed)
+    }, 0)
   }, [selected])
 
   useEffect(() => {
@@ -194,7 +195,6 @@ export default function Dashboard() {
       const base = selected.speed
       const v = base + Math.round((Math.random() - 0.5) * 80)
       setCurrentSpeed(v)
-      setSpeedDelta(v - prevSpeedRef.current)
       prevSpeedRef.current = v
     }, 2000)
     return () => clearInterval(i)
@@ -269,7 +269,6 @@ export default function Dashboard() {
   const isTimeTravel = timeOffset !== 0
   const displayTime = isTimeTravel ? getSimulatedTime(timeOffset) : utc
   const speedColor = displaySpeed > 28000 ? '#FF6B35' : displaySpeed > 26000 ? '#FFD400' : '#00D4FF'
-  const speedPct = Math.min(100, (displaySpeed / 30000) * 100)
 
   return (
     <div style={{ height: 'calc(100vh - 52px)', display: 'flex', flexDirection: 'column', overflowY: 'auto', background: 'rgba(6,8,14,0.3)' }} className="custom-scrollbar">
@@ -821,7 +820,7 @@ export default function Dashboard() {
           </div>
           <div style={{ minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <AnimatePresence mode="wait">
-              {SPACE_FACTS.length > 1 ? (
+            {SPACE_FACTS.length > 1 ? (
                 <motion.div
                   key={factIndex}
                   initial={{ opacity: 0, scale: 0.98 }}
@@ -843,7 +842,7 @@ export default function Dashboard() {
                   }}
                   style={{ ...S, fontSize: 12, color: '#fff', textAlign: 'center', lineHeight: 1.6, maxWidth: 800 }}
                 >
-                  "{SPACE_FACTS[factIndex]}"
+                  &ldquo;{SPACE_FACTS[factIndex]}&rdquo;
                 </motion.div>
               ) : SPACE_FACTS.length === 1 ? (
                 <motion.div
@@ -860,7 +859,7 @@ export default function Dashboard() {
                     textShadow: '0 0 12px rgba(0,212,255,0.6)'
                   }}
                 >
-                  "{SPACE_FACTS[0]}"
+                  &ldquo;{SPACE_FACTS[0]}&rdquo;
                 </motion.div>
               ) : null}
             </AnimatePresence>

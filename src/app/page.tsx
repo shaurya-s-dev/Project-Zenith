@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
@@ -38,7 +38,9 @@ export default function HomePage() {
       opacity: Math.random() * 0.6 + 0.2,
       delay: Math.random() * 3,
     }))
-    setStars(s)
+    setTimeout(() => {
+      setStars(s)
+    }, 0)
   }, [])
 
   useEffect(() => {

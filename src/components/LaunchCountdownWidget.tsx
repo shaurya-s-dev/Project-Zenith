@@ -18,19 +18,8 @@ const MOCK_LAUNCHES: Launch[] = [
   { name: 'Electron · Skywatch', date: new Date(Date.now() + 86400000 * 8), provider: 'Rocket Lab', mission: 'Earth Observation' },
 ]
 
-function calcDiff(launch: Launch) {
-  const diff = launch.date.getTime() - Date.now()
-  if (diff <= 0) return { d: 0, h: 0, m: 0, s: 0 }
-  return {
-    d: Math.floor(diff / 86400000),
-    h: Math.floor((diff % 86400000) / 3600000),
-    m: Math.floor((diff % 3600000) / 60000),
-    s: Math.floor((diff % 60000) / 1000),
-  }
-}
-
 export default function LaunchCountdownWidget() {
-  const [now, setNow] = useState(Date.now())
+  const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
     const i = setInterval(() => setNow(Date.now()), 1000)
@@ -38,8 +27,13 @@ export default function LaunchCountdownWidget() {
   }, [])
 
   const nextLaunch = MOCK_LAUNCHES[0]
-  const cd = calcDiff(nextLaunch)
-  const totalMs = nextLaunch.date.getTime() - Date.now()
+  const totalMs = nextLaunch.date.getTime() - now
+  const cd = totalMs <= 0 ? { d: 0, h: 0, m: 0, s: 0 } : {
+    d: Math.floor(totalMs / 86400000),
+    h: Math.floor((totalMs % 86400000) / 3600000),
+    m: Math.floor((totalMs % 3600000) / 60000),
+    s: Math.floor((totalMs % 60000) / 1000),
+  }
 
   return totalMs <= 0 ? null : (
     <div className="animate-card-glow hover-lift" style={{

@@ -36,7 +36,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem('zenith-theme') as ThemeKey | null
     if (saved && THEME_ORDER.includes(saved)) {
-      setThemeState(saved)
+      setTimeout(() => setThemeState(saved), 0)
       document.documentElement.setAttribute('data-theme', saved)
     } else {
       document.documentElement.setAttribute('data-theme', 'deep-space')
@@ -44,7 +44,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const savedHolo = localStorage.getItem('zenith-hologram')
     if (savedHolo === 'true') {
-      setHologramOnState(true)
+      setTimeout(() => setHologramOnState(true), 0)
       document.documentElement.setAttribute('data-hologram', 'true')
     } else {
       document.documentElement.setAttribute('data-hologram', 'false')

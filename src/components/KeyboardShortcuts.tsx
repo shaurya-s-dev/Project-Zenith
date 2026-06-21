@@ -48,7 +48,7 @@ export default function KeyboardShortcuts(cb: ShortcutCallbacks) {
   return (
     <div
       style={{
-        position: 'fixed', bottom: 16, right: 16, zIndex: 999,
+        position: 'fixed', bottom: 48, right: 16, zIndex: 999,
       }}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}

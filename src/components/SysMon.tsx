@@ -14,11 +14,12 @@ export default function SysMon({ apiLatency, tleLastUpdated }: SysMonProps) {
   const [fps, setFps] = useState(0)
   const [memory, setMemory] = useState<string>('N/A')
   const frameRef = useRef<number>(0)
-  const lastTimeRef = useRef(performance.now())
+  const lastTimeRef = useRef<number>(0)
   const framesRef = useRef(0)
 
   useEffect(() => {
     let running = true
+    lastTimeRef.current = performance.now()
     const tick = () => {
       if (!running) return
       framesRef.current++
@@ -36,7 +37,7 @@ export default function SysMon({ apiLatency, tleLastUpdated }: SysMonProps) {
 
   useEffect(() => {
     const updateMemory = () => {
-      const perf = typeof window !== 'undefined' ? (window.performance as any) : null
+      const perf = typeof window !== 'undefined' ? window.performance as unknown as { memory?: { usedJSHeapSize: number } } : null
       if (perf && perf.memory) {
         setMemory(`${Math.round(perf.memory.usedJSHeapSize / 1048576)}MB`)
       } else {
@@ -59,7 +60,7 @@ export default function SysMon({ apiLatency, tleLastUpdated }: SysMonProps) {
 
   return (
     <div style={{
-      position: 'fixed', bottom: 16, left: 16, zIndex: 998,
+      position: 'fixed', bottom: 48, left: 16, zIndex: 998,
     }}>
       <button
         onClick={() => setCollapsed(c => !c)}

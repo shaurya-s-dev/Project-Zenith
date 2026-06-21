@@ -2,13 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState, useContext, createContext, useEffect } from 'react'
+import { useState, createContext, useEffect } from 'react'
 import { useTheme, THEME_LABELS, THEME_ORDER } from './ThemeProvider'
-import type { ThemeKey } from './ThemeProvider'
 
 const S = { fontFamily: 'Space Mono, monospace' }
 
-export const HologramCtx = createContext({ hologramOn: false, setHologramOn: (v: boolean) => {} })
+export const HologramCtx = createContext({ hologramOn: false, setHologramOn: (() => {}) as (h: boolean) => void })
 
 const TABS = [
   { id: 'dashboard', label: '🛰️ DASHBOARD', href: '/dashboard', icon: '📡' },

@@ -76,7 +76,11 @@ export default function SolarFlareBackground() {
         ctx.beginPath()
         for (let x = 0; x <= w; x += 3) {
           const yOff = Math.sin(x * 0.005 + time * 1.5 + i * 2) * 8
-          x === 0 ? ctx.moveTo(x, y + yOff) : ctx.lineTo(x, y + yOff)
+          if (x === 0) {
+            ctx.moveTo(x, y + yOff)
+          } else {
+            ctx.lineTo(x, y + yOff)
+          }
         }
         ctx.strokeStyle = `hsla(20, 90%, 60%, 0.03)`
         ctx.lineWidth = 12

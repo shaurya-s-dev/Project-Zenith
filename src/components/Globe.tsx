@@ -44,7 +44,6 @@ function propagateSat(sat: Sat, offsetHours: number): { lat: number; lon: number
   // Approximate longitude drift (satellites move eastward relative to ground in LEO)
   const lonDrift = fractionOfOrbit * 360
   // Latitude oscillates with inclination
-  const inclinationRad = (Math.abs(sat.lat) + 10) * (Math.PI / 180)
   const newLon = ((sat.lon + lonDrift + 180) % 360) - 180
   const latOscillation = Math.sin(fractionOfOrbit * 2 * Math.PI) * Math.abs(sat.lat)
 
@@ -64,6 +63,7 @@ export default function Globe({
   isPaused = false,
 }: GlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const globeRef = useRef<any>(null)
   const [size, setSize] = useState({ w: 600, h: 600 })
 
@@ -92,7 +92,7 @@ export default function Globe({
 
   // ISS and Selected satellite rings
   const ringsData = useMemo(() => {
-    const rings: any[] = []
+    const rings: { lat: number; lng: number; type: string }[] = []
     const iss = pointsData.find(s => s.type === 'ISS')
     if (iss) {
       rings.push({ lat: iss.lat, lng: iss.lon, type: 'ISS' })
@@ -111,7 +111,7 @@ export default function Globe({
   // We use arcsData to draw lines between star pairs
   const arcsData = useMemo(() => {
     if (!showConstellations) return []
-    const arcs: any[] = []
+    const arcs: { startLat: number; startLng: number; endLat: number; endLng: number; color: string; constellationId: string; constellationName: string; mythology: string; season: string }[] = []
     for (const con of CONSTELLATIONS) {
       for (const [ai, bi] of con.lines) {
         const a = con.stars[ai]
@@ -172,6 +172,7 @@ export default function Globe({
     controls.autoRotate = !isPaused
     controls.autoRotateSpeed = 0.35
     globeRef.current.pointOfView({ lat: 20, lng: 10, altitude: 2.2 }, 0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -214,6 +215,7 @@ export default function Globe({
         pointColor="color"
         pointAltitude={0.012}
         pointRadius="size"
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         pointLabel={(d: any) => {
           if (d.constellationName && !d.speed) {
             // Constellation star tooltip
@@ -221,6 +223,7 @@ export default function Globe({
           }
           return `<div style="font-family:'Space Mono',monospace;font-size:11px;color:#00D4FF;background:rgba(0,0,0,0.85);padding:6px 10px;border:1px solid rgba(0,212,255,0.3);border-radius:4px">${d.name}<br/><span style="color:#8892A4">${d.alt}km · ${d.speed?.toLocaleString('en-US')}km/h</span></div>`
         }}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onPointClick={(d: any) => {
           if (d.speed !== undefined) onSelect(d as Sat)
         }}
@@ -229,6 +232,7 @@ export default function Globe({
         ringsData={ringsData}
         ringLat="lat"
         ringLng="lng"
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ringColor={(d: any) => d.type === 'ISS' ? 'rgba(0,255,136,0.6)' : 'rgba(255,170,0,0.8)'}
         ringMaxRadius={5}
         ringPropagationSpeed={2}
@@ -246,7 +250,9 @@ export default function Globe({
         arcDashLength={0.6}
         arcDashGap={0.3}
         arcDashAnimateTime={showConstellations ? 8000 : 0}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         arcLabel={(d: any) => `<div style="font-family:'Space Mono',monospace;font-size:10px;color:#9BDCFF;background:rgba(0,0,0,0.88);padding:8px 12px;border:1px solid rgba(155,220,255,0.2);border-radius:6px;max-width:220px"><strong>${d.constellationName}</strong><br/><span style="color:#8892A4;font-size:9px">${d.mythology?.slice(0,100)}...</span></div>`}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onArcClick={(d: any) => {
           const con = CONSTELLATIONS.find(c => c.id === d.constellationId)
           if (con && onConstellationClick) onConstellationClick(con)
@@ -261,6 +267,7 @@ export default function Globe({
         labelColor="color"
         labelAltitude={0.02}
         labelDotRadius={0}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onLabelClick={(d: any) => {
           if (d.con && onConstellationClick) onConstellationClick(d.con)
         }}

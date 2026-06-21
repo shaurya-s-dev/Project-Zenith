@@ -109,24 +109,23 @@ export default function MoonPhaseGallery({ isOpen, onClose, currentPhase, curren
             onClick={onClose}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 1000 }}
           />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 20 }}
-            transition={{ type: 'spring', damping: 22, stiffness: 280 }}
-            style={{
-              position: 'fixed', top: '50%', left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '92%', maxWidth: 700,
-              maxHeight: '85vh', overflowY: 'auto',
-              background: 'rgba(6,8,18,0.96)',
-              border: '1px solid rgba(0,212,255,0.15)',
-              borderRadius: 16, padding: '28px 24px',
-              zIndex: 1001,
-              backdropFilter: 'blur(24px)',
-              boxShadow: '0 0 60px rgba(0,212,255,0.06)',
-            }}
-          >
+          <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1001, padding: 16, pointerEvents: 'none' }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+              style={{
+                width: '92%', maxWidth: 700,
+                maxHeight: '85vh', overflowY: 'auto',
+                background: 'rgba(6,8,18,0.96)',
+                border: '1px solid rgba(0,212,255,0.15)',
+                borderRadius: 16, padding: '28px 24px',
+                backdropFilter: 'blur(24px)',
+                boxShadow: '0 0 60px rgba(0,212,255,0.06)',
+                pointerEvents: 'auto',
+              }}
+            >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 18 }}>🌙</span>
@@ -177,8 +176,9 @@ export default function MoonPhaseGallery({ isOpen, onClose, currentPhase, curren
               </div>
             </div>
           </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+        </div>
+      </>
+    )}
+  </AnimatePresence>
   )
 }

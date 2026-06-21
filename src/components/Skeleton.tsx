@@ -8,11 +8,11 @@ const shimmerStyle: React.CSSProperties = {
 }
 
 export function SkeletonLine({ w = '100%', h = 12, style }: { w?: string | number; h?: number; style?: React.CSSProperties }) {
-  return <div style={{ ...shimmerStyle, width: w as any, height: h, ...style }} />
+  return <div style={{ ...shimmerStyle, width: w, height: h, ...style }} />
 }
 
 export function SkeletonRect({ w = '100%', h = 80, style }: { w?: string | number; h?: number; style?: React.CSSProperties }) {
-  return <div style={{ ...shimmerStyle, width: w as any, height: h, ...style }} />
+  return <div style={{ ...shimmerStyle, width: w, height: h, ...style }} />
 }
 
 export function SkeletonCircle({ size = 40, style }: { size?: number; style?: React.CSSProperties }) {

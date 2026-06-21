@@ -8,7 +8,6 @@ import TonightView from '@/components/TonightView'
 import MoonPhaseGallery from '@/components/MoonPhaseGallery'
 import Tooltip from '@/components/Tooltip'
 import { usePulseOnChange } from '@/hooks/usePulse'
-import { SkeletonLine } from '@/components/Skeleton'
 
 const S = { fontFamily: 'Space Mono, monospace' as const }
 const FALLBACK_LOC = { lat: 28.6139, lon: 77.2090, label: 'DEFAULT (NEW DELHI)' }
@@ -123,7 +122,7 @@ const PLANET_INFO: Record<string, { title: string; content: string; color: strin
   },
 }
 
-function MoonPhaseSVG({ phase, illum }: { phase: number; illum: number }) {
+function MoonPhaseSVG({ phase }: { phase: number; illum: number }) {
   const r = 40
   const isWaxing = phase < 0.5
   const litWidth = Math.abs(Math.cos(2 * Math.PI * phase)) * r
@@ -230,10 +229,16 @@ export default function SkyPage() {
     )
   }, [])
 
-  useEffect(() => { requestLocation() }, [requestLocation])
+  useEffect(() => {
+    setTimeout(() => {
+      requestLocation()
+    }, 0)
+  }, [requestLocation])
 
   useEffect(() => {
-    setNow(new Date())
+    setTimeout(() => {
+      setNow(new Date())
+    }, 0)
     const t = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(t)
   }, [])
@@ -261,6 +266,7 @@ export default function SkyPage() {
     return () => { cancelled = true; clearInterval(i) }
   }, [])
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const pulse = usePulseOnChange(iss?.vel)
 
   const dist = userLoc && iss ? distanceKm(userLoc.lat, userLoc.lon, iss.lat, iss.lon) : null

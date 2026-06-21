@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { InfoRayButton } from '@/components/InfoRayButton'
 import InfoModal from '@/components/InfoModal'
 import { useSpaceWeather } from '@/hooks/useSpaceWeather'
-import { SkeletonLine, SkeletonRect, SkeletonCircle } from '@/components/Skeleton'
+import { SkeletonLine } from '@/components/Skeleton'
 import { usePulseOnChange } from '@/hooks/usePulse'
 
 const S = { fontFamily: 'Space Mono, monospace' }
