@@ -36,13 +36,19 @@ export default function TabNav() {
       let isSkylensOnline = false
 
       try {
-        const r = await fetch('https://api.wheretheiss.at/v1/satellites/25544')
-        isISSOnline = r.ok
+        const r = await fetch('/api/iss')
+        if (r.ok) {
+          const d = await r.json()
+          isISSOnline = d.live !== false
+        }
       } catch {}
 
       try {
-        const r = await fetch('https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=json')
-        isCelestrakOnline = r.ok
+        const r = await fetch('/api/celestrak')
+        if (r.ok) {
+          const d = await r.json()
+          isCelestrakOnline = d.online === true
+        }
       } catch {}
 
       try {
