@@ -8,78 +8,103 @@
 
 :root {
   /* Default theme values (deep-space) */
-  --theme-bg: #000;
-  --theme-primary: #00D4FF;
+  --bg-primary: #060713;
+  --text-primary: #ffffff;
+  --accent-color: #00D4FF;
+  --border-glow: rgba(0, 212, 255, 0.3);
+
+  --theme-bg: var(--bg-primary);
+  --theme-primary: var(--accent-color);
   --theme-secondary: #00FF88;
   --theme-accent: #9B59FF;
   --theme-warn: #FF6B35;
   --theme-surface: rgba(8,10,16,0.92);
   --theme-border: rgba(0,212,255,0.12);
-  --theme-text: #ffffff;
+  --theme-text: var(--text-primary);
   --theme-text-dim: #8892A4;
   --theme-text-faint: #4A5568;
-  --theme-glow: rgba(0,212,255,0.3);
+  --theme-glow: var(--border-glow);
   --theme-nebula-hue: 260;
 }
 
 [data-theme="deep-space"] {
-  --theme-bg: #000;
-  --theme-primary: #00D4FF;
+  --bg-primary: #060713;
+  --text-primary: #ffffff;
+  --accent-color: #00D4FF;
+  --border-glow: rgba(0, 212, 255, 0.3);
+
+  --theme-bg: var(--bg-primary);
+  --theme-primary: var(--accent-color);
   --theme-secondary: #00FF88;
   --theme-accent: #9B59FF;
   --theme-warn: #FF6B35;
   --theme-surface: rgba(8,10,16,0.92);
   --theme-border: rgba(0,212,255,0.12);
-  --theme-text: #ffffff;
+  --theme-text: var(--text-primary);
   --theme-text-dim: #8892A4;
   --theme-text-faint: #4A5568;
-  --theme-glow: rgba(0,212,255,0.3);
+  --theme-glow: var(--border-glow);
   --theme-nebula-hue: 260;
 }
 
-[data-theme="cosmic-aurora"] {
-  --theme-bg: #0a0014;
-  --theme-primary: #9B59FF;
-  --theme-secondary: #00FF88;
-  --theme-accent: #FF6B35;
-  --theme-warn: #FFD400;
-  --theme-surface: rgba(15,0,30,0.92);
-  --theme-border: rgba(155,89,255,0.15);
-  --theme-text: #ffffff;
-  --theme-text-dim: #9B89B0;
-  --theme-text-faint: #6A5078;
-  --theme-glow: rgba(155,89,255,0.3);
-  --theme-nebula-hue: 290;
+[data-theme="holographic"] {
+  --bg-primary: rgba(5, 12, 22, 0.45);
+  --text-primary: #e0f7ff;
+  --accent-color: #00f3ff;
+  --border-glow: rgba(0, 243, 255, 0.5);
+
+  --theme-bg: rgba(5, 12, 22, 0.3);
+  --theme-primary: var(--accent-color);
+  --theme-secondary: #ff007f;
+  --theme-accent: #ff007f;
+  --theme-warn: #ffaa00;
+  --theme-surface: rgba(5, 12, 22, 0.5);
+  --theme-border: rgba(0, 243, 255, 0.25);
+  --theme-text: var(--text-primary);
+  --theme-text-dim: #a0c0d0;
+  --theme-text-faint: #507888;
+  --theme-glow: var(--border-glow);
+  --theme-nebula-hue: 180;
 }
 
 [data-theme="solar-flare"] {
-  --theme-bg: #0d0500;
-  --theme-primary: #FF6B35;
-  --theme-secondary: #FFD400;
-  --theme-accent: #FF3B3B;
+  --bg-primary: #0f0500;
+  --text-primary: #fff3eb;
+  --accent-color: #ffaa00;
+  --border-glow: rgba(255, 170, 0, 0.35);
+
+  --theme-bg: var(--bg-primary);
+  --theme-primary: var(--accent-color);
+  --theme-secondary: #ff5500;
+  --theme-accent: #ff3300;
   --theme-warn: #00D4FF;
   --theme-surface: rgba(20,8,0,0.92);
   --theme-border: rgba(255,107,53,0.15);
-  --theme-text: #ffffff;
+  --theme-text: var(--text-primary);
   --theme-text-dim: #B08870;
   --theme-text-faint: #6A4030;
-  --theme-glow: rgba(255,107,53,0.3);
+  --theme-glow: var(--border-glow);
   --theme-nebula-hue: 20;
 }
 
-[data-theme="retro-terminal"] {
-  --theme-bg: #000800;
-  --theme-primary: #00FF88;
-  --theme-secondary: #00D4FF;
-  --theme-accent: #FFD400;
-  --theme-warn: #FF6B35;
-  --theme-surface: rgba(0,15,0,0.95);
-  --theme-border: rgba(0,255,136,0.12);
-  --theme-text: #e0ffe0;
-  --theme-text-dim: #4a8a4a;
-  --theme-text-faint: #2a5a2a;
-  --theme-glow: rgba(0,255,136,0.3);
-  --theme-nebula-hue: 120;
+[data-theme="aurora-borealis"] {
+  --bg-primary: #010d0d;
+  --text-primary: #e0fff0;
+  --accent-color: #00ff88;
+  --border-glow: rgba(0, 255, 136, 0.35);
+
+  --theme-bg: var(--bg-primary);
+  --theme-primary: var(--accent-color);
+  --theme-secondary: #00d4ff;
+  --theme-accent: #00ffc8;
+  --theme-warn: #ff8800;
+  --theme-surface: rgba(2, 18, 18, 0.92);
+  --theme-border: rgba(0, 255, 136, 0.15);
+  --theme-text: var(--text-primary);
+  --theme-text-dim: #88b098;
+  --theme-text-faint: #406a50;
+  --theme-glow: var(--border-glow);
+  --theme-nebula-hue: 140;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useSkyLens } from '@/components/SkyLensContext'
 
 const S = { fontFamily: 'Space Mono, monospace' as const }
@@ -9,12 +9,14 @@ const S = { fontFamily: 'Space Mono, monospace' as const }
 interface Msg { role: 'user' | 'assistant'; content: string }
 
 const SUGGESTIONS = [
-  'What is the ISS doing right now?',
-  'Explain the KP index in simple terms.',
-  'When can I see Jupiter tonight?',
-  'How does satellite tracking work?',
-  'Tell me about the moon phases.',
-  'What is a near-Earth object?',
+  { text: "🛰️ What's the ISS doing right now?", query: "What's the ISS doing right now?" },
+  { text: "🌡️ Explain the KP index simply.", query: "Explain the KP index simply." },
+  { text: "🪐 When can I see Jupiter tonight?", query: "When can I see Jupiter tonight?" },
+  { text: "📡 How does satellite tracking work?", query: "How does satellite tracking work?" },
+  { text: "🌙 Tell me about moon phases.", query: "Tell me about moon phases." },
+  { text: "☄️ What is a near-Earth object?", query: "What is a near-Earth object?" },
+  { text: "🛸 What is orbital decay?", query: "What is orbital decay?" },
+  { text: "🌍 How many satellites are active?", query: "How many satellites are active?" },
 ]
 
 export default function SkyLensPage() {
@@ -32,8 +34,10 @@ export default function SkyLensPage() {
   }, [])
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
-  }, [messages])
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [messages, isLoading])
 
   useEffect(() => {
     if (!isLoading) { setDots(''); return }
@@ -76,66 +80,154 @@ export default function SkyLensPage() {
     <div style={{
       minHeight: 'calc(100vh - 52px)',
       color: 'var(--theme-text, #fff)',
-      display: 'flex', flexDirection: 'column',
+      display: 'flex',
+      flexDirection: 'column',
+      position: 'relative',
+      overflow: 'hidden',
     }}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 760, margin: '0 auto', width: '100%', padding: '0 20px', overflow: 'hidden' }}>
-
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        maxWidth: 800,
+        margin: '0 auto',
+        width: '100%',
+        padding: '0 24px',
+        zIndex: 5,
+      }}>
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ padding: '28px 0 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <span style={{ fontSize: 22 }}>🌌</span>
-            <h1 style={{
-              fontFamily: 'Space Grotesk, sans-serif', fontSize: 22, fontWeight: 700,
-              letterSpacing: '0.05em', color: 'var(--theme-text, #fff)',
-            }}>
-              SkyLens AI
-            </h1>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            padding: '24px 0 12px',
+            borderBottom: '1px solid var(--theme-border, rgba(255,255,255,0.06))',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2 }}>
+              <span style={{ fontSize: 24 }}>🌌</span>
+              <h1 style={{
+                fontFamily: 'Space Grotesk, sans-serif',
+                fontSize: 22,
+                fontWeight: 700,
+                letterSpacing: '0.05em',
+                background: 'linear-gradient(135deg, var(--theme-primary, #00D4FF), var(--theme-accent, #9B59FF))',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}>
+                SkyLens AI – Your Personal Space Expert
+              </h1>
+            </div>
+            <p style={{ ...S, fontSize: 10, color: 'var(--theme-text-dim, #8892A4)' }}>
+              Ask me anything about space, satellites, planets, and astronomy.
+            </p>
           </div>
-          <p style={{ ...S, fontSize: 10, color: 'var(--theme-text-dim, #8892A4)' }}>
-            Your Space Expert — Ask me anything about space, satellites, planets, and astronomy.
-          </p>
-        </motion.div>
 
-        {/* Toolbar */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 0 8px' }}>
           {messages.length > 0 && (
             <button
               onClick={clearMessages}
               style={{
-                ...S, fontSize: 8, color: 'var(--theme-text-dim, #8892A4)',
-                background: 'transparent', border: '1px solid var(--theme-border, rgba(255,255,255,0.08))',
-                borderRadius: 4, padding: '3px 8px', cursor: 'pointer',
+                ...S,
+                fontSize: 9,
+                color: '#FF6B35',
+                background: 'rgba(255,107,53,0.08)',
+                border: '1px solid rgba(255,107,53,0.25)',
+                borderRadius: 6,
+                padding: '5px 12px',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
               }}
             >
-              CLEAR CHAT
+              🗑️ CLEAR CHAT
             </button>
           )}
-        </div>
+        </motion.div>
 
-        {/* Messages */}
-        <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', paddingBottom: 12 }}>
+        {/* Message Panel */}
+        <div
+          ref={scrollRef}
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '20px 0',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+          }}
+        >
           {messages.length === 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: 'center', marginTop: 40 }}>
-              <div style={{ ...S, fontSize: 11, color: 'var(--theme-accent, #9B59FF)', letterSpacing: '0.3em', marginBottom: 12 }}>SKYLENS AI</div>
-              <div style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 20, marginBottom: 8, color: 'var(--theme-text, #fff)' }}>
-                Ask me about the sky
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                textAlign: 'center',
+                margin: 'auto 0',
+                padding: '40px 0',
+              }}
+            >
+              <div style={{
+                width: 60,
+                height: 60,
+                borderRadius: '50%',
+                background: 'rgba(0, 212, 255, 0.08)',
+                border: '1px solid rgba(0, 212, 255, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 32,
+                margin: '0 auto 20px',
+                boxShadow: '0 0 20px rgba(0, 212, 255, 0.15)',
+              }}>
+                🧠
               </div>
-              <div style={{ ...S, fontSize: 11, color: 'var(--theme-text-faint, #4A5568)', marginBottom: 28 }}>
-                Live-aware of current ISS telemetry · powered by Groq
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 520, margin: '0 auto' }}>
-                {SUGGESTIONS.map(s => (
+              <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 24, fontWeight: 700, marginBottom: 8, color: '#fff' }}>
+                Establish Telemetry Link
+              </h2>
+              <p style={{ ...S, fontSize: 11, color: 'var(--theme-text-dim, #8892A4)', maxWidth: 440, margin: '0 auto 24px', lineHeight: 1.6 }}>
+                Initialize connection with SkyLens AI. Real-time telemetry connection to ISS is active. Choose a suggestion or query the system directly.
+              </p>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 10,
+                maxWidth: 600,
+                margin: '0 auto',
+              }}>
+                {SUGGESTIONS.map((s, idx) => (
                   <button
-                    key={s}
-                    onClick={() => send(s)}
+                    key={idx}
+                    onClick={() => send(s.query)}
                     style={{
-                      ...S, fontSize: 10, color: 'var(--theme-text-dim, #8892A4)',
-                      border: '1px solid var(--theme-border, rgba(255,255,255,0.1))',
-                      background: 'rgba(255,255,255,0.02)', padding: '8px 12px',
-                      borderRadius: 8, cursor: 'pointer', textAlign: 'left',
+                      ...S,
+                      fontSize: 10,
+                      color: 'var(--theme-text-dim, #a0c0d0)',
+                      border: '1px solid var(--theme-border, rgba(255,255,255,0.08))',
+                      background: 'rgba(255,255,255,0.02)',
+                      padding: '12px 14px',
+                      borderRadius: 10,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.2s',
+                      backdropFilter: 'blur(4px)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = 'rgba(0, 212, 255, 0.05)'
+                      e.currentTarget.style.borderColor = 'rgba(0, 212, 255, 0.25)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)'
+                      e.currentTarget.style.borderColor = 'var(--theme-border, rgba(255,255,255,0.08))'
                     }}
                   >
-                    {s}
+                    {s.text}
                   </button>
                 ))}
               </div>
@@ -143,23 +235,38 @@ export default function SkyLensPage() {
           )}
 
           {messages.map((m, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 14 }}>
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                display: 'flex',
+                justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
+              }}
+            >
               <div style={{
-                maxWidth: '78%', padding: '10px 14px', borderRadius: 10,
+                maxWidth: '82%',
+                padding: '12px 16px',
+                borderRadius: m.role === 'user' ? '16px 16px 2px 16px' : '16px 16px 16px 2px',
                 background: m.role === 'user'
-                  ? 'color-mix(in srgb, var(--theme-primary, #00D4FF) 8%, transparent)'
-                  : 'color-mix(in srgb, var(--theme-accent, #9B59FF) 4%, transparent)',
+                  ? 'rgba(0, 212, 255, 0.08)'
+                  : 'rgba(155, 89, 255, 0.05)',
                 border: m.role === 'user'
-                  ? '1px solid color-mix(in srgb, var(--theme-primary, #00D4FF) 20%, transparent)'
-                  : '1px solid color-mix(in srgb, var(--theme-accent, #9B59FF) 12%, transparent)',
-                fontFamily: 'Space Grotesk, sans-serif', fontSize: 13, lineHeight: 1.6,
-                color: 'var(--theme-text, #fff)',
+                  ? '1px solid rgba(0, 212, 255, 0.25)'
+                  : '1px solid rgba(155, 89, 255, 0.2)',
+                boxShadow: m.role === 'user'
+                  ? '0 4px 12px rgba(0, 212, 255, 0.05)'
+                  : '0 4px 15px rgba(155, 89, 255, 0.08), 0 0 10px rgba(155, 89, 255, 0.05)',
+                fontFamily: 'Space Grotesk, sans-serif',
+                fontSize: 13.5,
+                lineHeight: 1.6,
+                color: '#fff',
                 whiteSpace: 'pre-wrap',
+                backdropFilter: 'blur(12px)',
               }}>
                 {m.content || (isLoading && i === messages.length - 1 ? (
                   <span style={{ ...S, color: 'var(--theme-accent, #9B59FF)' }}>
-                    thinking{dots}
+                    SkyLens is thinking{dots}
                   </span>
                 ) : '')}
               </div>
@@ -167,38 +274,97 @@ export default function SkyLensPage() {
           ))}
         </div>
 
-        {/* Input */}
-        <form onSubmit={e => { e.preventDefault(); send(input) }} style={{
-          display: 'flex', gap: 10, padding: '12px 0 24px', flexShrink: 0,
+        {/* Input Bar */}
+        <div style={{
+          padding: '16px 0 24px',
           borderTop: '1px solid var(--theme-border, rgba(255,255,255,0.06))',
-          marginTop: 8,
+          backgroundColor: 'transparent',
         }}>
-          <input
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            placeholder="Ask about satellites, the ISS, space weather, the night sky..."
-            style={{
-              ...S, flex: 1, background: 'rgba(255,255,255,0.03)',
-              border: '1px solid var(--theme-border, rgba(255,255,255,0.1))',
-              borderRadius: 8, padding: '12px 14px', color: 'var(--theme-text, #fff)',
-              fontSize: 12, outline: 'none',
-            }}
-          />
-          <button
-            type="submit"
-            disabled={isLoading}
-            style={{
-              ...S, fontSize: 10, letterSpacing: '0.15em',
-              color: '#000',
-              background: isLoading ? 'var(--theme-text-faint, #4A5568)' : 'var(--theme-primary, #00D4FF)',
-              border: 'none', borderRadius: 8, padding: '0 22px',
-              cursor: isLoading ? 'default' : 'pointer',
-              transition: 'background 0.2s',
-            }}
+          {messages.length > 0 && (
+            <div style={{
+              display: 'flex',
+              gap: 6,
+              overflowX: 'auto',
+              paddingBottom: 10,
+              marginBottom: 10,
+              scrollbarWidth: 'none',
+            }}>
+              {SUGGESTIONS.slice(0, 4).map((s, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => send(s.query)}
+                  style={{
+                    ...S,
+                    fontSize: 8.5,
+                    color: 'var(--theme-text-dim, #8892A4)',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    borderRadius: 20,
+                    padding: '4px 10px',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = 'var(--theme-primary, #00D4FF)'
+                    e.currentTarget.style.color = '#fff'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'
+                    e.currentTarget.style.color = 'var(--theme-text-dim, #8892A4)'
+                  }}
+                >
+                  {s.text}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <form
+            onSubmit={e => { e.preventDefault(); send(input) }}
+            style={{ display: 'flex', gap: 10 }}
           >
-            {isLoading ? '...' : '🚀 Send'}
-          </button>
-        </form>
+            <input
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder="Ask about satellites, the ISS, space weather, the night sky..."
+              style={{
+                ...S,
+                flex: 1,
+                background: 'rgba(0,0,0,0.4)',
+                border: '1px solid var(--theme-border, rgba(255,255,255,0.1))',
+                borderRadius: 8,
+                padding: '12px 14px',
+                color: '#fff',
+                fontSize: 12,
+                outline: 'none',
+                boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.5)',
+              }}
+            />
+            <button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              style={{
+                ...S,
+                fontSize: 11.5,
+                letterSpacing: '0.15em',
+                color: '#000',
+                background: isLoading || !input.trim()
+                  ? 'var(--theme-text-faint, #4A5568)'
+                  : 'var(--theme-primary, #00D4FF)',
+                border: 'none',
+                borderRadius: 8,
+                padding: '0 24px',
+                cursor: isLoading || !input.trim() ? 'default' : 'pointer',
+                transition: 'background 0.2s',
+                fontWeight: 700,
+                boxShadow: isLoading || !input.trim() ? 'none' : '0 0 15px rgba(0, 212, 255, 0.4)',
+              }}
+            >
+              {isLoading ? '...' : '🚀 Send'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )

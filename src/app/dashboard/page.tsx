@@ -15,33 +15,43 @@ import { useISSData } from '@/hooks/useISSData'
 import KeyboardShortcuts from '@/components/KeyboardShortcuts'
 import { useTheme, THEME_ORDER } from '@/components/ThemeProvider'
 import { SkeletonLine } from '@/components/Skeleton'
+import Tooltip from '@/components/Tooltip'
 
 const SAT_DATA = [
-  { id: 'ISS', name: 'ISS (ZARYA)', type: 'ISS', lat: 42.46, lon: -70.71, alt: 408, speed: 27600 },
-  { id: 'SL1', name: 'STARLINK-3112', type: 'SAT', lat: -12.65, lon: 131.02, alt: 550, speed: 27000 },
-  { id: 'SL2', name: 'STARLINK-3445', type: 'SAT', lat: 23.11, lon: -45.33, alt: 550, speed: 27000 },
-  { id: 'HST', name: 'HUBBLE (HST)', type: 'SAT', lat: 28.03, lon: -80.90, alt: 547, speed: 27300 },
-  { id: 'TG', name: 'TIANGONG', type: 'SAT', lat: 33.94, lon: -118.12, alt: 390, speed: 27600 },
-  { id: 'GPS1', name: 'GPS IIF-3', type: 'SAT', lat: 55.22, lon: 44.11, alt: 20200, speed: 14000 },
-  { id: 'DB1', name: 'DEBRIS-2022-041', type: 'DEBRIS', lat: -33.0, lon: 150.0, alt: 380, speed: 27800 },
-  { id: 'SL3', name: 'STARLINK-4001', type: 'SAT', lat: 51.5, lon: -0.12, alt: 550, speed: 27000 },
-  { id: 'SL4', name: 'STARLINK-4200', type: 'SAT', lat: -23.5, lon: -46.6, alt: 550, speed: 27000 },
-  { id: 'DB2', name: 'DEBRIS-2019-006', type: 'DEBRIS', lat: 40.7, lon: -74.0, alt: 420, speed: 27700 },
-  { id: 'LN1', name: 'LANDSAT-9', type: 'SAT', lat: 38.9, lon: -77.0, alt: 705, speed: 26600 },
-  { id: 'WS1', name: 'WORLDVIEW-3', type: 'SAT', lat: 1.3, lon: 103.8, alt: 617, speed: 26800 },
-  { id: 'SL5', name: 'STARLINK-5100', type: 'SAT', lat: -45.2, lon: 165.1, alt: 550, speed: 27000 },
-  { id: 'NO1', name: 'NOAA-21', type: 'SAT', lat: 62.4, lon: -25.7, alt: 824, speed: 26200 },
-  { id: 'DB3', name: 'DEBRIS-2020-089', type: 'DEBRIS', lat: 12.3, lon: 55.8, alt: 360, speed: 27900 },
-  { id: 'SE1', name: 'SENTINEL-2A', type: 'SAT', lat: 35.0, lon: -4.5, alt: 786, speed: 26400 },
-  { id: 'SL6', name: 'STARLINK-6200', type: 'SAT', lat: 67.8, lon: 22.0, alt: 550, speed: 27000 },
-  { id: 'DB4', name: 'DEBRIS-FALCON-9', type: 'DEBRIS', lat: -51.2, lon: -120.5, alt: 310, speed: 28000 },
-  { id: 'GP2', name: 'GLONASS-M', type: 'SAT', lat: 48.7, lon: 42.3, alt: 19130, speed: 13900 },
-  { id: 'SE2', name: 'SENTINEL-2B', type: 'SAT', lat: 29.5, lon: 94.2, alt: 786, speed: 26400 },
-  { id: 'DB5', name: 'DEBRIS-CZ-5B', type: 'DEBRIS', lat: -15.8, lon: -170.3, alt: 280, speed: 28100 },
-  { id: 'SL7', name: 'STARLINK-7400', type: 'SAT', lat: 11.0, lon: -165.0, alt: 550, speed: 27000 },
-  { id: 'ISS2', name: 'ISS (ZARYA) B', type: 'ISS', lat: 45.1, lon: 65.2, alt: 409, speed: 27600 },
-  { id: 'DB6', name: 'DEBRIS-2023-112', type: 'DEBRIS', lat: 3.5, lon: 132.8, alt: 340, speed: 27950 },
-  { id: 'SL8', name: 'STARLINK-8500', type: 'SAT', lat: -36.4, lon: -135.6, alt: 550, speed: 27000 },
+  { id: 'ISS', name: 'ISS (ZARYA)', type: 'ISS', status: 'GREEN', lat: 42.46, lon: -70.71, alt: 408, speed: 27600 },
+  { id: 'TG', name: 'TIANGONG (CSS)', type: 'SAT', status: 'GREEN', lat: 33.94, lon: -118.12, alt: 390, speed: 27600 },
+  { id: 'HST', name: 'HUBBLE (HST)', type: 'SAT', status: 'GREEN', lat: 28.03, lon: -80.90, alt: 547, speed: 27300 },
+  { id: 'SL1007', name: 'STARLINK-1007', type: 'SAT', status: 'GREEN', lat: -12.65, lon: 131.02, alt: 550, speed: 27000 },
+  { id: 'SL1012', name: 'STARLINK-1012', type: 'SAT', status: 'GREEN', lat: 23.11, lon: -45.33, alt: 550, speed: 27000 },
+  { id: 'SL1023', name: 'STARLINK-1023', type: 'SAT', status: 'YELLOW', lat: 51.5, lon: -0.12, alt: 540, speed: 26900 },
+  { id: 'SL1045', name: 'STARLINK-1045', type: 'SAT', status: 'GREEN', lat: -23.5, lon: -46.6, alt: 550, speed: 27000 },
+  { id: 'SL1056', name: 'STARLINK-1056', type: 'SAT', status: 'GREEN', lat: -45.2, lon: 165.1, alt: 550, speed: 27000 },
+  { id: 'SL1067', name: 'STARLINK-1067', type: 'SAT', status: 'YELLOW', lat: 67.8, lon: 22.0, alt: 545, speed: 26950 },
+  { id: 'SL1078', name: 'STARLINK-1078', type: 'SAT', status: 'GREEN', lat: 11.0, lon: -165.0, alt: 550, speed: 27000 },
+  { id: 'SL1089', name: 'STARLINK-1089', type: 'SAT', status: 'GREEN', lat: -36.4, lon: -135.6, alt: 550, speed: 27000 },
+  { id: 'GPS1', name: 'GPS IIF-1', type: 'SAT', status: 'GREEN', lat: 55.22, lon: 44.11, alt: 20200, speed: 14000 },
+  { id: 'GPS2', name: 'GPS IIF-2', type: 'SAT', status: 'GREEN', lat: -10.2, lon: 120.4, alt: 20200, speed: 14000 },
+  { id: 'GPS3', name: 'GPS IIF-3', type: 'SAT', status: 'YELLOW', lat: 38.5, lon: -9.4, alt: 20180, speed: 13980 },
+  { id: 'IR1', name: 'IRIDIUM-1', type: 'SAT', status: 'GREEN', lat: 45.1, lon: 65.2, alt: 780, speed: 26800 },
+  { id: 'IR2', name: 'IRIDIUM-2', type: 'SAT', status: 'GREEN', lat: -5.6, lon: 35.8, alt: 780, speed: 26800 },
+  { id: 'IR3', name: 'IRIDIUM-3', type: 'SAT', status: 'GREEN', lat: 12.3, lon: -85.4, alt: 780, speed: 26800 },
+  { id: 'C2542', name: 'COSMOS-2542', type: 'CLASSIFIED', status: 'BLUE', lat: 62.4, lon: -25.7, alt: 360, speed: 27800 },
+  { id: 'C2543', name: 'COSMOS-2543', type: 'CLASSIFIED', status: 'BLUE', lat: -25.4, lon: 134.2, alt: 380, speed: 27750 },
+  { id: 'C2544', name: 'COSMOS-2544', type: 'CLASSIFIED', status: 'BLUE', lat: 48.7, lon: 42.3, alt: 370, speed: 27820 },
+  { id: 'N19', name: 'NOAA-19', type: 'SAT', status: 'GREEN', lat: 29.5, lon: 94.2, alt: 870, speed: 26100 },
+  { id: 'N20', name: 'NOAA-20', type: 'SAT', status: 'GREEN', lat: 1.3, lon: 103.8, alt: 824, speed: 26200 },
+  { id: 'N21', name: 'NOAA-21', type: 'SAT', status: 'GREEN', lat: -15.8, lon: -170.3, alt: 824, speed: 26200 },
+  { id: 'G16', name: 'GOES-16', type: 'SAT', status: 'GREEN', lat: 0.0, lon: -75.2, alt: 35786, speed: 11070 },
+  { id: 'G17', name: 'GOES-17', type: 'SAT', status: 'GREEN', lat: 0.0, lon: -137.2, alt: 35786, speed: 11070 },
+  { id: 'G18', name: 'GOES-18', type: 'SAT', status: 'GREEN', lat: 0.0, lon: -137.0, alt: 35780, speed: 11070 },
+  { id: 'S6A', name: 'SENTINEL-6A', type: 'SAT', status: 'GREEN', lat: 35.0, lon: -4.5, alt: 1336, speed: 25900 },
+  { id: 'S6B', name: 'SENTINEL-6B', type: 'SAT', status: 'GREEN', lat: -3.5, lon: 132.8, alt: 1336, speed: 25900 },
+  { id: 'L8', name: 'LANDSAT-8', type: 'SAT', status: 'GREEN', lat: 38.9, lon: -77.0, alt: 705, speed: 26600 },
+  { id: 'L9', name: 'LANDSAT-9', type: 'SAT', status: 'GREEN', lat: -23.6, lon: -46.5, alt: 705, speed: 26600 },
+  { id: 'DB22', name: 'DEBRIS-2022-041A', type: 'DEBRIS', status: 'RED', lat: -33.0, lon: 150.0, alt: 380, speed: 27800 },
+  { id: 'DB23', name: 'DEBRIS-2023-089B', type: 'DEBRIS', status: 'RED', lat: 40.7, lon: -74.0, alt: 420, speed: 27700 },
+  { id: 'DB24', name: 'DEBRIS-2024-012C', type: 'DEBRIS', status: 'RED', lat: 3.5, lon: 112.8, alt: 340, speed: 27950 },
+  { id: 'OBJ123', name: 'OBJECT 12345 (CLASSIFIED)', type: 'CLASSIFIED', status: 'BLUE', lat: 40.0, lon: -110.0, alt: 250, speed: 28200 }
 ]
 
 const PASSES = [
@@ -52,6 +62,32 @@ const PASSES = [
 ]
 
 const PASS_MAX = Math.max(...PASSES.map(p => p.seconds))
+
+const SAT_META: Record<string, { norad: string; launch: string; operator: string; orbit: string }> = {
+  ISS:  { norad: '25544', launch: '1998-11-20', operator: 'NASA / Roscosmos / ESA / JAXA / CSA', orbit: 'LEO' },
+  HST:  { norad: '20580', launch: '1990-04-24', operator: 'NASA / ESA',                          orbit: 'LEO' },
+  TG:   { norad: '48274', launch: '2021-04-29', operator: 'CMSA (China)',                        orbit: 'LEO' },
+  GPS1: { norad: '40730', launch: '2015-10-31', operator: 'US Space Force',                      orbit: 'MEO' },
+  L9:   { norad: '49260', launch: '2021-09-27', operator: 'NASA / USGS',                          orbit: 'LEO · Sun-sync' },
+}
+
+function hashStr(s: string) {
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
+  return h
+}
+
+function getSatMeta(s: { id: string; name: string; type: string; alt: number }) {
+  if (SAT_META[s.id]) return SAT_META[s.id]
+  if (s.name.startsWith('STARLINK')) {
+    return { norad: String(40000 + (hashStr(s.id) % 9999)), launch: '2020 – 2024', operator: 'SpaceX', orbit: 'LEO' }
+  }
+  if (s.type === 'DEBRIS') return { norad: '—', launch: 'Unknown', operator: 'N/A · fragment', orbit: 'Decaying LEO' }
+  return {
+    norad: String(30000 + (hashStr(s.id) % 9999)), launch: 'Unknown', operator: 'Unknown',
+    orbit: s.alt < 2000 ? 'LEO' : s.alt < 35000 ? 'MEO' : 'GEO',
+  }
+}
 
 const NO_DATA = { lat: 0, lon: 0, alt: 0, vel: 0 }
 
@@ -79,30 +115,37 @@ const badge = (t: string) => ({
   ISS: { bg: 'rgba(0,255,136,0.1)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)' },
   SAT: { bg: 'rgba(0,212,255,0.1)', color: '#00D4FF', border: '1px solid rgba(0,212,255,0.3)' },
   DEBRIS: { bg: 'rgba(255,107,53,0.1)', color: '#FF6B35', border: '1px solid rgba(255,107,53,0.3)' },
+  CLASSIFIED: { bg: 'rgba(155,89,255,0.1)', color: '#9B59FF', border: '1px solid rgba(155,89,255,0.3)' },
 }[t] || {})
 
 // Status dot component
-function StatusDot({ type }: { type: string }) {
+function StatusDot({ status }: { status: string }) {
   const style: React.CSSProperties = {
     width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
   }
-  if (type === 'ISS') {
+  if (status === 'GREEN') {
     style.background = '#00FF88'
-    style.animation = 'heartbeat 1.5s infinite'
     style.boxShadow = '0 0 6px rgba(0,255,136,0.6)'
-  } else if (type === 'DEBRIS') {
-    style.background = '#FF6B35'
+    style.animation = 'blink 1.8s infinite'
+  } else if (status === 'YELLOW') {
+    style.background = '#FFD400'
+    style.boxShadow = '0 0 6px rgba(255,212,0,0.6)'
+    style.animation = 'blink 1.2s infinite'
+  } else if (status === 'RED') {
+    style.background = '#FF3B3B'
+    style.boxShadow = '0 0 6px rgba(255,59,59,0.6)'
     style.animation = 'flicker-noise 0.8s infinite'
-  } else {
+  } else { // BLUE
     style.background = '#00D4FF'
-    style.animation = 'blink 2s infinite'
-    style.opacity = 0.7
+    style.boxShadow = '0 0 6px rgba(0,212,255,0.6)'
+    style.animation = 'heartbeat 2s infinite'
   }
   return <div style={style} />
 }
 
 export default function Dashboard() {
   const [filter, setFilter] = useState('ALL')
+  const [searchQuery, setSearchQuery] = useState('')
   const [selected, setSelected] = useState<typeof SAT_DATA[0] | null>(null)
   const [utc, setUtc] = useState('')
   const [passes, setPasses] = useState(PASSES.map(p => ({ ...p })))
@@ -148,41 +191,55 @@ export default function Dashboard() {
     onTheme: (idx: number) => setTheme(THEME_ORDER[idx % THEME_ORDER.length]),
   }
 
-  // Speed tracker with odometer effect
+  // Live speed simulator
   useEffect(() => {
     if (!selected) return
-    const base = selected.id === 'ISS' ? issPos.vel : selected.speed
-    setCurrentSpeed(base); prevSpeedRef.current = base; prevSpeedDisplay.current = base; setDisplaySpeed(base)
-    const i = setInterval(() => {
-      const newSpeed = Math.round(base + (Math.random() - 0.5) * 12)
-      setSpeedDelta(newSpeed - prevSpeedRef.current)
-      setCurrentSpeed(newSpeed); prevSpeedRef.current = newSpeed
-    }, 1000)
-    return () => clearInterval(i)
-  }, [selected, issPos.vel])
+    setCurrentSpeed(selected.speed)
+    setDisplaySpeed(selected.speed)
+  }, [selected])
 
-  // Odometer rolling animation
   useEffect(() => {
-    if (!currentSpeed) return
-    const step = Math.sign(currentSpeed - displaySpeed) * Math.max(1, Math.abs(currentSpeed - displaySpeed) * 0.15)
+    if (!selected) return
     const i = setInterval(() => {
-      setDisplaySpeed(prev => {
-        if (Math.abs(prev - currentSpeed) <= 1) return currentSpeed
-        return prev + step
-      })
-    }, 40)
+      const base = selected.speed
+      const v = base + Math.round((Math.random() - 0.5) * 80)
+      setCurrentSpeed(v)
+      setSpeedDelta(v - prevSpeedRef.current)
+      prevSpeedRef.current = v
+    }, 2000)
     return () => clearInterval(i)
-  }, [currentSpeed, displaySpeed])
+  }, [selected])
 
+  useEffect(() => {
+    let frameId: number
+    const step = () => {
+      const diff = currentSpeed - prevSpeedDisplay.current
+      if (Math.abs(diff) < 1) {
+        setDisplaySpeed(currentSpeed)
+        prevSpeedDisplay.current = currentSpeed
+      } else {
+        const nextSpeed = prevSpeedDisplay.current + diff * 0.12
+        setDisplaySpeed(Math.round(nextSpeed))
+        prevSpeedDisplay.current = nextSpeed
+        frameId = requestAnimationFrame(step)
+      }
+    }
+    frameId = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(frameId)
+  }, [currentSpeed])
+
+  // Simulation time loop
   useEffect(() => {
     if (isPlaying) {
       playRef.current = setInterval(() => {
-        setTimeOffset(prev => {
-          const next = prev + 0.25
-          if (next >= 24) { setIsPlaying(false); return 24 }
-          return next
+        setTimeOffset(o => {
+          if (o >= 24) {
+            setIsPlaying(false)
+            return 24
+          }
+          return o + 0.25
         })
-      }, 200)
+      }, 500)
     } else {
       if (playRef.current) clearInterval(playRef.current)
     }
@@ -193,7 +250,11 @@ export default function Dashboard() {
     setModalObject(sat); setModalOpen(true)
   }
 
-  const list = SAT_DATA.filter(s => filter === 'ALL' || s.type === filter)
+  const list = SAT_DATA.filter(s => {
+    const matchesFilter = filter === 'ALL' || s.type === filter
+    const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.type.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesFilter && matchesSearch
+  })
   const S = { fontFamily: 'Space Mono, monospace' }
 
   // PDF export listener (must come after list declaration)
@@ -228,23 +289,45 @@ export default function Dashboard() {
           <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.3em' }}>TRACKED OBJECTS</span>
-              <span style={{ ...S, fontSize: 12, color: '#00D4FF' }}>23,794</span>
+              <span style={{ ...S, fontSize: 12, color: 'var(--theme-primary, #00D4FF)' }}>{list.length}</span>
             </div>
-            <div style={{ display: 'flex', gap: 4 }}>
-              {['ALL', 'SAT', 'ISS', 'DEBRIS'].map(f => (
+
+            {/* Search Input */}
+            <input
+              type="text"
+              placeholder="🔍 Filter satellites..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{
+                ...S,
+                width: '100%',
+                fontSize: 10,
+                background: 'rgba(0,0,0,0.3)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 4,
+                padding: '5px 8px',
+                color: '#fff',
+                marginBottom: 8,
+                outline: 'none',
+              }}
+            />
+
+            <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+              {['ALL', 'SAT', 'ISS', 'DEBRIS', 'CLASSIFIED'].map(f => (
                 <button key={f} onClick={() => setFilter(f)} style={{
-                  ...S, fontSize: 9, padding: '3px 8px', borderRadius: 4, cursor: 'pointer',
+                  ...S, fontSize: 8, padding: '3px 6px', borderRadius: 4, cursor: 'pointer',
                   background: filter === f ? 'rgba(0,212,255,0.12)' : 'transparent',
-                  color: filter === f ? '#00D4FF' : '#8892A4',
+                  color: filter === f ? 'var(--theme-primary, #00D4FF)' : '#8892A4',
                   border: filter === f ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent',
+                  marginBottom: 2,
                 }}>{f}</button>
               ))}
             </div>
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto' }}>
+          <div className="custom-scrollbar" style={{ flex: 1, maxHeight: 450, overflowY: 'auto' }}>
             {list.map((s, i) => (
-              <motion.div key={s.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+              <motion.div key={s.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.02 }}
                 onClick={() => setSelected(s)}
                 style={{
                   padding: '7px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer',
@@ -253,10 +336,10 @@ export default function Dashboard() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                  <StatusDot type={s.type} />
+                  <StatusDot status={s.status} />
                   <span style={{ ...S, fontSize: 8, padding: '1px 5px', borderRadius: 3, ...badge(s.type) }}>{s.type}</span>
-                  <span style={{ ...S, fontSize: 10, color: '#fff', flex: 1 }}>{s.name}</span>
-                  <InfoRayButton onClick={() => handleInfoClick(s)} color={s.type === 'ISS' ? '#00FF88' : s.type === 'DEBRIS' ? '#FF6B35' : '#FFD400'} size={20} />
+                  <span style={{ ...S, fontSize: 10, color: '#fff', flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{s.name}</span>
+                  <InfoRayButton onClick={() => handleInfoClick(s)} color={s.status === 'GREEN' ? '#00FF88' : s.status === 'YELLOW' ? '#FFD400' : s.status === 'RED' ? '#FF3B3B' : '#00D4FF'} size={20} />
                 </div>
                 <div style={{ display: 'flex', gap: 10, marginLeft: 18 }}>
                   <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>ALT: {s.alt}km</span>
@@ -288,6 +371,30 @@ export default function Dashboard() {
 
           {/* Launch Countdown */}
           <LaunchCountdownWidget />
+
+          {/* NEO Alert Widget */}
+          <div className="animate-card-glow" style={{
+            background: 'rgba(10,10,15,0.8)',
+            border: '1px solid rgba(155,89,255,0.15)',
+            borderRadius: 10, padding: 12, marginTop: 10, marginBottom: 10,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <span style={{ fontSize: 12 }}>☄️</span>
+              <span style={{ ...S, fontSize: 8, color: '#9B59FF', letterSpacing: '0.2em' }}>NEO WATCH ALERT</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', paddingBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ ...S, fontSize: 9, color: '#fff' }}>ASTEROID 2026-FT3</span>
+                  <span style={{ ...S, fontSize: 7, padding: '2px 4px', borderRadius: 3, background: 'rgba(255,170,0,0.1)', color: '#FFD400', border: '1px solid rgba(255,170,0,0.2)' }}>MONITORING</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
+                  <span style={{ ...S, fontSize: 7, color: '#4A5568' }}>DIST: 0.042 AU</span>
+                  <span style={{ ...S, fontSize: 7, color: '#4A5568' }}>VEL: 14.8 KM/S</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* CENTER - Globe + HUD */}
@@ -318,61 +425,82 @@ export default function Dashboard() {
             <Globe
               satellites={SAT_DATA}
               selected={selected}
-              onSelect={setSelected}
+              onSelect={(s) => {
+                const found = SAT_DATA.find(x => x.id === s.id)
+                if (found) setSelected(found)
+              }}
               timeOffsetHours={timeOffset}
               showConstellations={showConstellations}
               isPaused={globePaused}
             />
 
-            {/* Phase 6: Live Speed Tracker HUD */}
+            {/* Live Speed Tachometer HUD */}
             <AnimatePresence>
               {selected && (
                 <motion.div
                   key="speedhud"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
                   style={{
-                    position: 'absolute', top: 14, right: 14,
-                    background: 'rgba(0,0,0,0.82)',
-                    border: '1px solid rgba(0,212,255,0.2)',
-                    borderRadius: 10, padding: '10px 14px',
-                    backdropFilter: 'blur(12px)', minWidth: 170,
+                    position: 'absolute', top: 14, right: 14, zIndex: 10,
+                    background: 'rgba(8,10,16,0.92)', border: '1px solid rgba(0,212,255,0.15)',
+                    borderRadius: 12, padding: 12, width: 200,
+                    backdropFilter: 'blur(12px)',
                     boxShadow: '0 0 20px rgba(0,212,255,0.06)',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
-                    <StatusDot type={selected.type === 'DEBRIS' ? 'DEBRIS' : selected.type === 'ISS' ? 'ISS' : 'SAT'} />
-                    <span style={{ ...S, fontSize: 7, color: '#8892A4', letterSpacing: '0.2em' }}>LIVE SPEED</span>
+                    <StatusDot status={selected.status} />
+                    <span style={{ ...S, fontSize: 7, color: '#8892A4', letterSpacing: '0.2em' }}>TACHOMETER</span>
                   </div>
-                  <div style={{ ...S, fontSize: 8, color: '#4A5568', marginBottom: 2 }}>{selected.name}</div>
-                  {/* Odometer-style speed */}
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                  <div style={{ ...S, fontSize: 9, color: 'var(--theme-primary, #00D4FF)', marginBottom: 6, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{selected.name}</div>
+                  
+                  {/* Speed Tachometer SVG */}
+                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', marginBottom: 6 }}>
+                    <svg width="140" height="85" viewBox="0 0 140 85">
+                      <defs>
+                        <linearGradient id="speedGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#00FF88" />
+                          <stop offset="60%" stopColor="#00D4FF" />
+                          <stop offset="100%" stopColor="#FF6B35" />
+                        </linearGradient>
+                      </defs>
+                      {/* Dial Arc */}
+                      <path d="M 20 75 A 50 50 0 0 1 120 75" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" strokeLinecap="round" />
+                      <path 
+                        d="M 20 75 A 50 50 0 0 1 120 75" 
+                        fill="none" 
+                        stroke="url(#speedGrad)" 
+                        strokeWidth="6" 
+                        strokeDasharray="157" 
+                        strokeDashoffset={157 - (Math.min(displaySpeed, 30000) / 30000) * 157} 
+                        strokeLinecap="round" 
+                        style={{ transition: 'stroke-dashoffset 0.5s ease-out' }}
+                      />
+                      {/* Needle */}
+                      <g style={{ 
+                        transform: `rotate(${(-180 + (Math.min(displaySpeed, 30000) / 30000) * 180)}deg)`, 
+                        transformOrigin: '70px 75px',
+                        transition: 'transform 0.5s cubic-bezier(0.1, 0.8, 0.3, 1)'
+                      }}>
+                        <line x1="70" y1="75" x2="25" y2="75" stroke="var(--theme-primary, #00D4FF)" strokeWidth="2.5" strokeLinecap="round" />
+                      </g>
+                      <circle cx="70" cy="75" r="4.5" fill="#fff" stroke="var(--theme-primary, #00D4FF)" strokeWidth="1.5" />
+                    </svg>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, justifyContent: 'center', marginBottom: 4 }}>
                     <motion.span
-                      key={Math.floor(displaySpeed / 1000)}
-                      style={{ ...S, fontSize: 24, color: speedColor, fontWeight: 700 }}
+                      key={Math.floor(displaySpeed / 100)}
+                      style={{ ...S, fontSize: 18, color: speedColor, fontWeight: 700 }}
                     >
                       {displaySpeed.toLocaleString()}
                     </motion.span>
                     <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>KM/H</span>
                   </div>
-                  <div style={{ ...S, fontSize: 8, color: speedDelta >= 0 ? '#00FF88' : '#FF6B35', marginBottom: 4 }}>
-                    {speedDelta >= 0 ? '▲' : '▼'} {Math.abs(speedDelta)} km/h
-                  </div>
-                  {/* Glowing neon bar */}
-                  <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
-                    <motion.div
-                      animate={{ width: `${speedPct}%` }}
-                      transition={{ duration: 0.6, ease: 'easeOut' }}
-                      style={{
-                        height: '100%',
-                        background: speedColor,
-                        borderRadius: 2,
-                        boxShadow: `0 0 8px ${speedColor}`,
-                      }}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 6, marginTop: 4 }}>
                     <span style={{ ...S, fontSize: 7, color: '#4A5568' }}>ALT: {selected.id === 'ISS' && issPos.vel ? issPos.alt : selected.alt} KM</span>
                     <span style={{ ...S, fontSize: 7, color: '#4A5568' }}>{selected.type}</span>
                   </div>

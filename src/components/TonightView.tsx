@@ -28,6 +28,7 @@ export default function TonightView() {
     let w = 0, h = 0, dpr = 1
     let sweepAngle = 0
     const stars: { x: number; y: number; size: number; phase: number }[] = []
+    const asteroids: { x: number; y: number; vx: number; size: number; opacity: number }[] = []
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect()
@@ -37,6 +38,7 @@ export default function TonightView() {
       canvas.width = w
       canvas.height = h
       ctx.scale(dpr, dpr)
+      
       stars.length = 0
       for (let i = 0; i < 60; i++) {
         stars.push({
@@ -44,6 +46,17 @@ export default function TonightView() {
           y: Math.random() * rect.height * 0.7,
           size: 0.5 + Math.random() * 1.5,
           phase: Math.random() * Math.PI * 2,
+        })
+      }
+
+      asteroids.length = 0
+      for (let i = 0; i < 20; i++) {
+        asteroids.push({
+          x: Math.random() * rect.width,
+          y: rect.height * 0.35 + (Math.random() - 0.5) * rect.height * 0.15,
+          vx: 0.05 + Math.random() * 0.1,
+          size: 0.8 + Math.random() * 1.2,
+          opacity: 0.25 + Math.random() * 0.5,
         })
       }
     }
@@ -98,6 +111,19 @@ export default function TonightView() {
         ctx.beginPath()
         ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2)
         ctx.fillStyle = `rgba(255,255,255,${twinkle * 0.7})`
+        ctx.fill()
+      }
+
+      // Asteroid Belt Particles
+      for (const a of asteroids) {
+        a.x += a.vx
+        if (a.x > cw) {
+          a.x = -10
+          a.y = ch * 0.35 + (Math.random() - 0.5) * ch * 0.15
+        }
+        ctx.beginPath()
+        ctx.arc(a.x, a.y, a.size, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(224, 180, 140, ${a.opacity * 0.6})`
         ctx.fill()
       }
 

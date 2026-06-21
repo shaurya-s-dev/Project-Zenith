@@ -390,13 +390,14 @@ export default function SkyPage() {
                 transition={{ delay: 0.2 + i * 0.06 }}
                 className="animate-card-glow"
                 whileHover={{ scale: 1.02 }}
+                onClick={() => setModalKey(p.id)}
                 style={{
                   background: 'rgba(10,10,15,0.85)',
                   border: '1px solid rgba(255,255,255,0.06)',
                   borderRadius: 10, padding: 12,
                   transition: 'transform 0.2s, box-shadow 0.2s',
                   perspective: '800px',
-                  cursor: 'default',
+                  cursor: 'pointer',
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = 'perspective(800px) rotateY(5deg) scale(1.02)'

@@ -292,8 +292,11 @@ export default function WeatherPage() {
           </motion.div>
         </div>
 
+        {/* 3-Day Forecast Chart */}
+        <ForecastChart />
+
         {/* Source note */}
-        <div style={{ ...S, fontSize: 8, color: '#4A5568', marginTop: 20, textAlign: 'center' }}>
+        <div style={{ ...S, fontSize: 8, color: '#4A5568', marginTop: 24, textAlign: 'center' }}>
           SOURCE: NOAA SPACE WEATHER PREDICTION CENTER (SWPC) · UPDATES EVERY 60S
         </div>
       </div>
@@ -303,6 +306,165 @@ export default function WeatherPage() {
       <InfoModal isOpen={modalKey === 'solar'} onClose={() => setModalKey(null)} title={INFO.solar.title} content={INFO.solar.content} color="#00D4FF" />
       <InfoModal isOpen={modalKey === 'xray'} onClose={() => setModalKey(null)} title={INFO.xray.title} content={INFO.xray.content} color="#9B59FF" />
       <InfoModal isOpen={modalKey === 'aurora'} onClose={() => setModalKey(null)} title={INFO.aurora.title} content={INFO.aurora.content} color="#00FF88" />
+    </div>
+  )
+}
+
+// 3-Day Forecast SVG Chart
+function ForecastChart() {
+  const [activePt, setActivePt] = useState<{ x: number; y: number; label: string; val: number } | null>(null)
+  
+  // 3-day simulated Kp data: 24 points (every 3 hours)
+  const data = [
+    { label: 'Day 1 03h', val: 2.1 },
+    { label: 'Day 1 06h', val: 1.8 },
+    { label: 'Day 1 09h', val: 2.5 },
+    { label: 'Day 1 12h', val: 3.2 },
+    { label: 'Day 1 15h', val: 4.0 },
+    { label: 'Day 1 18h', val: 4.8 },
+    { label: 'Day 1 21h', val: 5.2 },
+    { label: 'Day 1 24h', val: 4.5 },
+    { label: 'Day 2 03h', val: 3.5 },
+    { label: 'Day 2 06h', val: 2.8 },
+    { label: 'Day 2 09h', val: 2.0 },
+    { label: 'Day 2 12h', val: 1.5 },
+    { label: 'Day 2 15h', val: 1.8 },
+    { label: 'Day 2 18h', val: 2.2 },
+    { label: 'Day 2 21h', val: 3.0 },
+    { label: 'Day 2 24h', val: 3.6 },
+    { label: 'Day 3 03h', val: 4.2 },
+    { label: 'Day 3 06h', val: 5.0 },
+    { label: 'Day 3 09h', val: 5.8 },
+    { label: 'Day 3 12h', val: 6.2 },
+    { label: 'Day 3 15h', val: 5.5 },
+    { label: 'Day 3 18h', val: 4.1 },
+    { label: 'Day 3 21h', val: 3.2 },
+    { label: 'Day 3 24h', val: 2.4 },
+  ]
+
+  const width = 1000
+  const height = 180
+  const paddingX = 40
+  const paddingY = 20
+
+  const chartWidth = width - paddingX * 2
+  const chartHeight = height - paddingY * 2
+
+  // Generate SVG points
+  const points = data.map((d, i) => {
+    const x = paddingX + (i / (data.length - 1)) * chartWidth
+    const y = height - paddingY - (d.val / 9) * chartHeight
+    return { x, y, ...d }
+  })
+
+  const pathD = points.reduce((acc, p, i) => {
+    if (i === 0) return `M ${p.x} ${p.y}`
+    return `${acc} L ${p.x} ${p.y}`
+  }, '')
+
+  const areaD = `${pathD} L ${points[points.length - 1].x} ${height - paddingY} L ${points[0].x} ${height - paddingY} Z`
+
+  return (
+    <div className="animate-card-glow" style={{
+      background: 'rgba(10,10,15,0.85)',
+      border: '1px solid rgba(0,212,255,0.08)',
+      borderRadius: 12, padding: 20, marginTop: 24,
+      position: 'relative'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+        <span style={{ ...S, fontSize: 9, color: '#8892A4', letterSpacing: '0.2em' }}>📈 3-DAY GEOMAGNETIC OUTLOOK (Kp FORECAST)</span>
+        <span style={{ ...S, fontSize: 8, color: '#4A5568' }}>Estimated 3-hour planetary Kp index predicted by NOAA SWPC</span>
+      </div>
+      <div style={{ position: 'relative', width: '100%', overflowX: 'auto' }}>
+        <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} style={{ minWidth: 700, display: 'block' }}>
+          <defs>
+            <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="rgba(0, 212, 255, 0.25)" />
+              <stop offset="100%" stopColor="rgba(0, 212, 255, 0)" />
+            </linearGradient>
+            <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#00FF88" />
+              <stop offset="50%" stopColor="#00D4FF" />
+              <stop offset="100%" stopColor="#FF6B35" />
+            </linearGradient>
+          </defs>
+
+          {/* Grid lines */}
+          {[0, 3, 6, 9].map(val => {
+            const y = height - paddingY - (val / 9) * chartHeight
+            return (
+              <g key={val}>
+                <line x1={paddingX} y1={y} x2={width - paddingX} y2={y} stroke="rgba(255,255,255,0.04)" strokeWidth="1" strokeDasharray="4 4" />
+                <text x={paddingX - 10} y={y + 3} fill="#4A5568" fontFamily="Space Mono, monospace" fontSize="8" textAnchor="end">Kp {val}</text>
+              </g>
+            )
+          })}
+
+          {/* Horizontal days lines separator */}
+          {[8, 16].map((idx) => {
+            const x = paddingX + (idx / (data.length - 1)) * chartWidth
+            return (
+              <g key={idx}>
+                <line x1={x} y1={paddingY} x2={x} y2={height - paddingY} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+                <text x={x + 5} y={paddingY + 8} fill="#8892A4" fontFamily="Space Mono, monospace" fontSize="8">DAY {idx === 8 ? '2' : '3'}</text>
+              </g>
+            )
+          })}
+          <text x={paddingX + 5} y={paddingY + 8} fill="#8892A4" fontFamily="Space Mono, monospace" fontSize="8">DAY 1</text>
+
+          {/* Area Fill */}
+          <path d={areaD} fill="url(#areaGrad)" />
+
+          {/* Path Line */}
+          <path d={pathD} fill="none" stroke="url(#lineGrad)" strokeWidth="2" strokeLinecap="round" />
+
+          {/* Points circles */}
+          {points.map((p, i) => (
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={activePt?.x === p.x ? 5 : 2.5}
+              fill={activePt?.x === p.x ? 'var(--theme-primary, #00D4FF)' : 'rgba(255,255,255,0.3)'}
+              stroke="rgba(0,0,0,0.5)"
+              strokeWidth="1"
+              style={{ cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseEnter={() => setActivePt(p)}
+              onMouseLeave={() => setActivePt(null)}
+            />
+          ))}
+
+          {/* Vertical indicator line */}
+          {activePt && (
+            <line x1={activePt.x} y1={paddingY} x2={activePt.x} y2={height - paddingY} stroke="rgba(0, 212, 255, 0.3)" strokeWidth="1" pointerEvents="none" />
+          )}
+        </svg>
+
+        {/* Dynamic Tooltip */}
+        {activePt && (
+          <div style={{
+            position: 'absolute',
+            left: Math.min(width - 160, Math.max(10, activePt.x - 75)),
+            bottom: height - activePt.y + 10,
+            background: 'rgba(5, 5, 8, 0.95)',
+            border: '1px solid var(--theme-border, rgba(0, 212, 255, 0.2))',
+            borderRadius: 6,
+            padding: '6px 10px',
+            pointerEvents: 'none',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+            zIndex: 10,
+          }}>
+            <div style={{ ...S, fontSize: 8, color: '#8892A4', marginBottom: 2 }}>{activePt.label}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: activePt.val >= 5 ? '#FF3B3B' : activePt.val >= 4 ? '#FFD400' : '#00FF88' }} />
+              <span style={{ ...S, fontSize: 11, color: '#fff', fontWeight: 'bold' }}>Kp {activePt.val}</span>
+            </div>
+            <div style={{ ...S, fontSize: 7, color: '#4A5568', marginTop: 2 }}>
+              {activePt.val >= 5 ? '⚠️ GEOMAGNETIC STORM' : activePt.val >= 4 ? 'UNSETTLED' : 'NOMINAL'}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
