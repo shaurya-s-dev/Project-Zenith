@@ -987,21 +987,21 @@ export default function Dashboard() {
                 exit={{ scale: 0.9, y: 15, opacity: 0 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 350 }}
                 style={{
-                  width: '90%', maxWidth: 440,
-                  background: 'rgba(8,10,20,0.92)',
+                  width: '95%', maxWidth: 580,
+                  background: 'rgba(8,10,20,0.95)',
                   backdropFilter: 'blur(30px)',
-                  border: '1px solid rgba(255,107,53,0.22)',
-                  borderRadius: 16, padding: 20,
-                  boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(255,107,53,0.08)',
+                  border: '1px solid rgba(255,107,53,0.25)',
+                  borderRadius: 16, padding: '24px 28px',
+                  boxShadow: '0 25px 60px rgba(0,0,0,0.65), 0 0 40px rgba(255,107,53,0.1)',
                   pointerEvents: 'auto',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <span style={{ ...S, fontSize: 8, color: '#FF6B35', letterSpacing: '0.2em', fontWeight: 700 }}>LAUNCH SPECIFICATION</span>
-                  <button onClick={() => setLaunchModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--theme-text-dim, #A0AEC0)', fontSize: 14, cursor: 'pointer' }}>✕</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                  <span style={{ ...S, fontSize: 9, color: '#FF6B35', letterSpacing: '0.2em', fontWeight: 700 }}>LAUNCH SPECIFICATION</span>
+                  <button onClick={() => setLaunchModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--theme-text-dim, #A0AEC0)', fontSize: 16, cursor: 'pointer' }}>✕</button>
                 </div>
-                <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 12px 0' }}>Falcon 9 · Starlink 12-3</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 22, fontWeight: 700, color: '#fff', margin: '0 0 14px 0' }}>Falcon 9 · Starlink 12-3</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                   {[
                     ['ROCKET', 'Falcon 9 Block 5'],
                     ['PAYLOAD', '22 Starlink V2 Mini'],
@@ -1010,15 +1010,15 @@ export default function Dashboard() {
                     ['BOOSTER CODE', 'B1089.4 (Reused)'],
                     ['LANDING SITE', 'ASDS Drone Ship'],
                   ].map(([label, val]) => (
-                    <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '8px 12px' }}>
-                      <div style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)', marginBottom: 2 }}>{label}</div>
-                      <div style={{ ...S, fontSize: 11, color: '#FF6B35' }}>{val}</div>
+                    <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '10px 14px' }}>
+                      <div style={{ ...S, fontSize: 9.5, color: 'var(--theme-text-faint, #7D8A9E)', marginBottom: 4 }}>{label}</div>
+                      <div style={{ ...S, fontSize: 13.5, color: '#FF6B35', fontWeight: 700 }}>{val}</div>
                     </div>
                   ))}
                 </div>
-                <div style={{ marginTop: 12, padding: 10, background: 'rgba(255,107,53,0.05)', border: '1px solid rgba(255,107,53,0.15)', borderRadius: 8 }}>
-                  <div style={{ ...S, fontSize: 8, color: '#FF6B35', marginBottom: 2 }}>MISSION OVERVIEW</div>
-                  <div style={{ ...S, fontSize: 9, color: '#a0aec0', lineHeight: 1.5 }}>
+                <div style={{ marginTop: 14, padding: 12, background: 'rgba(255,107,53,0.05)', border: '1px solid rgba(255,107,53,0.15)', borderRadius: 8 }}>
+                  <div style={{ ...S, fontSize: 9.5, color: '#FF6B35', marginBottom: 4, fontWeight: 700 }}>MISSION OVERVIEW</div>
+                  <div style={{ ...S, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 }}>
                     Deploys 22 next-generation Starlink satellites to expand global broadband coverage. The first stage booster is flight-proven and will attempt a precision landing on the recovery drone ship in the Atlantic Ocean.
                   </div>
                 </div>
@@ -1051,21 +1051,21 @@ export default function Dashboard() {
                 exit={{ scale: 0.9, y: 15, opacity: 0 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 350 }}
                 style={{
-                  width: '90%', maxWidth: 440,
-                  background: 'rgba(8,10,20,0.92)',
+                  width: '95%', maxWidth: 580,
+                  background: 'rgba(8,10,20,0.95)',
                   backdropFilter: 'blur(30px)',
-                  border: '1px solid rgba(155,89,255,0.22)',
-                  borderRadius: 16, padding: 20,
-                  boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(155,89,255,0.08)',
+                  border: '1px solid rgba(155,89,255,0.25)',
+                  borderRadius: 16, padding: '24px 28px',
+                  boxShadow: '0 25px 60px rgba(0,0,0,0.65), 0 0 40px rgba(155,89,255,0.1)',
                   pointerEvents: 'auto',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <span style={{ ...S, fontSize: 8, color: '#9B59FF', letterSpacing: '0.2em', fontWeight: 700 }}>NEO SPECIFICATION</span>
-                  <button onClick={() => setNeoModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--theme-text-dim, #A0AEC0)', fontSize: 14, cursor: 'pointer' }}>✕</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                  <span style={{ ...S, fontSize: 9, color: '#9B59FF', letterSpacing: '0.2em', fontWeight: 700 }}>NEO SPECIFICATION</span>
+                  <button onClick={() => setNeoModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--theme-text-dim, #A0AEC0)', fontSize: 16, cursor: 'pointer' }}>✕</button>
                 </div>
-                <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 12px 0' }}>Asteroid 2026-FT3</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 22, fontWeight: 700, color: '#fff', margin: '0 0 14px 0' }}>Asteroid 2026-FT3</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                   {[
                     ['DIAMETER', '310 Meters'],
                     ['CLASS', 'Apollo-class PHA'],
@@ -1074,15 +1074,15 @@ export default function Dashboard() {
                     ['LUNAR DISTANCE', '16.3 LD'],
                     ['DISCOVERY DATE', 'Mar 20, 2026'],
                   ].map(([label, val]) => (
-                    <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '8px 12px' }}>
-                      <div style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)', marginBottom: 2 }}>{label}</div>
-                      <div style={{ ...S, fontSize: 11, color: '#9B59FF' }}>{val}</div>
+                    <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '10px 14px' }}>
+                      <div style={{ ...S, fontSize: 9.5, color: 'var(--theme-text-faint, #7D8A9E)', marginBottom: 4 }}>{label}</div>
+                      <div style={{ ...S, fontSize: 13.5, color: '#9B59FF', fontWeight: 700 }}>{val}</div>
                     </div>
                   ))}
                 </div>
-                <div style={{ marginTop: 12, padding: 10, background: 'rgba(155,89,255,0.05)', border: '1px solid rgba(155,89,255,0.15)', borderRadius: 8 }}>
-                  <div style={{ ...S, fontSize: 8, color: '#9B59FF', marginBottom: 2 }}>HAZARD ASSESSMENT</div>
-                  <div style={{ ...S, fontSize: 9, color: '#a0aec0', lineHeight: 1.5 }}>
+                <div style={{ marginTop: 14, padding: 12, background: 'rgba(155,89,255,0.05)', border: '1px solid rgba(155,89,255,0.15)', borderRadius: 8 }}>
+                  <div style={{ ...S, fontSize: 9.5, color: '#9B59FF', marginBottom: 4, fontWeight: 700 }}>HAZARD ASSESSMENT</div>
+                  <div style={{ ...S, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 }}>
                     Classified as a Potentially Hazardous Asteroid (PHA) due to its size and proximity. However, detailed radar tracking confirms zero probability of impact during this pass. Orbit eccentricity is 0.582.
                   </div>
                 </div>
@@ -1115,21 +1115,21 @@ export default function Dashboard() {
                 exit={{ scale: 0.9, y: 15, opacity: 0 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 350 }}
                 style={{
-                  width: '90%', maxWidth: 440,
-                  background: 'rgba(8,10,20,0.92)',
+                  width: '95%', maxWidth: 580,
+                  background: 'rgba(8,10,20,0.95)',
                   backdropFilter: 'blur(30px)',
-                  border: '1px solid rgba(0,212,255,0.22)',
-                  borderRadius: 16, padding: 20,
-                  boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(0,212,255,0.08)',
+                  border: '1px solid rgba(0,212,255,0.25)',
+                  borderRadius: 16, padding: '24px 28px',
+                  boxShadow: '0 25px 60px rgba(0,0,0,0.65), 0 0 40px rgba(0,212,255,0.1)',
                   pointerEvents: 'auto',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <span style={{ ...S, fontSize: 8, color: '#00D4FF', letterSpacing: '0.2em', fontWeight: 700 }}>TELEMETRY STATUS</span>
-                  <button onClick={() => setStatsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--theme-text-dim, #A0AEC0)', fontSize: 14, cursor: 'pointer' }}>✕</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                  <span style={{ ...S, fontSize: 9, color: '#00D4FF', letterSpacing: '0.2em', fontWeight: 700 }}>TELEMETRY STATUS</span>
+                  <button onClick={() => setStatsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--theme-text-dim, #A0AEC0)', fontSize: 16, cursor: 'pointer' }}>✕</button>
                 </div>
-                <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 12px 0' }}>System Telemetry</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 22, fontWeight: 700, color: '#fff', margin: '0 0 14px 0' }}>System Telemetry</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                   {[
                     ['ACTIVE SATELLITES', '23,794 objects'],
                     ['TLE DB SOURCE', 'CelesTrak (Sync 5s)'],
@@ -1138,15 +1138,15 @@ export default function Dashboard() {
                     ['API LATENCY', '128ms average'],
                     ['CORES RUNNING', 'Turbopack (V8)'],
                   ].map(([label, val]) => (
-                    <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '8px 12px' }}>
-                      <div style={{ ...S, fontSize: 7, color: 'var(--theme-text-faint, #7D8A9E)', marginBottom: 2 }}>{label}</div>
-                      <div style={{ ...S, fontSize: 11, color: '#00D4FF' }}>{val}</div>
+                    <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '10px 14px' }}>
+                      <div style={{ ...S, fontSize: 9.5, color: 'var(--theme-text-faint, #7D8A9E)', marginBottom: 4 }}>{label}</div>
+                      <div style={{ ...S, fontSize: 13.5, color: '#00D4FF', fontWeight: 700 }}>{val}</div>
                     </div>
                   ))}
                 </div>
-                <div style={{ marginTop: 12, padding: 10, background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.15)', borderRadius: 8 }}>
-                  <div style={{ ...S, fontSize: 8, color: '#00D4FF', marginBottom: 2 }}>DIAGNOSTIC VERDICT</div>
-                  <div style={{ ...S, fontSize: 9, color: '#a0aec0', lineHeight: 1.5 }}>
+                <div style={{ marginTop: 14, padding: 12, background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.15)', borderRadius: 8 }}>
+                  <div style={{ ...S, fontSize: 9.5, color: '#00D4FF', marginBottom: 4, fontWeight: 700 }}>DIAGNOSTIC VERDICT</div>
+                  <div style={{ ...S, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 }}>
                     All background synchronization threads are executing within nominal limits. The satellite orbit propagators are fully cached on the client side. Offline availability verified.
                   </div>
                 </div>

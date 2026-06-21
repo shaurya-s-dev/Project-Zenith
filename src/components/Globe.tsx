@@ -324,10 +324,10 @@ export default function Globe({
         pathPointLng="lon"
         pathPointAlt="alt"
         pathColor="color"
-        pathStroke={1.8}
-        pathDashLength={0.08}
-        pathDashGap={0.04}
-        pathDashAnimateTime={6000}
+        pathStroke={2.2}
+        pathDashLength={0.06}
+        pathDashGap={0.02}
+        pathDashAnimateTime={12000}
         pathTransitionDuration={0}
       />
     </div>
