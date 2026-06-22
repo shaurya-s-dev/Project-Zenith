@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { InfoRayButton } from '@/components/InfoRayButton'
 import InfoModal from '@/components/InfoModal'
-import TonightView from '@/components/TonightView'
+import PolarSkyRadar from '@/components/PolarSkyRadar'
 import MoonPhaseGallery from '@/components/MoonPhaseGallery'
 import Tooltip from '@/components/Tooltip'
 import { usePulseOnChange } from '@/hooks/usePulse'
@@ -294,12 +294,11 @@ export default function SkyPage() {
             <p style={{ ...S, fontSize: 10, ...STYLE_SUBHEADER, marginTop: 4 }}>What&apos;s overhead, tracked live from your location</p>
           </motion.div>
 
-          {/* ROW 1: Tonight's View Horizon Diagram */}
+          {/* ROW 1: Polar Sky Radar */}
           <div style={{ marginBottom: 20 }}>
-            <TonightView 
+            <PolarSkyRadar 
               onSelectPlanet={(id) => setModalKey(id)} 
               onSelectMoon={() => setMoonGalleryOpen(true)}
-              onOpenInfo={() => setModalKey('TONIGHT_VIEW_INFO')}
             />
           </div>
 

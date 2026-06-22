@@ -78,7 +78,10 @@ export default function HomePage() {
           position: 'absolute', top: s.top, left: s.left,
           width: s.size, height: s.size, borderRadius: '50%',
           background: '#fff', opacity: s.opacity,
-          animation: `twinkle ${2 + s.delay}s ease-in-out infinite`,
+          animationName: 'twinkle',
+          animationDuration: `${2 + s.delay}s`,
+          animationTimingFunction: 'ease-in-out',
+          animationIterationCount: 'infinite',
           animationDelay: s.delay + 's',
           pointerEvents: 'none',
         }} />

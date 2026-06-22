@@ -122,7 +122,10 @@ function SolarWindParticles({ windSpeed }: { windSpeed: number | null }) {
             position: 'absolute', top: '50%', width: 3, height: 3, borderRadius: '50%',
             background: '#00D4FF',
             boxShadow: '0 0 4px #00D4FF',
-            animation: `particle-drift ${duration}s linear infinite`,
+            animationName: 'particle-drift',
+            animationDuration: `${duration}s`,
+            animationTimingFunction: 'linear',
+            animationIterationCount: 'infinite',
             animationDelay: `${i * (duration / 8)}s`,
             transform: 'translateY(-50%)',
           }}

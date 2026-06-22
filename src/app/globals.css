@@ -402,3 +402,28 @@ html, body, nav, header, footer, button, .animate-card-glow, .hover-lift {
   min-height: 100vh;
 }
 
+/* ── Polar Sky Radar Animations ───────────────────── */
+@keyframes polar-sweep {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes blip-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+@keyframes radar-ping {
+  0%   { r: 4; opacity: 0.9; }
+  100% { r: 14; opacity: 0; }
+}
+@keyframes moon-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+@keyframes orbit-march {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -400; }
+}
+@keyframes pulse-cyan {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
