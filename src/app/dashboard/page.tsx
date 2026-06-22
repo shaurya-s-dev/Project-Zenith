@@ -7,7 +7,11 @@ import { InfoRayButton } from '@/components/InfoRayButton'
 import SkyLensModal from '@/components/SkyLensModal'
 import ConjunctionWarning from '@/components/ConjunctionWarning'
 import SysMon from '@/components/SysMon'
-import LaunchCountdownWidget from '@/components/LaunchCountdownWidget'
+import dynamic from 'next/dynamic'
+const LaunchCountdownWidget = dynamic(
+  () => import('@/components/LaunchCountdownWidget'),
+  { ssr: false }
+)
 import { exportMissionLog } from '@/lib/exportPdf'
 import { useISSData } from '@/hooks/useISSData'
 import KeyboardShortcuts from '@/components/KeyboardShortcuts'

@@ -5,35 +5,17 @@ import { motion } from 'framer-motion'
 
 const S = { fontFamily: 'Space Mono, monospace' as const }
 
-interface Launch {
-  name: string
-  date: Date
-  provider: string
-  mission: string
-}
-
-const MOCK_LAUNCHES: Launch[] = [
-  { name: 'Falcon 9 · Starlink 12-3', date: new Date(Date.now() + 3600000 * 4), provider: 'SpaceX', mission: 'Communications' },
-  { name: 'Ariane 6 · VA264', date: new Date(Date.now() + 86400000 * 2.5), provider: 'Arianespace', mission: 'GEO Comsat' },
-  { name: 'Electron · Skywatch', date: new Date(Date.now() + 86400000 * 8), provider: 'Rocket Lab', mission: 'Earth Observation' },
-]
+const LAUNCH_TARGET = Date.now() + 3600000 * 4
 
 export default function LaunchCountdownWidget() {
-  // null on server — only set after mount to avoid hydration mismatch
-  const [now, setNow] = useState<number | null>(null)
+  const [now, setNow] = useState(Date.now())
 
   useEffect(() => {
-    setNow(Date.now())
     const i = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(i)
   }, [])
 
-  // Don't render anything until client has mounted
-  if (now === null) return null
-
-  const nextLaunch = MOCK_LAUNCHES[0]
-  const totalMs = nextLaunch.date.getTime() - now
-
+  const totalMs = LAUNCH_TARGET - now
   if (totalMs <= 0) return null
 
   const cd = {
@@ -53,7 +35,7 @@ export default function LaunchCountdownWidget() {
         <span style={{ fontSize: 12 }}>🚀</span>
         <span style={{ ...S, fontSize: 8, color: '#FF6B35', letterSpacing: '0.2em' }}>LAUNCH COUNTDOWN</span>
       </div>
-      <div style={{ ...S, fontSize: 10, color: '#fff', marginBottom: 6 }}>{nextLaunch.name}</div>
+      <div style={{ ...S, fontSize: 10, color: '#fff', marginBottom: 6 }}>Falcon 9 · Starlink 12-3</div>
       <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
         {([['DAYS', cd.d], ['HRS', cd.h], ['MIN', cd.m], ['SEC', cd.s]] as [string, number][]).map(([l, v]) => (
           <div key={l} style={{ flex: 1, textAlign: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 6, padding: '4px 6px' }}>
@@ -69,9 +51,7 @@ export default function LaunchCountdownWidget() {
           </div>
         ))}
       </div>
-      <div style={{ ...S, fontSize: 7, color: '#4A5568' }}>
-        {nextLaunch.provider} · {nextLaunch.mission}
-      </div>
+      <div style={{ ...S, fontSize: 7, color: '#4A5568' }}>SpaceX · Communications</div>
     </div>
   )
 }
