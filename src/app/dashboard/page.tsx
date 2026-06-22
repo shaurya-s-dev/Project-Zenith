@@ -868,7 +868,9 @@ export default function Dashboard() {
             </button>
 
             {/* Neon digital clock */}
-            <div style={{
+            <div
+              suppressHydrationWarning
+              style={{
               flex: 1, textAlign: 'center',
               fontFamily: "'Space Mono', monospace", fontSize: 13,
               color: timeOffset === 0 ? '#00D4FF' : '#FFD400',

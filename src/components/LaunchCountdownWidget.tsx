@@ -19,23 +19,31 @@ const MOCK_LAUNCHES: Launch[] = [
 ]
 
 export default function LaunchCountdownWidget() {
-  const [now, setNow] = useState(() => Date.now())
+  // null on server — only set after mount to avoid hydration mismatch
+  const [now, setNow] = useState<number | null>(null)
 
   useEffect(() => {
+    setNow(Date.now())
     const i = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(i)
   }, [])
 
+  // Don't render anything until client has mounted
+  if (now === null) return null
+
   const nextLaunch = MOCK_LAUNCHES[0]
   const totalMs = nextLaunch.date.getTime() - now
-  const cd = totalMs <= 0 ? { d: 0, h: 0, m: 0, s: 0 } : {
+
+  if (totalMs <= 0) return null
+
+  const cd = {
     d: Math.floor(totalMs / 86400000),
     h: Math.floor((totalMs % 86400000) / 3600000),
     m: Math.floor((totalMs % 3600000) / 60000),
     s: Math.floor((totalMs % 60000) / 1000),
   }
 
-  return totalMs <= 0 ? null : (
+  return (
     <div className="animate-card-glow hover-lift" style={{
       background: 'rgba(10,10,15,0.8)',
       border: '1px solid rgba(255,107,53,0.15)',
@@ -47,9 +55,7 @@ export default function LaunchCountdownWidget() {
       </div>
       <div style={{ ...S, fontSize: 10, color: '#fff', marginBottom: 6 }}>{nextLaunch.name}</div>
       <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-        {[
-          ['DAYS', cd.d], ['HRS', cd.h], ['MIN', cd.m], ['SEC', cd.s],
-        ].map(([l, v]) => (
+        {([['DAYS', cd.d], ['HRS', cd.h], ['MIN', cd.m], ['SEC', cd.s]] as [string, number][]).map(([l, v]) => (
           <div key={l} style={{ flex: 1, textAlign: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 6, padding: '4px 6px' }}>
             <motion.div
               key={`${l}-${v}`}

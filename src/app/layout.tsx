@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import Script from "next/script";
 import TabNav from "@/components/TabNav";
 import DynamicBackground from "@/components/DynamicBackground";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SkyLensProvider } from "@/components/SkyLensContext";
 import QueryProvider from "@/components/QueryProvider";
-
 import PageTransition from "@/components/PageTransition";
 
 export const metadata: Metadata = {
@@ -39,7 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </ThemeProvider>
         </QueryProvider>
 
-        <script
+        <Script
+          id="sw-register"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
